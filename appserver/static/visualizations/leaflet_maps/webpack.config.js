@@ -17,7 +17,11 @@ module.exports = {
             {
                 test: /leaflet\.markercluster-src\.js$/,
                 loader: 'imports-loader?L=leaflet'
-            }
+            },
+            {
+                test: /leaflet\.awesome-markers\.js$/,
+                loader: 'imports-loader?L=leaflet'
+            } 
         ]
     },
     externals: [
