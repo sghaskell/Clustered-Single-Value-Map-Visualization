@@ -75,20 +75,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        initialize: function() {
 	            SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	            this.$el = $(this.el);
-	            /*
-	            var icon = L.icon({
-	                    iconUrl: '/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/images/marker-icon.png',
-	                    iconSize: [25, 41],
-	                    iconAnchor: [12, 41],
-	                    popupAnchor: [0, -45],
-	                    shadowUrl: '/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/images/marker-shadow.png',
-	                    shadowSize: [41, 41],
-	                    shadowAnchor: [12, 41],
-	                });
-	            this.icons.push(icon);
-	            var icon = L.AwesomeMarkers.icon();
-	            this.icons.push(icon);
-	            */
 	            this.isInitializedDom = false;
 	        },
 	  
