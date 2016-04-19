@@ -1,0 +1,99 @@
+<form class="splunk-formatter-section" section-label="Clustering">
+    <div class="control-group">
+    	<label class="control-label">Enable Clustering</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="true">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets.</span> 
+        </div>
+	</div>
+
+    <div class="control-group">
+        <label class="control-label">Animate</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate" value="true">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Animate cluster separation on zoom</span> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Single Marker Mode</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode" value="false">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Re-style single marker icon to marker cluster style (round)</span> 
+        </div>
+    </div>
+
+
+
+    <div class="control-group">
+        <label class="control-label">Max Cluster Radius</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius"></splunk-text-input value="80">
+            <span class="help-block ">A cluster will cover at most this many pixels from its center (Default: 80)</span> 
+        </div>
+    </div>
+
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Tiles">
+    <div class="control-group">
+        <label class="control-label">Map Tile</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile" value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
+              <option value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">Open Streetmap</option> 
+              <option value="http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png">CartoDB Light</option> 
+              <option value="http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png">CartoDB Dark</option> 
+            </splunk-select> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Map Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom"></splunk-text-input value="6">
+            <span class="help-block ">Initial Zoom for map (Default: 6)</span> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Center Lat</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat"></splunk-text-input>
+            <span class="help-block ">Initial Center Latitiude (Default: 39.50) </span> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Center Lon</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon"></splunk-text-input>
+            <span class="help-block ">Initial Center Longitude (Default: -98.35)</span> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Min Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom" value="1"></splunk-text-input>
+            <span class="help-block ">Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)</span> 
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Max Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom" value="19"></splunk-text-input>
+            <span class="help-block ">Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)</span> 
+        </div>
+    </div>
+</form>
