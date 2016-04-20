@@ -244,6 +244,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        var icon = "circle";
 	                    }
 
+	                    if("title" in userData) {
+	                        var title = userData["title"];
+	                    } else {
+	                        var title = "";
+	                    }
+
 	                    if("markerColor" in userData) {
 	                        var markerColor = userData["markerColor"];
 	                    } else {
@@ -295,24 +301,25 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                }
 
 	                if (cluster === 'true') {
-	                    if(!userData["description"]) {
-	                        var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon});
-	                    } else {
-	                        var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']});
+	                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
+
+	                    if(userData["description"]) {
 	                        marker.bindPopup(userData['description']);
 	                    }
+
 	                    this.markerList.push(marker);
 	                } else {
 	                    if(!userData["description"]) {
 	                        L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon}).addTo(layerGroup);
 	                    } else {
 	                        if(allPopups === 'true') {
-	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
+	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
 	                        } else {
-	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']}).addTo(layerGroup).bindPopup(userData['description']);
+	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
 	                        }
 	                    }
 	                }
+
 	            }, this);            
 
 	            if (cluster === 'true') {           
