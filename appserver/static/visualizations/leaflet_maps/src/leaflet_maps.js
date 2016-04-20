@@ -18,7 +18,10 @@ define([
     var ATTRIBUTIONS = {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
         'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-        'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+        'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        'http://tile.stamen.com/toner/{z}/{x}/{y}.png': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
+        'http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.',
+        'http://tile.stamen.com/watercolor/{z}/{x}/{y}.jpg': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
     }
         
     return SplunkVisualizationBase.extend({
@@ -80,10 +83,14 @@ define([
 
             // get configs
             var cluster     = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster'] || "true",
+                allPopups   = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups'] || "false",
+                multiplePopups = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups'] || "false",
                 animate     = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate'] || "true",
                 singleMarkerMode = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode'] || "false",
                 maxClusterRadius = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius']) || 80,
                 mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']) || 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
+                mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
                 scrollWheelZoom = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom'] || "true",
                 mapCenterZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom']) || 6,
                 mapCenterLat = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat']) || 39.50,
@@ -91,14 +98,43 @@ define([
                 minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']) || 1,
                 maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']) || 19
 
+            this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
+            this.attribution = (mapAttributionOverride) ? mapAttributionOverride:ATTRIBUTIONS[mapTile];
+
             if (!this.isInitializedDom) {
-            	var map = this.map = L.map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
+                if(allPopups === 'true' || multiplePopups === 'true') {
+                    L.Map = L.Map.extend({
+                        openPopup: function (popup, latlng, options) {
+                            if (!(popup instanceof L.Popup)) {
+                                popup = new L.Popup(options).setContent(popup);
+                            }
+
+                            if (latlng) {
+                                popup.setLatLng(latlng);
+                            }
+
+                            if (this.hasLayer(popup)) {
+                                return this;
+                            }
+
+                            this._popup = popup;
+                            return this.addLayer(popup);
+                        }
+                    });                    
+
+            	    var map = this.map = new L.Map(this.el, {closePopupOnClick: false}).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
+                } else {
+            	    var map = this.map = new L.Map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
+                }
+                
             	$(this.el).height('100%').width('100%');
-				this.tileLayer = L.tileLayer(mapTile, {
-                    attribution: ATTRIBUTIONS[mapTile],
+            
+				this.tileLayer = L.tileLayer(this.activeTile, {
+                    attribution: this.attribution,
                     minZoom: minZoom,
                     maxZoom: maxZoom
 				});
+
                 this.map.addLayer(this.tileLayer);   
 
                 // Map Scroll
@@ -132,8 +168,8 @@ define([
             } 
 
             // Reset Tile If Changed
-            if(this.tileLayer._url != mapTile) {
-                this.tileLayer.setUrl(mapTile);
+            if(this.tileLayer._url != this.activeTile) {
+                this.tileLayer.setUrl(this.activeTile);
             }
 
             // Reset tile zoom levels if changed
@@ -155,7 +191,6 @@ define([
       		}
 
             var layerGroup = this.layerGroup;
-
 
             _.each(dataRows, function(userData, i) {
                 // Set icon options
@@ -189,6 +224,7 @@ define([
                         var popupAnchor = [-3, -30];
                     } else {
                         var className = "awesome-marker";
+                        extraClasses = "";
                         var popupAnchor = [1, -32];
                     }
 
@@ -227,7 +263,11 @@ define([
                     if(!userData["description"]) {
                         L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon}).addTo(layerGroup);
                     } else {
-                        L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']}).addTo(layerGroup).bindPopup(userData['description']);
+                        if(allPopups === 'true') {
+                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
+                        } else {
+                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: userData['description']}).addTo(layerGroup).bindPopup(userData['description']);
+                        }
                     }
                 }
             }, this);            

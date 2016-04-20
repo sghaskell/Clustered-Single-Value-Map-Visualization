@@ -9,7 +9,26 @@
             <span class="help-block ">Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets.</span> 
         </div>
 	</div>
-
+    <div class="control-group">
+    	<label class="control-label">Show All Popups</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="false">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Display all popups on page load. Only works with clustering disabled.</span> 
+        </div>
+	</div>
+    <div class="control-group">
+    	<label class="control-label">Allow Multiple Popups</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="false">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups.</span> 
+        </div>
+	</div>
     <div class="control-group">
         <label class="control-label">Animate</label>
         <div class="controls controls-fill ">
@@ -20,7 +39,6 @@
             <span class="help-block ">Animate cluster separation on zoom</span> 
         </div>
     </div>
-
     <div class="control-group">
         <label class="control-label">Single Marker Mode</label>
         <div class="controls controls-fill ">
@@ -31,18 +49,13 @@
             <span class="help-block ">Re-style single marker icon to marker cluster style (round)</span> 
         </div>
     </div>
-
-
-
     <div class="control-group">
         <label class="control-label">Max Cluster Radius</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius"></splunk-text-input value="80">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius" value="80"></splunk-text-input>
             <span class="help-block ">A cluster will cover at most this many pixels from its center (Default: 80)</span> 
         </div>
     </div>
-
-
 </form>
 
 <form class="splunk-formatter-section" section-label="Tiles">
@@ -53,11 +66,26 @@
               <option value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">Open Streetmap</option> 
               <option value="http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png">CartoDB Light</option> 
               <option value="http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png">CartoDB Dark</option> 
+              <option value="http://tile.stamen.com/toner/{z}/{x}/{y}.png">Stamen Toner</option> 
+              <option value="http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg">Stamen Terrain</option> 
+              <option value="http://tile.stamen.com/watercolor/{z}/{x}/{y}.jpg">Stamen Watercolor</option> 
             </splunk-select> 
         </div>
     </div>
-
-
+    <div class="control-group">
+        <label class="control-label">Map Tile Override</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride"></splunk-text-input>
+            <span class="help-block ">Use your own map tile and override defaults.</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Map Attribution Override</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride"></splunk-text-input>
+            <span class="help-block ">Use your own map tile and override defaults.</span> 
+        </div>
+    </div>
     <div class="control-group">
         <label class="control-label">Scroll Wheel Zoom</label>
         <div class="controls controls-fill ">
@@ -73,7 +101,7 @@
     <div class="control-group">
         <label class="control-label">Map Zoom</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom"></splunk-text-input value="6">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom" value="6"></splunk-text-input>
             <span class="help-block ">Initial Zoom for map (Default: 6)</span> 
         </div>
     </div>
