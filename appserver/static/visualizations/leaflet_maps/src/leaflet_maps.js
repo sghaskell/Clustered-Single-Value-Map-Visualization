@@ -28,7 +28,6 @@ define([
         maxResults: 0,
         icons: [],
         tileLayer: null,
-        //validMarkerKeys: ["
 
         initialize: function() {
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -39,7 +38,6 @@ define([
         // Search data params
         getInitialDataParams: function() {
             return ({
-                //outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
                 outputMode: SplunkVisualizationBase.RAW_OUTPUT_MODE,
                 count: this.maxResults
             });
