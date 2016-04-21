@@ -2,16 +2,13 @@
 This app only works with **Splunk 6.4** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
 # Usage
-`base_search | table latitude, longitude [description | title | icon | markerColor | iconColor | prefix | extraClasses]`
+`base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses ]`
 
 # Required Fields
-##### latitude
-Latitude Coordinates
-##### longitude
-Longitude Coordinates
+**latitude** - Latitude Coordinates
+**longitude** - Longitude Coordinates
 # Optional Fields
-##### descirption (Supports HTML)
-Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. This field supports HTML.
+**descirption** - Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
 
 # Style Markers And Icons Dynamically Through SPL
 ### Feature Description
