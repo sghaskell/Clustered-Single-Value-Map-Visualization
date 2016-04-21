@@ -270,11 +270,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	                    if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
 	                        var className = "";
-	                        var popupAnchor = [-3, -30];
+	                        var popupAnchor = [-3, -35];
 	                    } else {
 	                        var className = "awesome-marker";
 	                        extraClasses = "";
-	                        var popupAnchor = [1, -32];
+	                        var popupAnchor = [1, -35];
 	                    }
 
 	                    if("extraClasses" in userData) {
