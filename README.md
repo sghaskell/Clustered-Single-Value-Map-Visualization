@@ -2,6 +2,7 @@
 This app only works with **Splunk 6.4** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
 # Usage
+### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 `base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses ]`
 
 # Required Fields
