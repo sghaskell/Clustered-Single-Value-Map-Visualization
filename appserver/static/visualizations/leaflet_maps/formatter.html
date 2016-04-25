@@ -1,3 +1,94 @@
+<form class="splunk-formatter-section" section-label="Map">
+    <div class="control-group">
+        <label class="control-label">Map Tile</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile" value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
+              <option value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">Open Streetmap</option> 
+              <option value="http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png">CartoDB Light</option> 
+              <option value="http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png">CartoDB Dark</option> 
+              <option value="http://tile.stamen.com/toner/{z}/{x}/{y}.png">Stamen Toner</option> 
+              <option value="http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg">Stamen Terrain (USA Only)</option> 
+              <option value="http://tile.stamen.com/watercolor/{z}/{x}/{y}.jpg">Stamen Watercolor</option> 
+            </splunk-select> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Map Tile Override</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride"></splunk-text-input>
+            <span class="help-block ">Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Map Attribution Override</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride"></splunk-text-input>
+            <span class="help-block ">Use your own attribution.</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Scroll Wheel Zoom</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom" value="true">
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable zooming on map with scroll wheel</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Full Screen Mode</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen" value="false">
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Default Height</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight" value="600"></splunk-text-input>
+            <span class="help-block ">Initial Height Of Map (Default: 600) </span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Map Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom" value="6"></splunk-text-input>
+            <span class="help-block ">Initial Zoom for map (Default: 6)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Center Lat</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat"></splunk-text-input>
+            <span class="help-block ">Initial Center Latitiude (Default: 39.50) </span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Center Lon</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon"></splunk-text-input>
+            <span class="help-block ">Initial Center Longitude (Default: -98.35)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Min Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom" value="1"></splunk-text-input>
+            <span class="help-block ">Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Max Zoom</label>
+        <div class="controls controls-block">
+            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom" value="19"></splunk-text-input>
+            <span class="help-block ">Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)</span> 
+        </div>
+    </div>
+</form>
 <form class="splunk-formatter-section" section-label="Clustering">
     <div class="control-group">
     	<label class="control-label">Enable Clustering</label>
@@ -57,84 +148,65 @@
         </div>
     </div>
 </form>
-
-<form class="splunk-formatter-section" section-label="Tiles">
+<form class="splunk-formatter-section" section-label="Cluster Colors">
     <div class="control-group">
-        <label class="control-label">Map Tile</label>
+        <label class="control-label">Range One Background</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile" value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
-              <option value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">Open Streetmap</option> 
-              <option value="http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png">CartoDB Light</option> 
-              <option value="http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png">CartoDB Dark</option> 
-              <option value="http://tile.stamen.com/toner/{z}/{x}/{y}.png">Stamen Toner</option> 
-              <option value="http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg">Stamen Terrain (USA Only)</option> 
-              <option value="http://tile.stamen.com/watercolor/{z}/{x}/{y}.jpg">Stamen Watercolor</option> 
-            </splunk-select> 
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor" value="#B5E28C">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #B5E28C)</span> 
         </div>
     </div>
     <div class="control-group">
-        <label class="control-label">Map Tile Override</label>
+        <label class="control-label">Range One Foreground</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride"></splunk-text-input>
-            <span class="help-block ">Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png</span> 
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor" value="#6ECC39">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #6ECC39)</span> 
         </div>
     </div>
     <div class="control-group">
-        <label class="control-label">Map Attribution Override</label>
+        <label class="control-label">Range two thereshold</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride"></splunk-text-input>
-            <span class="help-block ">Use your own attribution.</span> 
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold" value="55"></splunk-text-input>
         </div>
     </div>
     <div class="control-group">
-        <label class="control-label">Scroll Wheel Zoom</label>
-        <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom" value="true">
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
-            </splunk-radio-input>
-            <span class="help-block ">Enable or disable zooming on map with scroll wheel</span>
+        <label class="control-label">Range Two Background</label>
+        <div class="controls controls-block">
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoBgColor" value="#F1D357">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #F1D357)</span> 
         </div>
     </div>
-
-
     <div class="control-group">
-        <label class="control-label">Map Zoom</label>
+        <label class="control-label">Range Two Foreground</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom" value="6"></splunk-text-input>
-            <span class="help-block ">Initial Zoom for map (Default: 6)</span> 
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor" value="#F0C20C">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #F0C20C)</span> 
         </div>
     </div>
-
     <div class="control-group">
-        <label class="control-label">Center Lat</label>
+        <label class="control-label">Range three threshold</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat"></splunk-text-input>
-            <span class="help-block ">Initial Center Latitiude (Default: 39.50) </span> 
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold" value="80"></splunk-text-input>
         </div>
     </div>
-
     <div class="control-group">
-        <label class="control-label">Center Lon</label>
+        <label class="control-label">Range Three Background</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon"></splunk-text-input>
-            <span class="help-block ">Initial Center Longitude (Default: -98.35)</span> 
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor" value="#FD9C73">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #FD9C73)</span> 
         </div>
     </div>
-
     <div class="control-group">
-        <label class="control-label">Min Zoom</label>
+        <label class="control-label">Range Three Foreground</label>
         <div class="controls controls-block">
-            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom" value="1"></splunk-text-input>
-            <span class="help-block ">Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)</span> 
-        </div>
-    </div>
-
-    <div class="control-group">
-        <label class="control-label">Max Zoom</label>
-        <div class="controls controls-block">
-            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom" value="19"></splunk-text-input>
-            <span class="help-block ">Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)</span> 
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor" value="#F18017">
+            </splunk-color-picker> 
+            <span class="help-block ">(Default: #F18017)</span> 
         </div>
     </div>
 </form>

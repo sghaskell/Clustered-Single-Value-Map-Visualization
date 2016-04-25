@@ -92,6 +92,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            this.clearMap = false;
 	        },
 
+	        hexToRgb: function(hex) {
+	            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	            return result ? {
+	                r: parseInt(result[1], 16),
+	                g: parseInt(result[2], 16),
+	                b: parseInt(result[3], 16)
+	            } : null;
+	        },
+	       
+	        createMarkerStyle: function(bgHex, fgHex, markerName) {
+	            var bgRgb = this.hexToRgb(bgHex);
+	            var fgRgb = this.hexToRgb(fgHex);
+	            var bgRgba = 'rgba(' + bgRgb.r + ', ' + bgRgb.g + ', ' + bgRgb.b + ', 0.6)';
+	            var fgRgba = 'rgba(' + fgRgb.r + ', ' + fgRgb.g + ', ' + fgRgb.b + ', 0.6)';
+
+	            var html = '.marker-cluster-' + markerName + ' { background-color: ' + bgRgba + ';} .marker-cluster-' + markerName + ' div { background-color: ' + fgRgba + ';}';
+	            $("<style>")
+	                .prop("type", "text/css")
+	                .html(html)
+	                .appendTo("head");
+	        },
+
 	        updateView: function(data, config) {
 	            // Clear map and reset everything
 	            if(this.clearMap === true) {
@@ -135,16 +157,45 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
 	                mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
 	                scrollWheelZoom = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom'] || "true",
+	                fullScreen = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen'] || "false",
+	                defaultHeight = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight']) || 600,
 	                mapCenterZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom']) || 6,
 	                mapCenterLat = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat']) || 39.50,
 	                mapCenterLon = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon']) || -98.35,
 	                minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']) || 1,
-	                maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']) || 19
+	                maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']) || 19,
+	                rangeOneBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor'] || "#B5E28C",
+	                rangeOneFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor'] || "#6ECC39",
+	                warningThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold'] || 55,
+	                rangeTwoBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoBgColor'] || "#F1D357",
+	                rangeTwoFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor'] || "#F0C20C",
+	                criticalThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold'] || 80,
+	                rangeThreeBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor'] || "#FD9C73",
+	                rangeThreeFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor'] || "#F18017"
 
 	            this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
 	            this.attribution = (mapAttributionOverride) ? mapAttributionOverride:ATTRIBUTIONS[mapTile];
 
 	            if (!this.isInitializedDom) {
+	                // Map Full Screen Mode
+	                if (fullScreen === 'true') {
+	                    var vh = $(window).height() - 120;
+	                    $("div.shared-reportvisualizer").css("height", vh);
+
+	                    $(window).resize(function() {
+	                        var vh = $(window).height() - 120;
+	                        $("div.shared-reportvisualizer").css("height", vh);
+	                    });
+	                } else {
+	                    $("div.shared-reportvisualizer").css("height", defaultHeight);
+	                } 
+
+	                // Setup cluster marker CSS
+	                this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
+	                this.createMarkerStyle(rangeTwoBgColor, rangeTwoFgColor, "two");
+	                this.createMarkerStyle(rangeThreeBgColor, rangeThreeFgColor, "three");
+
+	                // Enable all or multiple popups
 	                if(allPopups === 'true' || multiplePopups === 'true') {
 	                    L.Map = L.Map.extend({
 	                        openPopup: function (popup, latlng, options) {
@@ -170,7 +221,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            	    var map = this.map = new L.Map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
 	                }
 	                
-	            	$(this.el).height('100%').width('100%');
+	            	//$(this.el).height('100%').width('100%');
 	            
 					this.tileLayer = L.tileLayer(this.activeTile, {
 	                    attribution: this.attribution,
@@ -179,9 +230,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					});
 
 	                this.map.addLayer(this.tileLayer);   
-
-	                // Map Scroll
-	                (scrollWheelZoom === 'true') ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
 
 		            this.layerGroup = new L.LayerGroup().addTo(map);
 	                this.markers = new L.MarkerClusterGroup({ 
@@ -192,14 +240,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    iconCreateFunction: function(cluster) {
 	                        var childCount = cluster.getChildCount();
 	                        var c = ' marker-cluster-';
-	                        if (childCount < 50) {
-	                            c += 'small';
-	                        } else if (childCount < 150) {
-	                            c += 'medium';
+	                        if (childCount >= criticalThreshold) {
+	                            c += 'three';
+	                        } else if (childCount >= warningThreshold) {
+	                            c += 'two';
 	                        } else {
-	                            c += 'large';
+	                            c += 'one';
 	                        }
-
 	                        return new L.DivIcon({ html: '<div><span><b>' + childCount + '</span></div></b>', className: 'marker-cluster' + c , iconSize: new L.Point(40, 40) });
 	                    }
 	                });
@@ -209,6 +256,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					this.isInitializedDom = true;         
 	                this.clearMap = false;
 	            } 
+
+
+	            // Map Scroll
+	            (scrollWheelZoom === 'true') ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
 
 	            // Reset Tile If Changed
 	            if(this.tileLayer._url != this.activeTile) {
