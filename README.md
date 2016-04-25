@@ -36,6 +36,30 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 `index=chicago_crime | fillnull | eval description = "<b>".description."</b>" | eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "map-marker", like(description, "%RECKLESS CONDUCT%"), "map-pin", 1=1, "circle"), iconColor=case(like(description, "%HARASSMENT BY TELEPHONE%"), "#374D13", like(description, "%RECKLESS CONDUCT%"), "rgb(0,255,255)", 1=1, "white") | table latitude, longitude, description, markerColor, icon, iconColor` 
 
 # Formatting Options
+### Map
+###### Map Tile
+Select one of six available map tiles
+###### Map Tile Override
+Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png. Find more tiles [here](http://wiki.openstreetmap.org/wiki/Tiles)
+###### Map Attribution Override
+Use your own attribution. - **Requires browser Refresh**
+###### Scroll Wheel Zoom
+Enable or disable scroll wheel zoom.
+###### Full Screen Mode
+Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize.
+###### Default Height
+Initial Height Of Map (Default: 600)
+###### Map Zoom
+Initial Zoom for map (Default: 6)
+###### Center Lat
+Initial Center Latitiude (Default: 39.50)
+###### Center Lon
+Initial Center Longitude (Default: -98.35)
+###### Min Zoom
+Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)
+###### Max Zoom
+Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)
+
 ### Clustering
 ###### Enable Clustering
 Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets. - **Requires browser Refresh**
@@ -50,22 +74,20 @@ Re-style single marker icon to marker cluster style (round) - **Requires browser
 ###### Max Cluster Radius
 A cluster will cover at most this many pixels from its center (Default: 80) - **Requires browser Refresh**
 
-### Tiles
-###### Map Tile
-Select one of six available map tiles
-###### Map Tile Override
-Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png. Find more tiles [here](http://wiki.openstreetmap.org/wiki/Tiles)
-###### Map Attribution Override
-Use your own attribution. - **Requires browser Refresh**
-###### Scroll Wheel Zoom
-Enable or disable scroll wheel zoom. - **Requires browser Refresh**
-###### Map Zoom
-Initial Zoom for map (Default: 6)
-###### Center Lat
-Initial Center Latitiude (Default: 39.50)
-###### Center Lon
-Initial Center Longitude (Default: -98.35)
-###### Min Zoom
-Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)
-###### Max Zoom
-Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)
+### Cluster Colors
+###### Range One Background
+(Default: #B5E28C)
+###### Range One Foreground
+(Default: #6ECC39)
+###### Range two thereshold
+Number at which cluster group two starts
+###### Range Two Background
+(Default: #F1D357)
+###### Range Two Foreground
+(Default: #F0C20C)
+###### Range three threshold
+Number at which cluster group three starts
+###### Range Three Background
+(Default: #FD9C73)
+###### Range Three Foreground
+(Default: #F18017)
