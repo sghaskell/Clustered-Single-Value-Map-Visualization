@@ -132,19 +132,6 @@ define([
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:ATTRIBUTIONS[mapTile];
 
             if (!this.isInitializedDom) {
-                // Map Full Screen Mode
-                if (fullScreen === 'true') {
-                    var vh = $(window).height() - 120;
-                    $("div.leaflet-container").css("height", vh);
-
-                    $(window).resize(function() {
-                        var vh = $(window).height() - 120;
-                        $("div.leaflet-container").css("height", vh);
-                    });
-                } else {
-                    $("div.leaflet-container").css("height", defaultHeight);
-                }
-
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
                 this.createMarkerStyle(rangeTwoBgColor, rangeTwoFgColor, "two");
@@ -176,8 +163,6 @@ define([
             	    var map = this.map = new L.Map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
                 }
                 
-            	//$(this.el).height('100%').width('100%');
-            
 				this.tileLayer = L.tileLayer(this.activeTile, {
                     attribution: this.attribution,
                     minZoom: minZoom,
@@ -205,6 +190,21 @@ define([
                         return new L.DivIcon({ html: '<div><span><b>' + childCount + '</span></div></b>', className: 'marker-cluster' + c , iconSize: new L.Point(40, 40) });
                     }
                 });
+
+                // Map Full Screen Mode
+                if (fullScreen === 'true') {
+                    var vh = $(window).height() - 120;
+                    $("div.leaflet-container").parent().parent().closest("div").css("height", vh);
+
+                    $(window).resize(function() {
+                        var vh = $(window).height() - 120;
+                        $("div.leaflet-container").parent().parent().closest("div").css("height", vh);
+                    });
+                } else {
+                    $("div.leaflet-container").parent().parent().closest("div").css("height", defaultHeight);
+                }
+
+
                 this.markerList = [];
                 this.chunk = 50000;
                 this.offset = 0;
