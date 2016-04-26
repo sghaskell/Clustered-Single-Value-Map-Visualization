@@ -135,15 +135,15 @@ define([
                 // Map Full Screen Mode
                 if (fullScreen === 'true') {
                     var vh = $(window).height() - 120;
-                    $("div.shared-reportvisualizer").css("height", vh);
+                    $("div.leaflet-container").css("height", vh);
 
                     $(window).resize(function() {
                         var vh = $(window).height() - 120;
-                        $("div.shared-reportvisualizer").css("height", vh);
+                        $("div.leaflet-container").css("height", vh);
                     });
                 } else {
-                    $("div.shared-reportvisualizer").css("height", defaultHeight);
-                } 
+                    $("div.leaflet-container").css("height", defaultHeight);
+                }
 
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
