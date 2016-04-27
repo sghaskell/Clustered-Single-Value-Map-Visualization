@@ -191,17 +191,20 @@ define([
                     }
                 });
 
+                // Get parent element of div to resize
+                var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
+
                 // Map Full Screen Mode
                 if (fullScreen === 'true') {
                     var vh = $(window).height() - 120;
-                    $("div.leaflet-container").parent().parent().closest("div").css("height", vh);
+                    $("div[data-cid=" + parentEl + "]").css("height", vh);
 
                     $(window).resize(function() {
                         var vh = $(window).height() - 120;
-                        $("div.leaflet-container").parent().parent().closest("div").css("height", vh);
+                        $("div[data-cid=" + parentEl + "]").css("height", vh);
                     });
                 } else {
-                    $("div.leaflet-container").parent().parent().closest("div").css("height", defaultHeight);
+                    $("div[data-cid=" + parentEl + "]").css("height", defaultHeight);
                 }
 
 
