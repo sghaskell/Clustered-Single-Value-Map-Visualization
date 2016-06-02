@@ -29,9 +29,9 @@
     <div class="control-group">
         <label class="control-label">Scroll Wheel Zoom</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom" value="true">
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
             </splunk-radio-input>
             <span class="help-block ">Enable or disable zooming on map with scroll wheel</span>
         </div>
@@ -39,9 +39,9 @@
     <div class="control-group">
         <label class="control-label">Full Screen Mode</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen" value="false">
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen" value="0">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
             </splunk-radio-input>
             <span class="help-block ">Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize.</span>
         </div>
@@ -65,14 +65,14 @@
     <div class="control-group">
         <label class="control-label">Center Lat</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat"></splunk-text-input>
-            <span class="help-block ">Initial Center Latitiude (Default: 39.50) </span> 
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat" value="39.50"></splunk-text-input>
+            <span class="help-block ">Initial Center Latitiude (Default: 39.50)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Center Lon</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon"></splunk-text-input>
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon" value="-98.35"></splunk-text-input>
             <span class="help-block ">Initial Center Longitude (Default: -98.35)</span> 
         </div>
     </div>
@@ -95,9 +95,9 @@
     <div class="control-group">
     	<label class="control-label">Enable Clustering</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="true">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="1">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
             </splunk-radio-input> 
             <span class="help-block ">Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets.</span> 
         </div>
@@ -105,9 +105,9 @@
     <div class="control-group">
     	<label class="control-label">Show All Popups</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="false">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="0">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
             </splunk-radio-input> 
             <span class="help-block ">Display all popups on page load. Only works with clustering disabled.</span> 
         </div>
@@ -115,9 +115,9 @@
     <div class="control-group">
     	<label class="control-label">Allow Multiple Popups</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="false">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="0">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
             </splunk-radio-input> 
             <span class="help-block ">Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups.</span> 
         </div>
@@ -125,9 +125,9 @@
     <div class="control-group">
         <label class="control-label">Animate</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate" value="true">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate" value="1">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
             </splunk-radio-input> 
             <span class="help-block ">Animate cluster separation on zoom</span> 
         </div>
@@ -135,9 +135,9 @@
     <div class="control-group">
         <label class="control-label">Single Marker Mode</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode" value="false">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode" value="0">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
             </splunk-radio-input> 
             <span class="help-block ">Re-style single marker icon to marker cluster style (round)</span> 
         </div>
