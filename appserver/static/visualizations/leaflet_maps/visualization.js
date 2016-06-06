@@ -128,6 +128,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                b: parseInt(result[3], 16)
 	            } : null;
 	        },
+
+	        isArgTrue: function(arg) {
+	            if(arg === 1 || arg === 'true') {
+	                return true;
+	            } else {
+	                return false;
+	            }
+	        },
 	       
 	        createMarkerStyle: function(bgHex, fgHex, markerName) {
 	            var bgRgb = this.hexToRgb(bgHex);
@@ -217,7 +225,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.createMarkerStyle(rangeThreeBgColor, rangeThreeFgColor, "three");
 
 	                // Enable all or multiple popups
-	                if(allPopups === 1 || multiplePopups === 1) {
+	                if(this.isArgTrue(allPopups) || this.isArgTrue(multiplePopups)) {
 	                    L.Map = L.Map.extend({
 	                        openPopup: function (popup, latlng, options) {
 	                            if (!(popup instanceof L.Popup)) {
@@ -254,8 +262,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.markers = new L.MarkerClusterGroup({ 
 	                    chunkedLoading: true,
 	                    maxClusterRadius: maxClusterRadius,
-	                    singleMarkerMode: (singleMarkerMode === 1),
-	                    animate: (animate === 1),
+	                    singleMarkerMode: (this.isArgTrue(singleMarkerMode)),
+	                    animate: (this.isArgTrue(animate)),
 	                    iconCreateFunction: function(cluster) {
 	                        var childCount = cluster.getChildCount();
 	                        var c = ' marker-cluster-';
@@ -274,7 +282,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
 
 	                // Map Full Screen Mode
-	                if (fullScreen === 1) {
+	                if (this.isArgTrue(fullScreen)) {
 	                    var vh = $(window).height() - 120;
 	                    $("div[data-cid=" + parentEl + "]").css("height", vh);
 
@@ -296,7 +304,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	            // Map Scroll
-	            (scrollWheelZoom === 1) ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
+	            (this.isArgTrue(scrollWheelZoom)) ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
 
 	            // Reset Tile If Changed
 	            if(this.tileLayer._url != this.activeTile) {
@@ -393,7 +401,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    });
 	                }
 
-	                if (cluster === 1) {
+	                if (this.isArgTrue(cluster)) {
 	                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
 
 	                    if(userData["description"]) {
@@ -405,7 +413,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    if(!userData["description"]) {
 	                        L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon}).addTo(layerGroup);
 	                    } else {
-	                        if(allPopups === 1) {
+	                        if(this.isArgTrue(allPopups)) {
 	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
 	                        } else {
 	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
@@ -415,7 +423,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            }, this);            
 
-	            if (cluster === 1) {           
+	            if (this.isArgTrue(cluster)) {           
 	                // Create marker Layer and add to layer group
 	                this.markers.addLayers(this.markerList);
 	                this.layerGroup.addLayer(this.markers);
