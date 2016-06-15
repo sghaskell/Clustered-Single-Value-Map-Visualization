@@ -42,7 +42,7 @@ Select one of six available map tiles
 ###### Map Tile Override
 Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png. Find more tiles [here](http://wiki.openstreetmap.org/wiki/Tiles)
 ###### Map Attribution Override
-Use your own attribution. - **Requires browser Refresh**
+Use your own attribution. - **Requires browser refresh**
 ###### Scroll Wheel Zoom
 Enable or disable scroll wheel zoom.
 ###### Full Screen Mode
@@ -62,17 +62,21 @@ Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)
 
 ### Clustering
 ###### Enable Clustering
-Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets. - **Requires browser Refresh**
+Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets. - **Requires browser refresh**
 ###### Show All Popups
-Display all popups on page load. Only works with clustering disabled. - **Requires browser Refresh**
+Display all popups on page load. Only works with clustering disabled. - **Requires browser refresh**
 ###### Allow Multiple Popups
-Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups. - **Requires browser Refresh**
+Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups. - **Requires browser refresh**
 ###### Animate
-Animate cluster separation on zoom - **Requires browser Refresh**
+Animate cluster separation on zoom - **Requires browser refresh**
 ###### Single Marker Mode 
-Re-style single marker icon to marker cluster style (round) - **Requires browser Refresh**
+Re-style single marker icon to marker cluster style (round) - **Requires browser refresh**
 ###### Max Cluster Radius
-A cluster will cover at most this many pixels from its center (Default: 80) - **Requires browser Refresh**
+A cluster will cover at most this many pixels from its center (Default: 80) - **Requires browser refresh**
+###### Cluster Warning Size
+Display an alert warning that the cluster exceeds threshold at max-zoom and do not show underlying markers. Browser may hang and die if a single point exceeds a very large number.(Default: 100) - **Requires browser refresh**
+###### Distance Multiplier
+Increase to increase the distance away that markers appear from the center when expanded at max zoom. (Default: 1) - **Requires browser refresh**
 
 ### Cluster Colors
 ###### Range One Background
