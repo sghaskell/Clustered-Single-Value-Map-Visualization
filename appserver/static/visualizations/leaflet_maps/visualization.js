@@ -72,6 +72,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode': 0,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius': 80,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize': 100,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile': 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride': "",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride': "",
@@ -195,6 +197,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                animate     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate']),
 	                singleMarkerMode = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode']),
 	                maxClusterRadius = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius']),
+	                maxSpiderfySize = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize']),
+	                spiderfyDistanceMultiplier = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier']),
 	                mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']),
 	                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
 	                mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
@@ -262,6 +266,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.markers = new L.MarkerClusterGroup({ 
 	                    chunkedLoading: true,
 	                    maxClusterRadius: maxClusterRadius,
+	                    maxSpiderfySize: maxSpiderfySize,
+	                    spiderfyDistanceMultiplier: spiderfyDistanceMultiplier,
 	                    singleMarkerMode: (this.isArgTrue(singleMarkerMode)),
 	                    animate: (this.isArgTrue(animate)),
 	                    iconCreateFunction: function(cluster) {
@@ -449,7 +455,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.3
+	 * jQuery JavaScript Library v2.2.4
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -459,7 +465,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-04-05T19:26Z
+	 * Date: 2016-05-20T17:23Z
 	 */
 
 	(function( global, factory ) {
@@ -515,7 +521,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	var
-		version = "2.2.3",
+		version = "2.2.4",
 
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -5456,13 +5462,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		isDefaultPrevented: returnFalse,
 		isPropagationStopped: returnFalse,
 		isImmediatePropagationStopped: returnFalse,
+		isSimulated: false,
 
 		preventDefault: function() {
 			var e = this.originalEvent;
 
 			this.isDefaultPrevented = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.preventDefault();
 			}
 		},
@@ -5471,7 +5478,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			this.isPropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopPropagation();
 			}
 		},
@@ -5480,7 +5487,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			this.isImmediatePropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopImmediatePropagation();
 			}
 
@@ -6410,19 +6417,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 			styles = getStyles( elem ),
 			isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
-
-		// Support: IE11 only
-		// In IE 11 fullscreen elements inside of an iframe have
-		// 100x too small dimensions (gh-1764).
-		if ( document.msFullscreenElement && window.top !== window ) {
-
-			// Support: IE11 only
-			// Running getBoundingClientRect on a disconnected node
-			// in IE throws an error.
-			if ( elem.getClientRects().length ) {
-				val = Math.round( elem.getBoundingClientRect()[ name ] * 100 );
-			}
-		}
 
 		// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 		// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -8314,6 +8308,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		// Piggyback on a donor event to simulate a different one
+		// Used only for `focus(in | out)` events
 		simulate: function( type, elem, event ) {
 			var e = jQuery.extend(
 				new jQuery.Event(),
@@ -8321,27 +8316,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				{
 					type: type,
 					isSimulated: true
-
-					// Previously, `originalEvent: {}` was set here, so stopPropagation call
-					// would not be triggered on donor event, since in our own
-					// jQuery.event.stopPropagation function we had a check for existence of
-					// originalEvent.stopPropagation method, so, consequently it would be a noop.
-					//
-					// But now, this "simulate" function is used only for events
-					// for which stopPropagation() is noop, so there is no need for that anymore.
-					//
-					// For the 1.x branch though, guard for "click" and "submit"
-					// events is still used, but was moved to jQuery.event.stopPropagation function
-					// because `originalEvent` should point to the original event for the constancy
-					// with other events and for more focused logic
 				}
 			);
 
 			jQuery.event.trigger( e, null, elem );
-
-			if ( e.isDefaultPrevented() ) {
-				event.preventDefault();
-			}
 		}
 
 	} );
@@ -24325,10 +24303,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            shadowAnchor: [10, 12],
 	            shadowSize: [36, 16],
 	            className: 'awesome-marker',
-	            prefix: 'fa',
+	            prefix: 'glyphicon',
 	            spinClass: 'fa-spin',
 	            extraClasses: '',
-	            icon: 'circle',
+	            icon: 'home',
 	            markerColor: 'blue',
 	            iconColor: 'white'
 	        },
@@ -24368,12 +24346,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            }
 
 	            if(options.iconColor) {
-	                //if(options.iconColor === 'white' || options.iconColor === 'black') {
-	                //    iconColorClass = "icon-" + options.iconColor;
-	                //} else {
-	                //    iconColorStyle = "style='color: " + options.iconColor + "' ";
-	                //}
-	                iconColorStyle = "style='color: " + options.iconColor + "' ";
+	                if(options.iconColor === 'white' || options.iconColor === 'black') {
+	                    iconColorClass = "icon-" + options.iconColor;
+	                } else {
+	                    iconColorStyle = "style='color: " + options.iconColor + "' ";
+	                }
 	            }
 
 	            return "<i " + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + iconClass + " " + iconSpinClass + " " + iconColorClass + "'></i>";
@@ -24393,10 +24370,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            if (!anchor && size) {
 	                anchor = size.divideBy(2, true);
 	            }
-	            
-	            if(this.options.className) {
-	                img.className = 'awesome-marker-' + name + ' ' + options.className;
-	            }
+
+	            img.className = 'awesome-marker-' + name + ' ' + options.className;
 
 	            if (anchor) {
 	                img.style.marginLeft = (-anchor.x) + 'px';
@@ -24454,6 +24429,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			showCoverageOnHover: true,
 			zoomToBoundsOnClick: true,
 			singleMarkerMode: false,
+
+	        maxSpiderfySize: 100,
 
 			disableClusteringAtZoom: null,
 
@@ -25753,7 +25730,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.MarkerCluster = L.Marker.extend({
 		initialize: function (group, zoom, a, b) {
-
 			L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
 
 
@@ -26499,6 +26475,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				center = map.latLngToLayerPoint(this._latlng),
 				positions;
 
+	        if (childMarkers.length > this._group.options.maxSpiderfySize) {
+	            alert("Cluster has " + childMarkers.length + " points which exceeds cluster warning size of " + this._group.options.maxSpiderfySize + ". Cluster will not be expanded.");
+	            return;
+	        }
+
 			this._group._unspiderfy();
 			this._group._spiderfied = this;
 
@@ -27066,6 +27047,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	}(window, document));
+
 
 
 /***/ }

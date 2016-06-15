@@ -18,6 +18,8 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		zoomToBoundsOnClick: true,
 		singleMarkerMode: false,
 
+        maxSpiderfySize: 100,
+
 		disableClusteringAtZoom: null,
 
 		// Setting this to false prevents the removal of any clusters outside of the viewpoint, which
@@ -1316,7 +1318,6 @@ L.markerClusterGroup = function (options) {
 
 L.MarkerCluster = L.Marker.extend({
 	initialize: function (group, zoom, a, b) {
-
 		L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
 
 
@@ -2061,6 +2062,11 @@ L.MarkerCluster.include({
 			map = group._map,
 			center = map.latLngToLayerPoint(this._latlng),
 			positions;
+
+        if (childMarkers.length > this._group.options.maxSpiderfySize) {
+            alert("Cluster has " + childMarkers.length + " points which exceeds cluster warning size of " + this._group.options.maxSpiderfySize + ". Cluster will not be expanded.");
+            return;
+        }
 
 		this._group._unspiderfy();
 		this._group._spiderfied = this;

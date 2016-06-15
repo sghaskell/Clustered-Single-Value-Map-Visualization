@@ -27,6 +27,8 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius': 80,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize': 100,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile': 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride': "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride': "",
@@ -150,6 +152,8 @@ define([
                 animate     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate']),
                 singleMarkerMode = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode']),
                 maxClusterRadius = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius']),
+                maxSpiderfySize = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize']),
+                spiderfyDistanceMultiplier = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier']),
                 mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']),
                 mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
                 mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
@@ -217,6 +221,8 @@ define([
                 this.markers = new L.MarkerClusterGroup({ 
                     chunkedLoading: true,
                     maxClusterRadius: maxClusterRadius,
+                    maxSpiderfySize: maxSpiderfySize,
+                    spiderfyDistanceMultiplier: spiderfyDistanceMultiplier,
                     singleMarkerMode: (this.isArgTrue(singleMarkerMode)),
                     animate: (this.isArgTrue(animate)),
                     iconCreateFunction: function(cluster) {

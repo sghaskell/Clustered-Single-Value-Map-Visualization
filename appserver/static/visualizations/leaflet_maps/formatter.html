@@ -142,11 +142,27 @@
             <span class="help-block ">Re-style single marker icon to marker cluster style (round)</span> 
         </div>
     </div>
+</form>
+<form class="splunk-formatter-section" section-label="Clustering (Continued)">
     <div class="control-group">
         <label class="control-label">Max Cluster Radius</label>
         <div class="controls controls-block">
             <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius" value="80"></splunk-text-input>
             <span class="help-block ">A cluster will cover at most this many pixels from its center (Default: 80)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Cluster Warning Size</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize" value="100"></splunk-text-input>
+            <span class="help-block ">Display an alert warning that the cluster exceeds threshold at max-zoom and do not show underlying markers. Browser may hang and die if a single point exceeds a very large number.(Default: 100)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Distance Multiplier</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier" value="1"></splunk-text-input>
+            <span class="help-block ">Increase to increase the distance away that markers appear from the center when expanded at max zoom. (Default: 1)</span> 
         </div>
     </div>
 </form>
