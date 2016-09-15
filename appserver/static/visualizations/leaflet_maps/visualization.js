@@ -78,6 +78,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile': 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride': "",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride': "",
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl' : 1,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen': 0,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
