@@ -166,6 +166,28 @@
         </div>
     </div>
 </form>
+<form class="splunk-formatter-section" section-label="Layer Controls">
+    <div class="control-group">
+        <label class="control-label">Layer Control</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Control Collapsed</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Collapse or expand layer control widget. If collapsed, mousing over icon will expand.</span>
+        </div>
+    </div>
+</form>
 <form class="splunk-formatter-section" section-label="Cluster Colors">
     <div class="control-group">
         <label class="control-label">Range One Background</label>

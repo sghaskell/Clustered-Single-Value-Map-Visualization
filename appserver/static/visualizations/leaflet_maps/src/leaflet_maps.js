@@ -5,7 +5,8 @@ define([
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
-            '../contrib/leaflet.markercluster-src'
+            '../contrib/leaflet.markercluster-src',
+            '../contrib/leaflet.featuregroup.subgroup-src'
         ],
         function(
             $,
@@ -18,8 +19,8 @@ define([
 
     return SplunkVisualizationBase.extend({
         maxResults: 0,
-        icons: [],
         tileLayer: null,
+        layerFilter: {},
         defaultConfig:  {
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups': 0,
@@ -116,6 +117,7 @@ define([
 
             // Clear map and reset everything
             if(this.clearMap === true) {
+                //console.log("CLEARING MAP!!");
                 this.offset = 0; // reset offset
                 this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
                 this.invalidateUpdateView();  // redraw map
@@ -127,6 +129,11 @@ define([
                 this.markerList = [];
                 var clearMap = this.clearMap;
                 this.clearMap = false;
+                // remove layers from map and clear out marker data
+                _.each(this.layerFilter, function(lg, i) {
+                    lg.group.clearLayers();
+                    lg.markerList = [];
+                }, this);
             }
 
             // get data
@@ -157,6 +164,8 @@ define([
                 mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']),
                 mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
                 mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
+                layerControl = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl']),
+                layerControlCollapsed = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed']),
                 scrollWheelZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom']),
                 fullScreen = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen']),
                 defaultHeight = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight']),
@@ -239,6 +248,13 @@ define([
                     }
                 });
 
+                //this.group1 = L.featureGroup.subGroup(this.markers);
+                //console.log(this.group1);
+                //this.control = L.control.layers(null, null, { collapsed: true});
+                this.control = L.control.layers(null, null, { collapsed: this.isArgTrue(layerControlCollapsed)});
+                //console.log(this.control);
+                this.markers.addTo(this.map);
+           
                 // Get parent element of div to resize
                 var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
 
@@ -297,14 +313,35 @@ define([
                 if(Object.keys(userData).length > 2) {
                     if("icon" in userData) {
                         var icon = userData["icon"];
+
                     } else {
                         var icon = "circle";
+
+                    }
+
+                    // Create Clustered icon layer
+                    if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
+                        this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
+                                                  'markerList' : [],
+                                                  'iconStyle' : icon,
+                                                  'layerExists' : false
+                                                 };
+                    } else if (typeof this.layerFilter[icon] == 'undefined') {
+                        this.layerFilter[icon] = {'group' : L.layerGroup(),
+                                                  'markerList' : [],
+                                                  'iconStyle' : icon,
+                                                  'layerExists' : false
+                                                 };
                     }
 
                     if("title" in userData) {
                         var title = userData["title"];
                     } else {
                         var title = "";
+                    }
+
+                    if (typeof this.layerFilter[icon] !== 'undefined') {
+                        this.layerFilter[icon].title = title;
                     }
 
                     if("markerColor" in userData) {
@@ -341,7 +378,14 @@ define([
                     } else {
                         var extraClasses = "";
                     }
-                    
+                
+                    if("description" in userData) {
+                        var description = userData["description"]
+                    }
+                    else {
+                        var description = "";
+                    }    
+
                     var markerIcon = L.AwesomeMarkers.icon({
                         icon: icon,
                         markerColor: markerColor,
@@ -349,7 +393,8 @@ define([
                         prefix: prefix,
                         className: className,
                         extraClasses: extraClasses,
-                        popupAnchor: popupAnchor
+                        popupAnchor: popupAnchor,
+                        description: description
                     }); 
                 }
                 else {
@@ -362,39 +407,114 @@ define([
                     });
                 }
 
-                if (this.isArgTrue(cluster)) {
-                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
-
-                    if(userData["description"]) {
-                        marker.bindPopup(userData['description']);
-                    }
-
-                    this.markerList.push(marker);
-                } else {
-                    if(!userData["description"]) {
-                        L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon}).addTo(layerGroup);
-                    } else {
-                        if(this.isArgTrue(allPopups)) {
-                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
-                        } else {
-                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
-                        }
-                    }
+                // Add the icon so we can access properties for overlay
+                if (typeof this.layerFilter[icon] !== 'undefined') {
+                    this.layerFilter[icon].icon = markerIcon;
                 }
+
+                // Create marker
+                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
+
+                // Bind description popup if description exists
+                if(userData["description"]) {
+                    marker.bindPopup(userData['description']);
+                }
+
+                // Save each icon in the layer
+                this.layerFilter[icon].markerList.push(marker);
 
             }, this);            
 
+            // Enable/disable layer controls and toggle collapse 
+            if (this.isArgTrue(layerControl)) {           
+                this.control.addTo(this.map);
+                this.control.options.collapsed = this.isArgTrue(layerControlCollapsed);
+            } else {
+                this.control.remove();
+            }
+
             if (this.isArgTrue(cluster)) {           
-                // Create marker Layer and add to layer group
-                this.markers.addLayers(this.markerList);
-                this.layerGroup.addLayer(this.markers);
+
+                _.each(this.layerFilter, function(lg, i) { 
+                    // Create temp clustered layergroup and add markerlist
+                    this.tmpFG = L.featureGroup.subGroup(this.markers, lg.markerList);
+
+                    // add temp layergroup to layer filter layergroup and add to map
+                    lg.group.addLayer(this.tmpFG);
+                    lg.group.addTo(this.map);
+                        //console.log(iconDiv);
+                        //console.log($(iconDiv)[0].outerHTML);
+                        //var iconHtml = $(iconDiv)[0].outerHTML;
+                        //var iconHtml = "<div class=\"awesome-marker-icon-red awesome-marker\"><i style=\"color: white\" class=\"fa fa-exclamation  \"></i>" + lg.title + " </div>";
+                        //console.log(iconHtml);
+                        //var foo = $(iconDiv).append($('').clone()).html();
+                        //console.log(iconDiv);
+                        //console.log("text ", $(iconDiv).html(), "end");
+                        //console.log("text ", $(iconDiv).outerHTML(), "end");
+                        //var iconString = "<html><body>" + lg.icon.createIcon() + "</body></html>";
+                        //console.log(lg.icon.createIcon()); 
+                        //console.log(iconDiv);
+                        //console.log($(iconDiv).find("awesome-marker").text());
+                        //var iconHtml= "<div class=\"awesome-marker-icon-" + lg.color + " awesome-marker\">" + "<i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title + "</div>";
+                        //var iconHtml= "<div class=\"awesome-marker awesome-marker-icon-" + lg.icon.options.markerColor + "\"><i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.iconColor + "\"></i>  " + lg.title + "</div>";
+                        //var iconHtml= "<i class=\"awesome-marker-icon-" + lg.color + " awesome-marker legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title;
+
+                    // create control icon overlay and add to layergroup if it doesn't already exist
+                    if(!lg.layerExists) {
+                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
+                        console.log(iconHtml);
+                        //console.log(iconString);
+                        this.control.addOverlay(lg.group, iconHtml);
+                        lg.layerExists = true;
+                    }
+                        //this.control.addOverlay(lg.group, iconString);
+                        //this.icons.push(lg.icon);
+                        //this.baseLayers[iconHtml] = lg.group;
+
+                    //lg.group.addLayer(this.tmpFG);
+                    //lg.group.addTo(this.map);
+                }, this);
+            } else {
+                console.log("Single Value"); 
+                //this.control.addTo(this.map);
+
+                // Loop through layer filters
+                _.each(this.layerFilter, function(lg, i) { 
+
+                    this.tmpFG = L.layerGroup(lg.markerList);
+                    lg.group.addLayer(this.tmpFG);
+                    lg.group.addTo(this.map);
+
+                    console.log(lg.markerList[0]);
+                    _.each(lg.markerList, function(m, k) {
+                        if(this.isArgTrue(allPopups)) {
+                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
+                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']).openPopup();
+                            //m.addTo(lg.group).openPopup();
+                            m.addTo(lg.group).bindPopup(m.options.icon.options.description).openPopup();
+                        } else {
+                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
+                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']);
+                            m.addTo(lg.group);
+                        }
+                    }, this);
+
+                    if(!lg.layerExists) {
+                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
+                        console.log(iconHtml);
+                        this.control.addOverlay(lg.group, iconHtml);
+                        lg.layerExists = true;
+                    }
+                }, this);
+
             }
 
             // Chunk through data 50k results at a time
             if(dataRows.length === this.chunk) {
                 this.offset += this.chunk;
                 this.updateDataParams({count: this.chunk, offset: this.offset});
-            } else {
+            } else if (typeof data.meta.done !== 'undefined' && data.meta.done) {
+                console.log("search done!!");
                 this.markerList = [];
                 this.clearMap = true;
             }

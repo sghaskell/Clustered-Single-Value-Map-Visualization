@@ -51,7 +51,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            __webpack_require__(4),
 	            __webpack_require__(5),
 	            __webpack_require__(6),
-	            __webpack_require__(7)
+	            __webpack_require__(7),
+	            __webpack_require__(8)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -63,8 +64,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	    return SplunkVisualizationBase.extend({
 	        maxResults: 0,
-	        icons: [],
 	        tileLayer: null,
+	        layerFilter: {},
 	        defaultConfig:  {
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups': 0,
@@ -161,6 +162,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            // Clear map and reset everything
 	            if(this.clearMap === true) {
+	                //console.log("CLEARING MAP!!");
 	                this.offset = 0; // reset offset
 	                this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
 	                this.invalidateUpdateView();  // redraw map
@@ -172,6 +174,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.markerList = [];
 	                var clearMap = this.clearMap;
 	                this.clearMap = false;
+	                // remove layers from map and clear out marker data
+	                _.each(this.layerFilter, function(lg, i) {
+	                    lg.group.clearLayers();
+	                    lg.markerList = [];
+	                }, this);
 	            }
 
 	            // get data
@@ -202,6 +209,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']),
 	                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
 	                mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
+	                layerControl = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl']),
+	                layerControlCollapsed = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed']),
 	                scrollWheelZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom']),
 	                fullScreen = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen']),
 	                defaultHeight = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight']),
@@ -284,6 +293,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    }
 	                });
 
+	                //this.group1 = L.featureGroup.subGroup(this.markers);
+	                //console.log(this.group1);
+	                //this.control = L.control.layers(null, null, { collapsed: true});
+	                this.control = L.control.layers(null, null, { collapsed: this.isArgTrue(layerControlCollapsed)});
+	                //console.log(this.control);
+	                this.markers.addTo(this.map);
+	           
 	                // Get parent element of div to resize
 	                var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
 
@@ -342,14 +358,35 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                if(Object.keys(userData).length > 2) {
 	                    if("icon" in userData) {
 	                        var icon = userData["icon"];
+
 	                    } else {
 	                        var icon = "circle";
+
+	                    }
+
+	                    // Create Clustered icon layer
+	                    if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
+	                        this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
+	                                                  'markerList' : [],
+	                                                  'iconStyle' : icon,
+	                                                  'layerExists' : false
+	                                                 };
+	                    } else if (typeof this.layerFilter[icon] == 'undefined') {
+	                        this.layerFilter[icon] = {'group' : L.layerGroup(),
+	                                                  'markerList' : [],
+	                                                  'iconStyle' : icon,
+	                                                  'layerExists' : false
+	                                                 };
 	                    }
 
 	                    if("title" in userData) {
 	                        var title = userData["title"];
 	                    } else {
 	                        var title = "";
+	                    }
+
+	                    if (typeof this.layerFilter[icon] !== 'undefined') {
+	                        this.layerFilter[icon].title = title;
 	                    }
 
 	                    if("markerColor" in userData) {
@@ -386,7 +423,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    } else {
 	                        var extraClasses = "";
 	                    }
-	                    
+	                
+	                    if("description" in userData) {
+	                        var description = userData["description"]
+	                    }
+	                    else {
+	                        var description = "";
+	                    }    
+
 	                    var markerIcon = L.AwesomeMarkers.icon({
 	                        icon: icon,
 	                        markerColor: markerColor,
@@ -394,7 +438,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        prefix: prefix,
 	                        className: className,
 	                        extraClasses: extraClasses,
-	                        popupAnchor: popupAnchor
+	                        popupAnchor: popupAnchor,
+	                        description: description
 	                    }); 
 	                }
 	                else {
@@ -407,39 +452,114 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    });
 	                }
 
-	                if (this.isArgTrue(cluster)) {
-	                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
-
-	                    if(userData["description"]) {
-	                        marker.bindPopup(userData['description']);
-	                    }
-
-	                    this.markerList.push(marker);
-	                } else {
-	                    if(!userData["description"]) {
-	                        L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon}).addTo(layerGroup);
-	                    } else {
-	                        if(this.isArgTrue(allPopups)) {
-	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
-	                        } else {
-	                            L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
-	                        }
-	                    }
+	                // Add the icon so we can access properties for overlay
+	                if (typeof this.layerFilter[icon] !== 'undefined') {
+	                    this.layerFilter[icon].icon = markerIcon;
 	                }
+
+	                // Create marker
+	                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
+
+	                // Bind description popup if description exists
+	                if(userData["description"]) {
+	                    marker.bindPopup(userData['description']);
+	                }
+
+	                // Save each icon in the layer
+	                this.layerFilter[icon].markerList.push(marker);
 
 	            }, this);            
 
+	            // Enable/disable layer controls and toggle collapse 
+	            if (this.isArgTrue(layerControl)) {           
+	                this.control.addTo(this.map);
+	                this.control.options.collapsed = this.isArgTrue(layerControlCollapsed);
+	            } else {
+	                this.control.remove();
+	            }
+
 	            if (this.isArgTrue(cluster)) {           
-	                // Create marker Layer and add to layer group
-	                this.markers.addLayers(this.markerList);
-	                this.layerGroup.addLayer(this.markers);
+
+	                _.each(this.layerFilter, function(lg, i) { 
+	                    // Create temp clustered layergroup and add markerlist
+	                    this.tmpFG = L.featureGroup.subGroup(this.markers, lg.markerList);
+
+	                    // add temp layergroup to layer filter layergroup and add to map
+	                    lg.group.addLayer(this.tmpFG);
+	                    lg.group.addTo(this.map);
+	                        //console.log(iconDiv);
+	                        //console.log($(iconDiv)[0].outerHTML);
+	                        //var iconHtml = $(iconDiv)[0].outerHTML;
+	                        //var iconHtml = "<div class=\"awesome-marker-icon-red awesome-marker\"><i style=\"color: white\" class=\"fa fa-exclamation  \"></i>" + lg.title + " </div>";
+	                        //console.log(iconHtml);
+	                        //var foo = $(iconDiv).append($('').clone()).html();
+	                        //console.log(iconDiv);
+	                        //console.log("text ", $(iconDiv).html(), "end");
+	                        //console.log("text ", $(iconDiv).outerHTML(), "end");
+	                        //var iconString = "<html><body>" + lg.icon.createIcon() + "</body></html>";
+	                        //console.log(lg.icon.createIcon()); 
+	                        //console.log(iconDiv);
+	                        //console.log($(iconDiv).find("awesome-marker").text());
+	                        //var iconHtml= "<div class=\"awesome-marker-icon-" + lg.color + " awesome-marker\">" + "<i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title + "</div>";
+	                        //var iconHtml= "<div class=\"awesome-marker awesome-marker-icon-" + lg.icon.options.markerColor + "\"><i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.iconColor + "\"></i>  " + lg.title + "</div>";
+	                        //var iconHtml= "<i class=\"awesome-marker-icon-" + lg.color + " awesome-marker legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title;
+
+	                    // create control icon overlay and add to layergroup if it doesn't already exist
+	                    if(!lg.layerExists) {
+	                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
+	                        console.log(iconHtml);
+	                        //console.log(iconString);
+	                        this.control.addOverlay(lg.group, iconHtml);
+	                        lg.layerExists = true;
+	                    }
+	                        //this.control.addOverlay(lg.group, iconString);
+	                        //this.icons.push(lg.icon);
+	                        //this.baseLayers[iconHtml] = lg.group;
+
+	                    //lg.group.addLayer(this.tmpFG);
+	                    //lg.group.addTo(this.map);
+	                }, this);
+	            } else {
+	                console.log("Single Value"); 
+	                //this.control.addTo(this.map);
+
+	                // Loop through layer filters
+	                _.each(this.layerFilter, function(lg, i) { 
+
+	                    this.tmpFG = L.layerGroup(lg.markerList);
+	                    lg.group.addLayer(this.tmpFG);
+	                    lg.group.addTo(this.map);
+
+	                    console.log(lg.markerList[0]);
+	                    _.each(lg.markerList, function(m, k) {
+	                        if(this.isArgTrue(allPopups)) {
+	                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
+	                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']).openPopup();
+	                            //m.addTo(lg.group).openPopup();
+	                            m.addTo(lg.group).bindPopup(m.options.icon.options.description).openPopup();
+	                        } else {
+	                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
+	                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']);
+	                            m.addTo(lg.group);
+	                        }
+	                    }, this);
+
+	                    if(!lg.layerExists) {
+	                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
+	                        console.log(iconHtml);
+	                        this.control.addOverlay(lg.group, iconHtml);
+	                        lg.layerExists = true;
+	                    }
+	                }, this);
+
 	            }
 
 	            // Chunk through data 50k results at a time
 	            if(dataRows.length === this.chunk) {
 	                this.offset += this.chunk;
 	                this.updateDataParams({count: this.chunk, offset: this.offset});
-	            } else {
+	            } else if (typeof data.meta.done !== 'undefined' && data.meta.done) {
+	                console.log("search done!!");
 	                this.markerList = [];
 	                this.clearMap = true;
 	            }
@@ -11829,12 +11949,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
-	 Leaflet 1.0.0-rc.1 (a626826), a JS library for interactive maps. http://leafletjs.com
+	 Leaflet 1.0.0-rc.3, a JS library for interactive maps. http://leafletjs.com
 	 (c) 2010-2015 Vladimir Agafonkin, (c) 2010-2011 CloudMade
 	*/
 	(function (window, document, undefined) {
 	var L = {
-		version: '1.0.0-rc.1'
+		version: "1.0.0-rc.3"
 	};
 
 	function expose() {
@@ -11928,7 +12048,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @function throttle(fn: Function, time: Number, context: Object): Function
 		// Returns a function which executes function `fn` with the given scope `context`
-		// (so that the `this` keyword refers to `context` inside `fn`'s code). The arguments received by the bound function will be any arguments passed when binding the function, followed by any arguments passed when invoking the bound function. Has an `L.bind` shortcut.
+		// (so that the `this` keyword refers to `context` inside `fn`'s code). The function
+		// `fn` will be called no more than one time per given amount of `time`. The arguments
+		// received by the bound function will be any arguments passed when binding the
+		// function, followed by any arguments passed when invoking the bound function.
+		// Has an `L.bind` shortcut.
 		throttle: function (fn, time, context) {
 			var lock, args, wrapperFn, later;
 
@@ -11991,7 +12115,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return L.Util.trim(str).split(/\s+/);
 		},
 
-		// @function setOptions(obj: Object: options: Object): Object
+		// @function setOptions(obj: Object, options: Object): Object
 		// Merges the given properties to the `options` of the `obj` object, returning the resulting options. See `Class options`. Has an `L.setOptions` shortcut.
 		setOptions: function (obj, options) {
 			if (!obj.hasOwnProperty('options')) {
@@ -12016,7 +12140,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
 		},
 
-		// @template (str: String, data: Object)
+		// @function template(str: String, data: Object): String
 		// Simple templating facility, accepts a template string of the form `'Hello {a}, {b}'`
 		// and a data object like `{a: 'foo', b: 'bar'}`, returns evaluated string
 		// `('Hello foo, bar')`. You can also specify functions instead of strings for
@@ -12043,7 +12167,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return (Object.prototype.toString.call(obj) === '[object Array]');
 		},
 
-		// @function indexOf: Number
+		// @function indexOf(array: Array, el: Object): Number
 		// Compatibility polyfill for [Array.prototype.indexOf](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)
 		indexOf: function (array, el) {
 			for (var i = 0; i < array.length; i++) {
@@ -12082,12 +12206,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		               getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
 
 
-		// @function requestAnimFrame(fn: Function, context?: Object, immediate?: Boolean): requestId: Number
+		// @function requestAnimFrame(fn: Function, context?: Object, immediate?: Boolean): Number
 		// Schedules `fn` to be executed when the browser repaints. `fn` is bound to
 		// `context` if given. When `immediate` is set, `fn` is called immediately if
 		// the browser doesn't have native support for
 		// [`window.requestAnimationFrame`](https://developer.mozilla.org/docs/Web/API/window/requestAnimationFrame),
-		// otherwise it's delayed. Returns an id that can be used to cancel the request.
+		// otherwise it's delayed. Returns a request ID that can be used to cancel the request.
 		L.Util.requestAnimFrame = function (fn, context, immediate) {
 			if (immediate && requestFn === timeoutDefer) {
 				fn.call(context);
@@ -12096,7 +12220,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 		};
 
-		// @function cancelAnimFrame(id: Number)
+		// @function cancelAnimFrame(id: Number): undefined
 		// Cancels a previous `requestAnimFrame`. See also [window.cancelAnimationFrame](https://developer.mozilla.org/docs/Web/API/window/cancelAnimationFrame).
 		L.Util.cancelAnimFrame = function (id) {
 			if (id) {
@@ -12196,21 +12320,21 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 
-	// @function include(properties: Object)
+	// @function include(properties: Object): this
 	// [Includes a mixin](#class-includes) into the current class.
 	L.Class.include = function (props) {
 		L.extend(this.prototype, props);
 		return this;
 	};
 
-	// @function mergeOptions(options: Object)
+	// @function mergeOptions(options: Object): this
 	// [Merges `options`](#class-options) into the defaults of the class.
 	L.Class.mergeOptions = function (options) {
 		L.extend(this.prototype.options, options);
 		return this;
 	};
 
-	// @function addInitHook(fn: Function)
+	// @function addInitHook(fn: Function): this
 	// Adds a [constructor hook](#class-constructor-hooks) to the class.
 	L.Class.addInitHook = function (fn) { // (Function) || (String, args...)
 		var args = Array.prototype.slice.call(arguments, 1);
@@ -12318,80 +12442,88 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// attach listener (without syntactic sugar now)
 		_on: function (type, fn, context) {
+			this._events = this._events || {};
 
-			var events = this._events = this._events || {},
-			    contextId = context && context !== this && L.stamp(context);
-
-			if (contextId) {
-				// store listeners with custom context in a separate hash (if it has an id);
-				// gives a major performance boost when firing and removing events (e.g. on map object)
-
-				var indexKey = type + '_idx',
-				    indexLenKey = type + '_len',
-				    typeIndex = events[indexKey] = events[indexKey] || {},
-				    id = L.stamp(fn) + '_' + contextId;
-
-				if (!typeIndex[id]) {
-					typeIndex[id] = {fn: fn, ctx: context};
-
-					// keep track of the number of keys in the index to quickly check if it's empty
-					events[indexLenKey] = (events[indexLenKey] || 0) + 1;
-				}
-
-			} else {
-				// individual layers mostly use "this" for context and don't fire listeners too often
-				// so simple array makes the memory footprint better while not degrading performance
-
-				events[type] = events[type] || [];
-				events[type].push({fn: fn});
+			/* get/init listeners for type */
+			var typeListeners = this._events[type];
+			if (!typeListeners) {
+				typeListeners = {
+					listeners: [],
+					count: 0
+				};
+				this._events[type] = typeListeners;
 			}
+
+			if (context === this) {
+				// Less memory footprint.
+				context = undefined;
+			}
+			var newListener = {fn: fn, ctx: context},
+			    listeners = typeListeners.listeners;
+
+			// check if fn already there
+			for (var i = 0, len = listeners.length; i < len; i++) {
+				if (listeners[i].fn === fn && listeners[i].ctx === context) {
+					return;
+				}
+			}
+
+			listeners.push(newListener);
+			typeListeners.count++;
 		},
 
 		_off: function (type, fn, context) {
-			var events = this._events,
-			    indexKey = type + '_idx',
-			    indexLenKey = type + '_len';
+			var typeListeners,
+			    listeners,
+			    i,
+			    len;
 
-			if (!events) { return; }
+			if (!this._events) { return; }
 
-			if (!fn) {
-				// clear all listeners for a type if function isn't specified
-				delete events[type];
-				delete events[indexKey];
-				delete events[indexLenKey];
+			typeListeners = this._events[type];
+
+			if (!typeListeners) {
 				return;
 			}
 
-			var contextId = context && context !== this && L.stamp(context),
-			    listeners, i, len, listener, id;
+			listeners = typeListeners.listeners;
 
-			if (contextId) {
-				id = L.stamp(fn) + '_' + contextId;
-				listeners = events[indexKey];
-
-				if (listeners && listeners[id]) {
-					listener = listeners[id];
-					delete listeners[id];
-					events[indexLenKey]--;
+			if (!fn) {
+				// Set all removed listeners to noop so they are not called if remove happens in fire
+				for (i = 0, len = listeners.length; i < len; i++) {
+					listeners[i].fn = L.Util.falseFn;
 				}
-
-			} else {
-				listeners = events[type];
-
-				if (listeners) {
-					for (i = 0, len = listeners.length; i < len; i++) {
-						if (listeners[i].fn === fn) {
-							listener = listeners[i];
-							listeners.splice(i, 1);
-							break;
-						}
-					}
-				}
+				// clear all listeners for a type if function isn't specified
+				delete this._events[type];
+				return;
 			}
 
-			// set the removed listener to noop so that's not called if remove happens in fire
-			if (listener) {
-				listener.fn = L.Util.falseFn;
+
+			if (context === this) {
+				context = undefined;
+			}
+
+			if (listeners) {
+
+				// find fn and remove it
+				for (i = 0, len = listeners.length; i < len; i++) {
+					var l = listeners[i];
+					if (l.ctx !== context) { continue; }
+					if (l.fn === fn) {
+
+						// set the removed listener to noop so that's not called if remove happens in fire
+						l.fn = L.Util.falseFn;
+						typeListeners.count--;
+
+						if (this._isFiring) {
+							/* copy array in case events are being fired */
+							listeners = listeners.slice();
+						}
+						listeners.splice(i, 1);
+
+						return;
+					}
+				}
 			}
 		},
 
@@ -12402,25 +12534,20 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		fire: function (type, data, propagate) {
 			if (!this.listens(type, propagate)) { return this; }
 
-			var event = L.Util.extend({}, data, {type: type, target: this}),
-			    events = this._events;
+			var event = L.Util.extend({}, data, {type: type, target: this});
 
-			if (events) {
-				var typeIndex = events[type + '_idx'],
-				    i, len, listeners, id;
+			if (this._events) {
+				var typeListeners = this._events[type];
 
-				if (events[type]) {
-					// make sure adding/removing listeners inside other listeners won't cause infinite loop
-					listeners = events[type].slice();
-
-					for (i = 0, len = listeners.length; i < len; i++) {
-						listeners[i].fn.call(this, event);
+				if (typeListeners) {
+					this._isFiring = true;
+					var listeners = typeListeners.listeners;
+					for (var i = 0, len = listeners.length; i < len; i++) {
+						var l = listeners[i];
+						l.fn.call(l.ctx || this, event);
 					}
-				}
 
-				// fire event for the context-indexed listeners as well
-				for (id in typeIndex) {
-					typeIndex[id].fn.call(typeIndex[id].ctx, event);
+					this._isFiring = false;
 				}
 			}
 
@@ -12435,9 +12562,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @method listens(type: String): Boolean
 		// Returns `true` if a particular event type has any listeners attached to it.
 		listens: function (type, propagate) {
-			var events = this._events;
-
-			if (events && (events[type] || events[type + '_len'])) { return true; }
+			var typeListeners = this._events && this._events[type];
+			if (typeListeners && typeListeners.count) { return true; }
 
 			if (propagate) {
 				// also check parents for listeners if event propagates
@@ -12554,6 +12680,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		    chrome    = ua.indexOf('chrome') !== -1,
 		    gecko     = ua.indexOf('gecko') !== -1  && !webkit && !window.opera && !ie,
 
+		    win = navigator.platform.indexOf('Win') === 0,
+
 		    mobile = typeof orientation !== 'undefined' || ua.indexOf('mobile') !== -1,
 		    msPointer = !window.PointerEvent && window.MSPointerEvent,
 		    pointer = window.PointerEvent || msPointer,
@@ -12562,6 +12690,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		    webkit3d = ('WebKitCSSMatrix' in window) && ('m11' in new window.WebKitCSSMatrix()) && !android23,
 		    gecko3d = 'MozPerspective' in doc.style,
 		    opera12 = 'OTransition' in doc.style;
+
 
 		var touch = !window.L_NO_TOUCH && (pointer || 'ontouchstart' in window ||
 				(window.DocumentTouch && document instanceof window.DocumentTouch));
@@ -12603,6 +12732,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// @property safari: Boolean
 			// `true` for the Safari browser.
 			safari: !chrome && ua.indexOf('safari') !== -1,
+
+
+			// @property win: Boolean
+			// `true` when the browser is running in a Windows platform
+			win: win,
 
 
 			// @property ie3d: Boolean
@@ -12848,6 +12982,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// @alternative
 	// @factory L.point(coords: Number[])
 	// Expects an array of the form `[x, y]` instead.
+
+	// @alternative
+	// @factory L.point(coords: Object)
+	// Expects a plain object of the form `{x: Number, y: Number}` instead.
 	L.point = function (x, y, round) {
 		if (x instanceof L.Point) {
 			return x;
@@ -12857,6 +12995,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		}
 		if (x === undefined || x === null) {
 			return x;
+		}
+		if (typeof x === 'object' && 'x' in x && 'y' in x) {
+			return new L.Point(x.x, x.y);
 		}
 		return new L.Point(x, y, round);
 	};
@@ -12946,7 +13087,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// Returns `true` if the rectangle contains the given one.
 		// @alternative
 		// @method contains(point: Point): Boolean
-		// Returns `true` if the rectangle contains the given poing.
+		// Returns `true` if the rectangle contains the given point.
 		contains: function (obj) {
 			var min, max;
 
@@ -13050,7 +13191,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 	L.Transformation.prototype = {
-		// @method transform(point: Point, scale?: Number)
+		// @method transform(point: Point, scale?: Number): Point
 		// Returns a transformed point, optionally multiplied by the given scale.
 		// Only accepts real `L.Point` instances, not arrays.
 		transform: function (point, scale) { // (Point, Number) -> Point
@@ -13065,7 +13206,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return point;
 		},
 
-		// @method untransform(point: Point, scale?: Number)
+		// @method untransform(point: Point, scale?: Number): Point
 		// Returns the reverse transformation of the given point, optionally divided
 		// by the given scale. Only accepts real `L.Point` instances, not arrays.
 		untransform: function (point, scale) {
@@ -13118,7 +13259,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		create: function (tagName, className, container) {
 
 			var el = document.createElement(tagName);
-			el.className = className;
+			el.className = className || '';
 
 			if (container) {
 				container.appendChild(el);
@@ -13852,7 +13993,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @aka L.CRS
 	 * Abstract class that defines coordinate reference systems for projecting
 	 * geographical points into pixel (screen) coordinates and back (and to
-	 * coordinates in other units for WMS services). See
+	 * coordinates in other units for [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) services). See
 	 * [spatial reference system](http://en.wikipedia.org/wiki/Coordinate_reference_system).
 	 *
 	 * Leaflet defines the most usual CRSs by default. If you want to use a
@@ -13922,21 +14063,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return L.bounds(min, max);
 		},
 
+		// @method distance(latlng1: LatLng, latlng1: LatLng): Number
+		// Returns the distance between two geographical coordinates.
+
 		// @property code: String
 		// Standard code name of the CRS passed into WMS services (e.g. `'EPSG:3857'`)
 		//
 		// @property wrapLng: Number[]
-		// An array of two numbers defining whether the longitude coordinate axis
-		// wraps around a given range and how. Defaults to `[-180, 180]` in most
-		// geographical CRSs.
+		// An array of two numbers defining whether the longitude (horizontal) coordinate
+		// axis wraps around a given range and how. Defaults to `[-180, 180]` in most
+		// geographical CRSs. If `undefined`, the longitude axis does not wrap around.
 		//
 		// @property wrapLat: Number[]
-		// Like `wrapLng`, but for the latitude axis.
+		// Like `wrapLng`, but for the latitude (vertical) axis.
 
 		// wrapLng: [min, max],
 		// wrapLat: [min, max],
 
-		// @property infinite: Boolean = false
+		// @property infinite: Boolean
 		// If true, the coordinate space will be unbounded (infinite in both axes)
 		infinite: false,
 
@@ -13960,7 +14104,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *
 	 * A simple CRS that maps longitude and latitude into `x` and `y` directly.
 	 * May be used for maps of flat surfaces (e.g. game maps). Note that the `y`
-	 * axis should still be inverted (going from bottom to top).
+	 * axis should still be inverted (going from bottom to top). `distance()` returns
+	 * simple euclidean distance.
 	 */
 
 	L.CRS.Simple = L.extend({}, L.CRS, {
@@ -13993,7 +14138,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *
 	 * Serves as the base for CRS that are global such that they cover the earth.
 	 * Can only be used as the base for other CRS and cannot be used directly,
-	 * since it does not have a `code`, `projection` or `transformation`.
+	 * since it does not have a `code`, `projection` or `transformation`. `distance()` returns
+	 * meters.
 	 */
 
 	L.CRS.Earth = L.extend({}, L.CRS, {
@@ -14194,7 +14340,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @section Methods for modifying map state
 
-		// @method setView(center: LatLnt, zoom: Number, options?: Zoom/Pan options): this
+		// @method setView(center: LatLng, zoom: Number, options?: Zoom/pan options): this
 		// Sets the view of the map (geographical center and zoom) with the given
 		// animation options.
 		setView: function (center, zoom) {
@@ -14204,7 +14350,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @method setZoom(zoom: Number, options: Zoom/Pan options): this
+		// @method setZoom(zoom: Number, options: Zoom/pan options): this
 		// Sets the zoom of the map.
 		setZoom: function (zoom, options) {
 			if (!this._loaded) {
@@ -14314,7 +14460,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		setMaxBounds: function (bounds) {
 			bounds = L.latLngBounds(bounds);
 
-			if (!bounds) {
+			if (!bounds.isValid()) {
+				this.options.maxBounds = null;
 				return this.off('moveend', this._panInsideMaxBounds);
 			} else if (this.options.maxBounds) {
 				this.off('moveend', this._panInsideMaxBounds);
@@ -14419,7 +14566,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 
 			// @section Map state change events
-			// @event resize: Event
+			// @event resize: ResizeEvent
 			// Fired when the map is resized.
 			return this.fire('resize', {
 				oldSize: oldSize,
@@ -14495,7 +14642,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @section Other Methods
 		// @method createPane(name: String, container?: HTMLElement): HTMLElement
-		// Creates a new map pane with the given name if it doesn't exist already,
+		// Creates a new [map pane](#map-pane) with the given name if it doesn't exist already,
 		// then returns it. The pane is created as a children of `container`, or
 		// as a children of the main map pane if not set.
 		createPane: function (name, container) {
@@ -14565,8 +14712,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			    max = this.getMaxZoom(),
 			    nw = bounds.getNorthWest(),
 			    se = bounds.getSouthEast(),
-			    size = this.getSize(),
-			    boundsSize = this.project(se, zoom).subtract(this.project(nw, zoom)).add(padding),
+			    size = this.getSize().subtract(padding),
+			    boundsSize = this.project(se, zoom).subtract(this.project(nw, zoom)),
 			    snap = L.Browser.any3d ? this.options.zoomSnap : 1;
 
 			var scale = Math.min(size.x / boundsSize.x, size.y / boundsSize.y);
@@ -14622,13 +14769,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @section Other Methods
 
 		// @method getPane(pane: String|HTMLElement): HTMLElement
-		// Returns a map pane, given its name or its HTML element (its identity).
+		// Returns a [map pane](#map-pane), given its name or its HTML element (its identity).
 		getPane: function (pane) {
 			return typeof pane === 'string' ? this._panes[pane] : pane;
 		},
 
 		// @method getPanes(): Object
-		// Returns a plain object containing the names of all panes as keys and
+		// Returns a plain object containing the names of all [panes](#map-pane) as keys and
 		// the panes as values.
 		getPanes: function () {
 			return this._panes;
@@ -14823,20 +14970,23 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._mapPane = this.createPane('mapPane', this._container);
 			L.DomUtil.setPosition(this._mapPane, new L.Point(0, 0));
 
-			// @pane tilePane: HTMLElement = 2
-			// Pane for tile layers
+			// @pane tilePane: HTMLElement = 200
+			// Pane for `GridLayer`s and `TileLayer`s
 			this.createPane('tilePane');
-			// @pane overlayPane: HTMLElement = 4
-			// Pane for overlays like polylines and polygons
+			// @pane overlayPane: HTMLElement = 400
+			// Pane for vector overlays (`Path`s), like `Polyline`s and `Polygon`s
 			this.createPane('shadowPane');
-			// @pane shadowPane: HTMLElement = 5
-			// Pane for overlay shadows (e.g. marker shadows)
+			// @pane shadowPane: HTMLElement = 500
+			// Pane for overlay shadows (e.g. `Marker` shadows)
 			this.createPane('overlayPane');
-			// @pane markerPane: HTMLElement = 6
-			// Pane for marker icons
+			// @pane markerPane: HTMLElement = 600
+			// Pane for `Icon`s of `Marker`s
 			this.createPane('markerPane');
-			// @pane popupPane: HTMLElement = 7
-			// Pane for popups.
+			// @pane tooltipPane: HTMLElement = 650
+			// Pane for tooltip.
+			this.createPane('tooltipPane');
+			// @pane popupPane: HTMLElement = 700
+			// Pane for `Popup`s.
 			this.createPane('popupPane');
 
 			if (!this.options.markerZoomAnimation) {
@@ -15049,17 +15199,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			var type = e.type === 'keypress' && e.keyCode === 13 ? 'click' : e.type;
 
-			if (e.type === 'click') {
-				// Fire a synthetic 'preclick' event which propagates up (mainly for closing popups).
-				// @event preclick: MouseEvent
-				// Fired before mouse click on the map (sometimes useful when you
-				// want something to happen on click before any existing click
-				// handlers start running).
-				var synth = L.Util.extend({}, e);
-				synth.type = 'preclick';
-				this._handleDOMEvent(synth);
-			}
-
 			if (type === 'mousedown') {
 				// prevents outline when clicking on keyboard-focusable element
 				L.DomUtil.preventOutline(e.target || e.srcElement);
@@ -15069,6 +15208,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_fireDOMEvent: function (e, type, targets) {
+
+			if (e.type === 'click') {
+				// Fire a synthetic 'preclick' event which propagates up (mainly for closing popups).
+				// @event preclick: MouseEvent
+				// Fired before mouse click on the map (sometimes useful when you
+				// want something to happen on click before any existing click
+				// handlers start running).
+				var synth = L.Util.extend({}, e);
+				synth.type = 'preclick';
+				this._fireDOMEvent(synth, synth.type, targets);
+			}
 
 			if (e._stopped) { return; }
 
@@ -15102,7 +15252,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_draggableMoved: function (obj) {
-			obj = obj.options.draggable ? obj : this;
+			obj = obj.dragging && obj.dragging.enabled() ? obj : this;
 			return (obj.dragging && obj.dragging.moved()) || (this.boxZoom && this.boxZoom.moved());
 		},
 
@@ -15332,7 +15482,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._zoomAnimated = map._zoomAnimated;
 
 			if (this.getEvents) {
-				map.on(this.getEvents(), this);
+				var events = this.getEvents();
+				map.on(events, this);
+				this.once('remove', function () {
+					map.off(events, this);
+				}, this);
 			}
 
 			this.onAdd(map);
@@ -15358,7 +15512,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * Should contain all clean up code that removes the layer's elements from the DOM and removes listeners previously added in [`onAdd`](#layer-onadd). Called on [`map.removeLayer(layer)`](#map-removelayer).
 	 *
 	 * @method getEvents(): Object
-	 * This optional method should return an object like `{ viewreset: this._reset }` for [`addEventListener`](#event-addeventlistener). These events will be automatically added and removed from the map with your layer.
+	 * This optional method should return an object like `{ viewreset: this._reset }` for [`addEventListener`](#evented-addeventlistener). The event handlers in this object will be automatically added and removed from the map with your layer.
 	 *
 	 * @method getAttribution(): String
 	 * This optional method should return a string containing HTML to be shown on the `Attribution control` whenever the layer is visible.
@@ -15384,7 +15538,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// Adds the given layer to the map
 		addLayer: function (layer) {
 			var id = L.stamp(layer);
-			if (this._layers[id]) { return layer; }
+			if (this._layers[id]) { return this; }
 			this._layers[id] = layer;
 
 			layer._mapToAdd = this;
@@ -15411,10 +15565,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			if (layer.getAttribution && this.attributionControl) {
 				this.attributionControl.removeAttribution(layer.getAttribution());
-			}
-
-			if (layer.getEvents) {
-				this.off(layer.getEvents(), layer);
 			}
 
 			delete this._layers[id];
@@ -15574,13 +15724,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @aka L.GridLayer
 	 *
 	 * Generic class for handling a tiled grid of HTML elements. This is the base class for all tile layers and replaces `TileLayer.Canvas`.
-	 * GridLayer can be extended to create a tiled grid of HTML Elements like `<canvas>`, `<img>` or `<div>`. GridLayer will handle creating and animating these DOM elements for you.
+	 * GridLayer can be extended to create a tiled grid of HTML elements like `<canvas>`, `<img>` or `<div>`. GridLayer will handle creating and animating these DOM elements for you.
 	 *
 	 *
 	 * @section Synchronous usage
 	 * @example
 	 *
-	 * To create a custom layer, extend GridLayer and impliment the `createTile()` method, which will be passed a `Point` object with the `x`, `y`, and `z` (zoom level) coordinates to draw your tile.
+	 * To create a custom layer, extend GridLayer and implement the `createTile()` method, which will be passed a `Point` object with the `x`, `y`, and `z` (zoom level) coordinates to draw your tile.
 	 *
 	 * ```js
 	 * var CanvasLayer = L.GridLayer.extend({
@@ -15594,7 +15744,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *         tile.height = size.y;
 	 *
 	 *         // get a canvas context and draw something on it using coords.x, coords.y and coords.z
-	 *         var ctx = canvas.getContext('2d');
+	 *         var ctx = tile.getContext('2d');
 	 *
 	 *         // return the tile so it can be rendered on screen
 	 *         return tile;
@@ -15602,10 +15752,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * });
 	 * ```
 	 *
-	 * @section Asynchrohous usage
+	 * @section Asynchronous usage
 	 * @example
 	 *
-	 * Tile creation can also be asyncronous, this is useful when using a third-party drawing library. Once the tile is finsihed drawing it can be passed to the done() callback.
+	 * Tile creation can also be asynchronous, this is useful when using a third-party drawing library. Once the tile is finished drawing it can be passed to the `done()` callback.
 	 *
 	 * ```js
 	 * var CanvasLayer = L.GridLayer.extend({
@@ -15620,8 +15770,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *         tile.width = size.x;
 	 *         tile.height = size.y;
 	 *
-	 *         // draw something and pass the tile to the done() callback
-	 *         done(error, tile);
+	 *         // draw something asynchronously and pass the tile to the done() callback
+	 *         setTimeout(function() {
+	 *             done(error, tile);
+	 *         }, 1000);
+	 *
+	 *         return tile;
 	 *     }
 	 * });
 	 * ```
@@ -15632,6 +15786,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.GridLayer = L.Layer.extend({
 
+		// @section
+		// @aka GridLayer options
 		options: {
 			// @option tileSize: Number|Point = 256
 			// Width and height of tiles in the grid. Use a number if width and height are equal, or `L.point(width, height)` otherwise.
@@ -15645,8 +15801,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// If `false`, new tiles are loaded during panning, otherwise only after it (for better performance). `true` by default on mobile browsers, otherwise `false`.
 			updateWhenIdle: L.Browser.mobile,
 
+			// @option updateWhenZooming: Boolean = true
+			// By default, a smooth zoom animation (during a [touch zoom](#map-touchzoom) or a [`flyTo()`](#map-flyto)) will update grid layers every integer zoom level. Setting this option to `false` will update the grid layer only when the smooth animation ends.
+			updateWhenZooming: true,
+
 			// @option updateInterval: Number = 200
-			// Tiles will not update more than once every `updateInterval` milliseconds.
+			// Tiles will not update more than once every `updateInterval` milliseconds when panning.
 			updateInterval: 200,
 
 			// @option attribution: String = null
@@ -15658,7 +15818,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			zIndex: 1,
 
 			// @option bounds: LatLngBounds = undefined
-			// If set, tiles will only be loaded inside inside the set `LatLngBounds`.
+			// If set, tiles will only be loaded inside the set `LatLngBounds`.
 			bounds: null,
 
 			// @option minZoom: Number = 0
@@ -15667,16 +15827,25 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// @option maxZoom: Number = undefined
 			// The maximum zoom level that tiles will be loaded at.
-	//		maxZoom: undefined,
+			maxZoom: undefined,
 
 			// @option noWrap: Boolean = false
 			// Whether the layer is wrapped around the antimeridian. If `true`, the
-			// GridLayer will only be displayed once at low zoom levels.
+			// GridLayer will only be displayed once at low zoom levels. Has no
+			// effect when the [map CRS](#map-crs) doesn't wrap around.
 			noWrap: false,
 
 			// @option pane: String = 'tilePane'
 			// `Map pane` where the grid layer will be added.
-			pane: 'tilePane'
+			pane: 'tilePane',
+
+			// @option className: String = ''
+			// A custom class name to assign to the tile layer. Empty by default.
+			className: '',
+
+			// @option keepBuffer: Number = 2
+			// When panning the map, keep this many rows and columns of tiles before unloading them.
+			keepBuffer: 2
 		},
 
 		initialize: function (options) {
@@ -15877,7 +16046,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_initContainer: function () {
 			if (this._container) { return; }
 
-			this._container = L.DomUtil.create('div', 'leaflet-layer');
+			this._container = L.DomUtil.create('div', 'leaflet-layer ' + (this.options.className || ''));
 			this._updateZIndex();
 
 			if (this.options.opacity < 1) {
@@ -16055,7 +16224,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				tileZoom = undefined;
 			}
 
-			var tileZoomChanged = (tileZoom !== this._tileZoom);
+			var tileZoomChanged = this.options.updateWhenZooming && (tileZoom !== this._tileZoom);
 
 			if (!noUpdate || tileZoomChanged) {
 
@@ -16126,7 +16295,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_onMoveEnd: function () {
 			if (!this._map || this._map._animatingZoom) { return; }
 
-			this._resetView();
+			this._update();
 		},
 
 		_getTiledPixelBounds: function (center) {
@@ -16151,10 +16320,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			var pixelBounds = this._getTiledPixelBounds(center),
 			    tileRange = this._pxBoundsToTileRange(pixelBounds),
 			    tileCenter = tileRange.getCenter(),
-			    queue = [];
+			    queue = [],
+			    margin = this.options.keepBuffer,
+			    noPruneRange = new L.Bounds(tileRange.getBottomLeft().subtract([margin, -margin]),
+			                              tileRange.getTopRight().add([margin, -margin]));
 
 			for (var key in this._tiles) {
-				this._tiles[key].current = false;
+				var c = this._tiles[key].coords;
+				if (c.z !== this._tileZoom || !noPruneRange.contains(L.point(c.x, c.y))) {
+					this._tiles[key].current = false;
+				}
 			}
 
 			// _update just loads more tiles. If the tile zoom level differs too much
@@ -16188,7 +16363,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				if (!this._loading) {
 					this._loading = true;
 					// @event loading: Event
-					// Fired when the grid layer starts loading tiles
+					// Fired when the grid layer starts loading tiles.
 					this.fire('loading');
 				}
 
@@ -16327,7 +16502,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			if (!this._map) { return; }
 
 			if (err) {
-				// @event tileerror: TileEvent
+				// @event tileerror: TileErrorEvent
 				// Fired when there is an error loading a tile.
 				this.fire('tileerror', {
 					error: err,
@@ -16362,7 +16537,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			if (this._noTilesToLoad()) {
 				this._loading = false;
-				// @event load: TileEvent
+				// @event load: Event
 				// Fired when the grid layer loaded all visible tiles.
 				this.fire('load');
 
@@ -16439,13 +16614,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * ```
 	 * L.tileLayer('http://{s}.somedomain.com/{foo}/{z}/{x}/{y}.png', {foo: 'bar'});
 	 * ```
-	 *
-	 * @section
 	 */
 
 
 	L.TileLayer = L.GridLayer.extend({
 
+		// @section
+		// @aka TileLayer options
 		options: {
 			// @option minZoom: Number = 0
 			// Minimum zoom number.
@@ -16474,7 +16649,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			zoomOffset: 0,
 
 			// @option tms: Boolean = false
-			// If `true`, inverses Y axis numbering for tiles (turn this on for TMS services).
+			// If `true`, inverses Y axis numbering for tiles (turn this on for [TMS](https://en.wikipedia.org/wiki/Tile_Map_Service) services).
 			tms: false,
 
 			// @option zoomReverse: Boolean = false
@@ -16500,10 +16675,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			if (options.detectRetina && L.Browser.retina && options.maxZoom > 0) {
 
 				options.tileSize = Math.floor(options.tileSize / 2);
-				options.zoomOffset++;
+
+				if (!options.zoomReverse) {
+					options.zoomOffset++;
+					options.maxZoom--;
+				} else {
+					options.zoomOffset--;
+					options.minZoom++;
+				}
 
 				options.minZoom = Math.max(0, options.minZoom);
-				options.maxZoom--;
 			}
 
 			if (typeof options.subdomains === 'string') {
@@ -16649,7 +16830,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	});
 
 
-	// @factory L.tilelayer(urlTemplate: String, options? TileLayer options)
+	// @factory L.tilelayer(urlTemplate: String, options?: TileLayer options)
 	// Instantiates a tile layer object given a `URL template` and optionally an options object.
 
 	L.tileLayer = function (url, options) {
@@ -16662,7 +16843,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @class TileLayer.WMS
 	 * @inherits TileLayer
 	 * @aka L.TileLayer.WMS
-	 * Used to display WMS services as tile layers on the map. Extends `TileLayer`.
+	 * Used to display [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) services as tile layers on the map. Extends `TileLayer`.
 	 *
 	 * @example
 	 *
@@ -16680,6 +16861,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @section
 		// @aka TileLayer.WMS options
+		// If any custom options not documented here are used, they will be sent to the
+		// WMS server as extra parameters in each request URL. This can be useful for
+		// [non-standard vendor WMS parameters](http://docs.geoserver.org/stable/en/user/services/wms/vendor.html).
 		defaultWmsParams: {
 			service: 'WMS',
 			request: 'GetMap',
@@ -16790,7 +16974,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/*
 	 * @class ImageOverlay
 	 * @aka L.ImageOverlay
-	 * @inherits Layer
+	 * @inherits Interactive layer
 	 *
 	 * Used to load and display a single image over specific bounds of the map. Extends `Layer`.
 	 *
@@ -16805,6 +16989,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.ImageOverlay = L.Layer.extend({
 
+		// @section
+		// @aka ImageOverlay options
 		options: {
 			// @option opacity: Number = 1.0
 			// The opacity of the image overlay.
@@ -16815,17 +17001,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			alt: '',
 
 			// @option interactive: Boolean = false
-			// If `true`, the image overlay will emit mouse events when clicked or hovered.
+			// If `true`, the image overlay will emit [mouse events](#interactive-layer) when clicked or hovered.
 			interactive: false,
 
 			// @option attribution: String = null
 			// An optional string containing HTML to be shown on the `Attribution control`
-			attribution: null
+			attribution: null,
 
 			// @option crossOrigin: Boolean = false
 			// If true, the image will have its crossOrigin attribute set to ''. This is needed if you want to access image pixel data.
-
-			// crossOrigin: false,
+			crossOrigin: false
 		},
 
 		initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
@@ -17094,8 +17279,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_setIconStyles: function (img, name) {
-			var options = this.options,
-			    size = L.point(options[name + 'Size']),
+			var options = this.options;
+			var sizeOption = options[name + 'Size'];
+
+			if (typeof sizeOption === 'number') {
+				sizeOption = [sizeOption, sizeOption];
+			}
+
+			var size = L.point(sizeOption),
 			    anchor = L.point(name === 'shadow' && options.shadowAnchor || options.iconAnchor ||
 			            size && size.divideBy(2, true));
 
@@ -17142,6 +17333,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			iconSize:    [25, 41],
 			iconAnchor:  [12, 41],
 			popupAnchor: [1, -34],
+			tooltipAnchor: [16, -28],
 			shadowSize:  [41, 41]
 		},
 
@@ -17182,7 +17374,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	/*
 	 * @class Marker
-	 * @inherits Layer
+	 * @inherits Interactive layer
 	 * @aka L.Marker
 	 * L.Marker is used to display clickable/draggable icons on the map. Extends `Layer`.
 	 *
@@ -17195,13 +17387,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.Marker = L.Layer.extend({
 
+		// @section
+		// @aka Marker options
 		options: {
-			// @option icon: L.Icon = *
+			// @option icon: Icon = *
 			// Icon class to use for rendering the marker. See [Icon documentation](#L.Icon) for details on how to customize the marker icon. Set to new `L.Icon.Default()` by default.
 			icon: new L.Icon.Default(),
 
-			// @option interactive: Boolean = true
-			// If `false`, the marker will not emit mouse events and will act as a part of the underlying map.
+			// Option inherited from "Interactive layer" abstract class
 			interactive: true,
 
 			// @option draggable: Boolean = false
@@ -17246,31 +17439,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		/* @section
 		 *
-		 * You can subscribe to the following events using [these methods](#evented-method).
-		 *
-		 * @event click: MouseEvent
-		 * Fired when the user clicks (or taps) the marker.
-		 *
-		 * @event dblclick: MouseEvent
-		 * Fired when the user double-clicks (or double-taps) the marker.
-		 *
-		 * @event mousedown: MouseEvent
-		 * Fired when the user pushes the mouse button on the marker.
-		 *
-		 * @event mouseover: MouseEvent
-		 * Fired when the mouse enters the marker.
-		 *
-		 * @event mouseout: MouseEvent
-		 * Fired when the mouse leaves the marker.
-		 *
-		 * @event contextmenu: MouseEvent
-		 * Fired when the user right-clicks on the marker.
-		 */
-
-
-
-		/* @section
-		 *
 		 * In addition to [shared layer methods](#Layer) like `addTo()` and `remove()` and [popup methods](#Popup) like bindPopup() you can also use the following methods:
 		 */
 
@@ -17282,14 +17450,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		onAdd: function (map) {
 			this._zoomAnimated = this._zoomAnimated && map.options.markerZoomAnimation;
 
+			if (this._zoomAnimated) {
+				map.on('zoomanim', this._animateZoom, this);
+			}
+
 			this._initIcon();
 			this.update();
 		},
 
-		onRemove: function () {
+		onRemove: function (map) {
 			if (this.dragging && this.dragging.enabled()) {
 				this.options.draggable = true;
 				this.dragging.removeHooks();
+			}
+
+			if (this._zoomAnimated) {
+				map.off('zoomanim', this._animateZoom, this);
 			}
 
 			this._removeIcon();
@@ -17297,16 +17473,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		getEvents: function () {
-			var events = {
+			return {
 				zoom: this.update,
 				viewreset: this.update
 			};
-
-			if (this._zoomAnimated) {
-				events.zoomanim = this._animateZoom;
-			}
-
-			return events;
 		},
 
 		// @method getLatLng: LatLng
@@ -17606,98 +17776,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	/*
-	 * @class Popup
+	 * @class DivOverlay
 	 * @inherits Layer
-	 * @aka L.Popup
-	 * Used to open popups in certain places of the map. Use [Map.openPopup](#map-openpopup) to
-	 * open popups while making sure that only one popup is open at one time
-	 * (recommended for usability), or use [Map.addLayer](#map-addlayer) to open as many as you want.
-	 *
-	 * @example
-	 *
-	 * If you want to just bind a popup to marker click and then open it, it's really easy:
-	 *
-	 * ```js
-	 * marker.bindPopup(popupContent).openPopup();
-	 * ```
-	 * Path overlays like polylines also have a `bindPopup` method.
-	 * Here's a more complicated way to open a popup on a map:
-	 *
-	 * ```js
-	 * var popup = L.popup()
-	 * 	.setLatLng(latlng)
-	 * 	.setContent('<p>Hello world!<br />This is a nice popup.</p>')
-	 * 	.openOn(map);
-	 * ```
+	 * @aka L.DivOverlay
+	 * Base model for L.Popup and L.Tooltip. Inherit from it for custom popup like plugins.
 	 */
 
-
-	/* @namespace Map
-	 * @section Interaction Options
-	 * @option closePopupOnClick: Boolean = true
-	 * Set it to `false` if you don't want popups to close when user clicks the map.
-	 */
-	L.Map.mergeOptions({
-		closePopupOnClick: true
-	});
-
-	// @namespace Popup
-	L.Popup = L.Layer.extend({
+	// @namespace DivOverlay
+	L.DivOverlay = L.Layer.extend({
 
 		// @section
-		// @aka Popup options
+		// @aka DivOverlay options
 		options: {
-			// @option maxWidth: Number = 300
-			// Max width of the popup, in pixels.
-			maxWidth: 300,
-
-			// @option minWidth: Number = 50
-			// Min width of the popup, in pixels.
-			minWidth: 50,
-
-			// @option maxHeight: Number = null
-			// If set, creates a scrollable container of the given height
-			// inside a popup if its content exceeds it.
-			maxHeight: null,
-
-			// @option autoPan: Boolean = true
-			// Set it to `false` if you don't want the map to do panning animation
-			// to fit the opened popup.
-			autoPan: true,
-
-			// @option autoPanPaddingTopLeft: Point = null
-			// The margin between the popup and the top left corner of the map
-			// view after autopanning was performed.
-			autoPanPaddingTopLeft: null,
-
-			// @option autoPanPaddingBottomRight: Point = null
-			// The margin between the popup and the bottom right corner of the map
-			// view after autopanning was performed.
-			autoPanPaddingBottomRight: null,
-
-			// @option autoPanPadding: Point = Point(5, 5)
-			// Equivalent of setting both top left and bottom right autopan padding to the same value.
-			autoPanPadding: [5, 5],
-
-			// @option keepInView: Boolean = false
-			// Set it to `true` if you want to prevent users from panning the popup
-			// off of the screen while it is open.
-			keepInView: false,
-
-			// @option closeButton: Boolean = true
-			// Controls the presence of a close button in the popup.
-			closeButton: true,
-
 			// @option offset: Point = Point(0, 7)
 			// The offset of the popup position. Useful to control the anchor
 			// of the popup when opening it on some overlays.
 			offset: [0, 7],
-
-			// @option autoClose: Boolean = true
-			// Set it to `false` if you want to override the default behavior of
-			// the popup closing when user clicks the map (set globally by
-			// the Map's [closePopupOnClick](#map-closepopuponclick) option).
-			autoClose: true,
 
 			// @option zoomAnimation: Boolean = true
 			// Whether to animate the popup on zoom. Disable it if you have
@@ -17738,28 +17832,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				L.DomUtil.setOpacity(this._container, 1);
 			}
 
-			// @namespace Map
-			// @section Popup events
-			// @event popupopen: PopupEvent
-			// Fired when a popup is opened in the map
-			map.fire('popupopen', {popup: this});
-
-			if (this._source) {
-				// @namespace Layer
-				// @section Popup events
-				// @event popupopen: PopupEvent
-				// Fired when a popup bound to this layer is opened
-				this._source.fire('popupopen', {popup: this}, true);
-				this._source.on('preclick', L.DomEvent.stopPropagation);
-			}
-		},
-
-		// @namespace Popup
-		// @method openOn(map: Map): this
-		// Adds the popup to the map and closes the previous one. The same as `map.openPopup(popup)`.
-		openOn: function (map) {
-			map.openPopup(this);
-			return this;
+			this.bringToFront();
 		},
 
 		onRemove: function (map) {
@@ -17768,22 +17841,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				this._removeTimeout = setTimeout(L.bind(L.DomUtil.remove, L.DomUtil, this._container), 200);
 			} else {
 				L.DomUtil.remove(this._container);
-			}
-
-			// @namespace Map
-			// @section Popup events
-			// @event popupclose: PopupEvent
-			// Fired when a popup in the map is closed
-			map.fire('popupclose', {popup: this});
-
-			if (this._source) {
-				// @namespace Layer
-				// @section Popup events
-				// @event popupclose: PopupEvent
-				// Fired when a popup bound to this layer is closed
-				// @namespace Popup
-				this._source.fire('popupclose', {popup: this}, true);
-				this._source.off('preclick', L.DomEvent.stopPropagation);
 			}
 		},
 
@@ -17850,12 +17907,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			if (this._zoomAnimated) {
 				events.zoomanim = this._animateZoom;
 			}
-			if ('closeOnClick' in this.options ? this.options.closeOnClick : this._map.options.closePopupOnClick) {
-				events.preclick = this._close;
-			}
-			if (this.options.keepInView) {
-				events.moveend = this._adjustPan;
-			}
 			return events;
 		},
 
@@ -17881,6 +17932,199 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				L.DomUtil.toBack(this._container);
 			}
 			return this;
+		},
+
+		_updateContent: function () {
+			if (!this._content) { return; }
+
+			var node = this._contentNode;
+			var content = (typeof this._content === 'function') ? this._content(this._source || this) : this._content;
+
+			if (typeof content === 'string') {
+				node.innerHTML = content;
+			} else {
+				while (node.hasChildNodes()) {
+					node.removeChild(node.firstChild);
+				}
+				node.appendChild(content);
+			}
+			this.fire('contentupdate');
+		},
+
+		_updatePosition: function () {
+			if (!this._map) { return; }
+
+			var pos = this._map.latLngToLayerPoint(this._latlng),
+			    offset = L.point(this.options.offset),
+			    anchor = this._getAnchor();
+
+			if (this._zoomAnimated) {
+				L.DomUtil.setPosition(this._container, pos.add(anchor));
+			} else {
+				offset = offset.add(pos).add(anchor);
+			}
+
+			var bottom = this._containerBottom = -offset.y,
+			    left = this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x;
+
+			// bottom position the popup in case the height of the popup changes (images loading etc)
+			this._container.style.bottom = bottom + 'px';
+			this._container.style.left = left + 'px';
+		},
+
+		_getAnchor: function () {
+			return [0, 0];
+		}
+
+	});
+
+
+
+	/*
+	 * @class Popup
+	 * @inherits DivOverlay
+	 * @aka L.Popup
+	 * Used to open popups in certain places of the map. Use [Map.openPopup](#map-openpopup) to
+	 * open popups while making sure that only one popup is open at one time
+	 * (recommended for usability), or use [Map.addLayer](#map-addlayer) to open as many as you want.
+	 *
+	 * @example
+	 *
+	 * If you want to just bind a popup to marker click and then open it, it's really easy:
+	 *
+	 * ```js
+	 * marker.bindPopup(popupContent).openPopup();
+	 * ```
+	 * Path overlays like polylines also have a `bindPopup` method.
+	 * Here's a more complicated way to open a popup on a map:
+	 *
+	 * ```js
+	 * var popup = L.popup()
+	 * 	.setLatLng(latlng)
+	 * 	.setContent('<p>Hello world!<br />This is a nice popup.</p>')
+	 * 	.openOn(map);
+	 * ```
+	 */
+
+
+	// @namespace Popup
+	L.Popup = L.DivOverlay.extend({
+
+		// @section
+		// @aka Popup options
+		options: {
+			// @option maxWidth: Number = 300
+			// Max width of the popup, in pixels.
+			maxWidth: 300,
+
+			// @option minWidth: Number = 50
+			// Min width of the popup, in pixels.
+			minWidth: 50,
+
+			// @option maxHeight: Number = null
+			// If set, creates a scrollable container of the given height
+			// inside a popup if its content exceeds it.
+			maxHeight: null,
+
+			// @option autoPan: Boolean = true
+			// Set it to `false` if you don't want the map to do panning animation
+			// to fit the opened popup.
+			autoPan: true,
+
+			// @option autoPanPaddingTopLeft: Point = null
+			// The margin between the popup and the top left corner of the map
+			// view after autopanning was performed.
+			autoPanPaddingTopLeft: null,
+
+			// @option autoPanPaddingBottomRight: Point = null
+			// The margin between the popup and the bottom right corner of the map
+			// view after autopanning was performed.
+			autoPanPaddingBottomRight: null,
+
+			// @option autoPanPadding: Point = Point(5, 5)
+			// Equivalent of setting both top left and bottom right autopan padding to the same value.
+			autoPanPadding: [5, 5],
+
+			// @option keepInView: Boolean = false
+			// Set it to `true` if you want to prevent users from panning the popup
+			// off of the screen while it is open.
+			keepInView: false,
+
+			// @option closeButton: Boolean = true
+			// Controls the presence of a close button in the popup.
+			closeButton: true,
+
+			// @option autoClose: Boolean = true
+			// Set it to `false` if you want to override the default behavior of
+			// the popup closing when user clicks the map (set globally by
+			// the Map's [closePopupOnClick](#map-closepopuponclick) option).
+			autoClose: true
+		},
+
+		// @namespace Popup
+		// @method openOn(map: Map): this
+		// Adds the popup to the map and closes the previous one. The same as `map.openPopup(popup)`.
+		openOn: function (map) {
+			map.openPopup(this);
+			return this;
+		},
+
+		onAdd: function (map) {
+			L.DivOverlay.prototype.onAdd.call(this, map);
+
+			// @namespace Map
+			// @section Popup events
+			// @event popupopen: PopupEvent
+			// Fired when a popup is opened in the map
+			map.fire('popupopen', {popup: this});
+
+			if (this._source) {
+				// @namespace Layer
+				// @section Popup events
+				// @event popupopen: PopupEvent
+				// Fired when a popup bound to this layer is opened
+				this._source.fire('popupopen', {popup: this}, true);
+				// For non-path layers, we toggle the popup when clicking
+				// again the layer, so prevent the map to reopen it.
+				if (!(this._source instanceof L.Path)) {
+					this._source.on('preclick', L.DomEvent.stopPropagation);
+				}
+			}
+		},
+
+		onRemove: function (map) {
+			L.DivOverlay.prototype.onRemove.call(this, map);
+
+			// @namespace Map
+			// @section Popup events
+			// @event popupclose: PopupEvent
+			// Fired when a popup in the map is closed
+			map.fire('popupclose', {popup: this});
+
+			if (this._source) {
+				// @namespace Layer
+				// @section Popup events
+				// @event popupclose: PopupEvent
+				// Fired when a popup bound to this layer is closed
+				this._source.fire('popupclose', {popup: this}, true);
+				if (!(this._source instanceof L.Path)) {
+					this._source.off('preclick', L.DomEvent.stopPropagation);
+				}
+			}
+		},
+
+		getEvents: function () {
+			var events = L.DivOverlay.prototype.getEvents.call(this);
+
+			if ('closeOnClick' in this.options ? this.options.closeOnClick : this._map.options.closePopupOnClick) {
+				events.preclick = this._close;
+			}
+
+			if (this.options.keepInView) {
+				events.moveend = this._adjustPan;
+			}
+
+			return events;
 		},
 
 		_close: function () {
@@ -17915,23 +18159,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._tip = L.DomUtil.create('div', prefix + '-tip', this._tipContainer);
 		},
 
-		_updateContent: function () {
-			if (!this._content) { return; }
-
-			var node = this._contentNode;
-			var content = (typeof this._content === 'function') ? this._content(this._source || this) : this._content;
-
-			if (typeof content === 'string') {
-				node.innerHTML = content;
-			} else {
-				while (node.hasChildNodes()) {
-					node.removeChild(node.firstChild);
-				}
-				node.appendChild(content);
-			}
-			this.fire('contentupdate');
-		},
-
 		_updateLayout: function () {
 			var container = this._contentNode,
 			    style = container.style;
@@ -17962,36 +18189,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._containerWidth = this._container.offsetWidth;
 		},
 
-		_updatePosition: function () {
-			if (!this._map) { return; }
-
-			var pos = this._map.latLngToLayerPoint(this._latlng),
-			    offset = L.point(this.options.offset);
-
-			if (this._zoomAnimated) {
-				L.DomUtil.setPosition(this._container, pos);
-			} else {
-				offset = offset.add(pos);
-			}
-
-			var bottom = this._containerBottom = -offset.y,
-			    left = this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x;
-
-			// bottom position the popup in case the height of the popup changes (images loading etc)
-			this._container.style.bottom = bottom + 'px';
-			this._container.style.left = left + 'px';
-		},
-
 		_animateZoom: function (e) {
-			var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center);
-			L.DomUtil.setPosition(this._container, pos);
+			var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center),
+			    anchor = this._getAnchor();
+			L.DomUtil.setPosition(this._container, pos.add(anchor));
 		},
 
 		_adjustPan: function () {
 			if (!this.options.autoPan || (this._map._panAnim && this._map._panAnim._inProgress)) { return; }
 
 			var map = this._map,
-			    containerHeight = this._container.offsetHeight,
+			    marginBottom = parseInt(L.DomUtil.getStyle(this._container, 'marginBottom'), 10) || 0,
+			    containerHeight = this._container.offsetHeight + marginBottom,
 			    containerWidth = this._containerWidth,
 			    layerPos = new L.Point(this._containerLeft, -containerHeight - this._containerBottom);
 
@@ -18022,7 +18231,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// @namespace Map
 			// @section Popup events
-			// @event autopanstart
+			// @event autopanstart: Event
 			// Fired when the map starts autopanning when opening a popup.
 			if (dx || dy) {
 				map
@@ -18034,15 +18243,31 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_onCloseButtonClick: function (e) {
 			this._close();
 			L.DomEvent.stop(e);
+		},
+
+		_getAnchor: function () {
+			// Where should we anchor the popup on the source layer?
+			return L.point(this._source && this._source._getPopupAnchor ? this._source._getPopupAnchor() : [0, 0]);
 		}
+
 	});
 
 	// @namespace Popup
 	// @factory L.popup(options?: Popup options, source?: Layer)
-	// Instantiates a Popup object given an optional `options` object that describes its appearance and location and an optional `source` object that is used to tag the popup with a reference to the Layer to which it refers.
+	// Instantiates a `Popup` object given an optional `options` object that describes its appearance and location and an optional `source` object that is used to tag the popup with a reference to the Layer to which it refers.
 	L.popup = function (options, source) {
 		return new L.Popup(options, source);
 	};
+
+
+	/* @namespace Map
+	 * @section Interaction Options
+	 * @option closePopupOnClick: Boolean = true
+	 * Set it to `false` if you don't want popups to close when user clicks the map.
+	 */
+	L.Map.mergeOptions({
+		closePopupOnClick: true
+	});
 
 
 	// @namespace Map
@@ -18134,9 +18359,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				this._popupHandlersAdded = true;
 			}
 
-			// save the originally passed offset
-			this._originalPopupOffset = this._popup.options.offset;
-
 			return this;
 		},
 
@@ -18175,9 +18397,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 
 			if (this._popup && this._map) {
-				// set the popup offset for this layer
-				this._popup.options.offset = this._popupAnchor(layer);
-
 				// set popup source to this layer
 				this._popup._source = layer;
 
@@ -18200,7 +18419,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @method closePopup(): this
+		// @method togglePopup(): this
 		// Opens or closes the popup bound to this layer depending on its current state.
 		togglePopup: function (target) {
 			if (this._popup) {
@@ -18213,13 +18432,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @method closePopup(): this
+		// @method isPopupOpen(): boolean
 		// Returns `true` if the popup bound to this layer is currently open.
 		isPopupOpen: function () {
 			return this._popup.isOpen();
 		},
 
-		// @method setPopupContent(content: String|HTMLElement|Popup, options?: Popup options): this
+		// @method setPopupContent(content: String|HTMLElement|Popup): this
 		// Sets the content of the popup bound to this layer.
 		setPopupContent: function (content) {
 			if (this._popup) {
@@ -18245,6 +18464,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				return;
 			}
 
+			// prevent map click
+			L.DomEvent.stop(e);
+
 			// if this inherits from Path its a vector and we can just
 			// open the popup at the new location
 			if (layer instanceof L.Path) {
@@ -18261,17 +18483,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 		},
 
-		_popupAnchor: function (layer) {
-			// where shold we anchor the popup on this layer?
-			var anchor = layer._getPopupAnchor ? layer._getPopupAnchor() : [0, 0];
-
-			// add the users passed offset to that
-			var offsetToAdd = this._originalPopupOffset || L.Popup.prototype.options.offset;
-
-			// return the final point to anchor the popup
-			return L.point(anchor).add(offsetToAdd);
-		},
-
 		_movePopup: function (e) {
 			this._popup.setLatLng(e.latlng);
 		}
@@ -18286,6 +18497,431 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	L.Marker.include({
 		_getPopupAnchor: function () {
 			return this.options.icon.options.popupAnchor || [0, 0];
+		}
+	});
+
+
+
+	/*
+	 * @class Tooltip
+	 * @inherits DivOverlay
+	 * @aka L.Tooltip
+	 * Used to display small texts on top of map layers.
+	 *
+	 * @example
+	 *
+	 * ```js
+	 * marker.bindTooltip("my tooltip text").openTooltip();
+	 * ```
+	 * Note about tooltip offset. Leaflet takes two options in consideration
+	 * for computing tooltip offseting:
+	 * - the `offset` Tooltip option: it defaults to [0, 0], and it's specific to one tooltip.
+	 *   Add a positive x offset to move the tooltip to the right, and a positive y offset to
+	 *   move it to the bottom. Negatives will move to the left and top.
+	 * - the `tooltipAnchor` Icon option: this will only be considered for Marker. You
+	 *   should adapt this value if you use a custom icon.
+	 */
+
+
+	// @namespace Tooltip
+	L.Tooltip = L.DivOverlay.extend({
+
+		// @section
+		// @aka Tooltip options
+		options: {
+			// @option pane: String = 'tooltipPane'
+			// `Map pane` where the tooltip will be added.
+			pane: 'tooltipPane',
+
+			// @option offset: Point = Point(0, 0)
+			// Optional offset of the tooltip position.
+			offset: [0, 0],
+
+			// @option direction: String = 'auto'
+			// Direction where to open the tooltip. Possible values are: `right`, `left`,
+			// `top`, `bottom`, `center`, `auto`.
+			// `auto` will dynamicaly switch between `right` and `left` according to the tooltip
+			// position on the map.
+			direction: 'auto',
+
+			// @option permanent: Boolean = false
+			// Whether to open the tooltip permanently or only on mouseover.
+			permanent: false,
+
+			// @option sticky: Boolean = false
+			// If true, the tooltip will follow the mouse instead of being fixed at the feature center.
+			sticky: false,
+
+			// @option interactive: Boolean = false
+			// If true, the tooltip will listen to the feature events.
+			interactive: false,
+
+			// @option opacity: Number = 0.9
+			// Tooltip container opacity.
+			opacity: 0.9
+		},
+
+		onAdd: function (map) {
+			L.DivOverlay.prototype.onAdd.call(this, map);
+			this.setOpacity(this.options.opacity);
+
+			// @namespace Map
+			// @section Tooltip events
+			// @event tooltipopen: TooltipEvent
+			// Fired when a tooltip is opened in the map.
+			map.fire('tooltipopen', {tooltip: this});
+
+			if (this._source) {
+				// @namespace Layer
+				// @section Tooltip events
+				// @event tooltipopen: TooltipEvent
+				// Fired when a tooltip bound to this layer is opened.
+				this._source.fire('tooltipopen', {tooltip: this}, true);
+			}
+		},
+
+		onRemove: function (map) {
+			L.DivOverlay.prototype.onRemove.call(this, map);
+
+			// @namespace Map
+			// @section Tooltip events
+			// @event tooltipclose: TooltipEvent
+			// Fired when a tooltip in the map is closed.
+			map.fire('tooltipclose', {tooltip: this});
+
+			if (this._source) {
+				// @namespace Layer
+				// @section Tooltip events
+				// @event tooltipclose: TooltipEvent
+				// Fired when a tooltip bound to this layer is closed.
+				this._source.fire('tooltipclose', {tooltip: this}, true);
+			}
+		},
+
+		getEvents: function () {
+			var events = L.DivOverlay.prototype.getEvents.call(this);
+
+			if (L.Browser.touch && !this.options.permanent) {
+				events.preclick = this._close;
+			}
+
+			return events;
+		},
+
+		_close: function () {
+			if (this._map) {
+				this._map.closeTooltip(this);
+			}
+		},
+
+		_initLayout: function () {
+			var prefix = 'leaflet-tooltip',
+			    className = prefix + ' ' + (this.options.className || '') + ' leaflet-zoom-' + (this._zoomAnimated ? 'animated' : 'hide');
+
+			this._contentNode = this._container = L.DomUtil.create('div', className);
+		},
+
+		_updateLayout: function () {},
+
+		_adjustPan: function () {},
+
+		_setPosition: function (pos) {
+			var map = this._map,
+			    container = this._container,
+			    centerPoint = map.latLngToContainerPoint(map.getCenter()),
+			    tooltipPoint = map.layerPointToContainerPoint(pos),
+			    direction = this.options.direction,
+			    tooltipWidth = container.offsetWidth,
+			    tooltipHeight = container.offsetHeight,
+			    offset = L.point(this.options.offset),
+			    anchor = this._getAnchor();
+
+			if (direction === 'top') {
+				pos = pos.add(L.point(-tooltipWidth / 2 + offset.x, -tooltipHeight + offset.y + anchor.y));
+			} else if (direction === 'bottom') {
+				pos = pos.subtract(L.point(tooltipWidth / 2 - offset.x, -offset.y));
+			} else if (direction === 'center') {
+				pos = pos.subtract(L.point(tooltipWidth / 2 + offset.x, tooltipHeight / 2 - anchor.y + offset.y));
+			} else if (direction === 'right' || direction === 'auto' && tooltipPoint.x < centerPoint.x) {
+				direction = 'right';
+				pos = pos.add([offset.x + anchor.x, anchor.y - tooltipHeight / 2 + offset.y]);
+			} else {
+				direction = 'left';
+				pos = pos.subtract(L.point(tooltipWidth + anchor.x - offset.x, tooltipHeight / 2 - anchor.y - offset.y));
+			}
+
+			L.DomUtil.removeClass(container, 'leaflet-tooltip-right');
+			L.DomUtil.removeClass(container, 'leaflet-tooltip-left');
+			L.DomUtil.removeClass(container, 'leaflet-tooltip-top');
+			L.DomUtil.removeClass(container, 'leaflet-tooltip-bottom');
+			L.DomUtil.addClass(container, 'leaflet-tooltip-' + direction);
+			L.DomUtil.setPosition(container, pos);
+		},
+
+		_updatePosition: function () {
+			var pos = this._map.latLngToLayerPoint(this._latlng);
+			this._setPosition(pos);
+		},
+
+		setOpacity: function (opacity) {
+			this.options.opacity = opacity;
+
+			if (this._container) {
+				L.DomUtil.setOpacity(this._container, opacity);
+			}
+		},
+
+		_animateZoom: function (e) {
+			var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center);
+			this._setPosition(pos);
+		},
+
+		_getAnchor: function () {
+			// Where should we anchor the tooltip on the source layer?
+			return L.point(this._source._getTooltipAnchor && !this.options.sticky ? this._source._getTooltipAnchor() : [0, 0]);
+		}
+
+	});
+
+	// @namespace Tooltip
+	// @factory L.tooltip(options?: Tooltip options, source?: Layer)
+	// Instantiates a Tooltip object given an optional `options` object that describes its appearance and location and an optional `source` object that is used to tag the tooltip with a reference to the Layer to which it refers.
+	L.tooltip = function (options, source) {
+		return new L.Tooltip(options, source);
+	};
+
+	// @namespace Map
+	// @section Methods for Layers and Controls
+	L.Map.include({
+
+		// @method openTooltip(tooltip: Tooltip): this
+		// Opens the specified tooltip.
+		// @alternative
+		// @method openTooltip(content: String|HTMLElement, latlng: LatLng, options?: Tooltip options): this
+		// Creates a tooltip with the specified content and options and open it.
+		openTooltip: function (tooltip, latlng, options) {
+			if (!(tooltip instanceof L.Tooltip)) {
+				tooltip = new L.Tooltip(options).setContent(tooltip);
+			}
+
+			if (latlng) {
+				tooltip.setLatLng(latlng);
+			}
+
+			if (this.hasLayer(tooltip)) {
+				return this;
+			}
+
+			return this.addLayer(tooltip);
+		},
+
+		// @method closeTooltip(tooltip?: Tooltip): this
+		// Closes the tooltip given as parameter.
+		closeTooltip: function (tooltip) {
+			if (tooltip) {
+				this.removeLayer(tooltip);
+			}
+			return this;
+		}
+
+	});
+
+
+
+	/*
+	 * @namespace Layer
+	 * @section Tooltip methods example
+	 *
+	 * All layers share a set of methods convenient for binding tooltips to it.
+	 *
+	 * ```js
+	 * var layer = L.Polygon(latlngs).bindTooltip('Hi There!').addTo(map);
+	 * layer.openTooltip();
+	 * layer.closeTooltip();
+	 * ```
+	 */
+
+	// @section Tooltip methods
+	L.Layer.include({
+
+		// @method bindTooltip(content: String|HTMLElement|Function|Tooltip, options?: Tooltip options): this
+		// Binds a tooltip to the layer with the passed `content` and sets up the
+		// neccessary event listeners. If a `Function` is passed it will receive
+		// the layer as the first argument and should return a `String` or `HTMLElement`.
+		bindTooltip: function (content, options) {
+
+			if (content instanceof L.Tooltip) {
+				L.setOptions(content, options);
+				this._tooltip = content;
+				content._source = this;
+			} else {
+				if (!this._tooltip || options) {
+					this._tooltip = L.tooltip(options, this);
+				}
+				this._tooltip.setContent(content);
+
+			}
+
+			this._initTooltipInteractions();
+
+			if (this._tooltip.options.permanent && this._map && this._map.hasLayer(this)) {
+				this.openTooltip();
+			}
+
+			return this;
+		},
+
+		// @method unbindTooltip(): this
+		// Removes the tooltip previously bound with `bindTooltip`.
+		unbindTooltip: function () {
+			if (this._tooltip) {
+				this._initTooltipInteractions(true);
+				this.closeTooltip();
+				this._tooltip = null;
+			}
+			return this;
+		},
+
+		_initTooltipInteractions: function (remove) {
+			if (!remove && this._tooltipHandlersAdded) { return; }
+			var onOff = remove ? 'off' : 'on',
+			    events = {
+				remove: this.closeTooltip,
+				move: this._moveTooltip
+			    };
+			if (!this._tooltip.options.permanent) {
+				events.mouseover = this._openTooltip;
+				events.mouseout = this.closeTooltip;
+				if (this._tooltip.options.sticky) {
+					events.mousemove = this._moveTooltip;
+				}
+				if (L.Browser.touch) {
+					events.click = this._openTooltip;
+				}
+			} else {
+				events.add = this._openTooltip;
+			}
+			this[onOff](events);
+			this._tooltipHandlersAdded = !remove;
+		},
+
+		// @method openTooltip(latlng?: LatLng): this
+		// Opens the bound tooltip at the specificed `latlng` or at the default tooltip anchor if no `latlng` is passed.
+		openTooltip: function (layer, latlng) {
+			if (!(layer instanceof L.Layer)) {
+				latlng = layer;
+				layer = this;
+			}
+
+			if (layer instanceof L.FeatureGroup) {
+				for (var id in this._layers) {
+					layer = this._layers[id];
+					break;
+				}
+			}
+
+			if (!latlng) {
+				latlng = layer.getCenter ? layer.getCenter() : layer.getLatLng();
+			}
+
+			if (this._tooltip && this._map) {
+
+				// set tooltip source to this layer
+				this._tooltip._source = layer;
+
+				// update the tooltip (content, layout, ect...)
+				this._tooltip.update();
+
+				// open the tooltip on the map
+				this._map.openTooltip(this._tooltip, latlng);
+
+				// Tooltip container may not be defined if not permanent and never
+				// opened.
+				if (this._tooltip.options.interactive && this._tooltip._container) {
+					L.DomUtil.addClass(this._tooltip._container, 'leaflet-clickable');
+					this.addInteractiveTarget(this._tooltip._container);
+				}
+			}
+
+			return this;
+		},
+
+		// @method closeTooltip(): this
+		// Closes the tooltip bound to this layer if it is open.
+		closeTooltip: function () {
+			if (this._tooltip) {
+				this._tooltip._close();
+				if (this._tooltip.options.interactive) {
+					L.DomUtil.removeClass(this._tooltip._container, 'leaflet-clickable');
+					this.removeInteractiveTarget(this._tooltip._container);
+				}
+			}
+			return this;
+		},
+
+		// @method toggleTooltip(): this
+		// Opens or closes the tooltip bound to this layer depending on its current state.
+		toggleTooltip: function (target) {
+			if (this._tooltip) {
+				if (this._tooltip._map) {
+					this.closeTooltip();
+				} else {
+					this.openTooltip(target);
+				}
+			}
+			return this;
+		},
+
+		// @method isTooltipOpen(): boolean
+		// Returns `true` if the tooltip bound to this layer is currently open.
+		isTooltipOpen: function () {
+			return this._tooltip.isOpen();
+		},
+
+		// @method setTooltipContent(content: String|HTMLElement|Tooltip): this
+		// Sets the content of the tooltip bound to this layer.
+		setTooltipContent: function (content) {
+			if (this._tooltip) {
+				this._tooltip.setContent(content);
+			}
+			return this;
+		},
+
+		// @method getTooltip(): Tooltip
+		// Returns the tooltip bound to this layer.
+		getTooltip: function () {
+			return this._tooltip;
+		},
+
+		_openTooltip: function (e) {
+			var layer = e.layer || e.target;
+
+			if (!this._tooltip || !this._map) {
+				return;
+			}
+			this.openTooltip(layer, this._tooltip.options.sticky ? e.latlng : undefined);
+		},
+
+		_moveTooltip: function (e) {
+			var latlng = e.latlng, containerPoint, layerPoint;
+			if (this._tooltip.options.sticky && e.originalEvent) {
+				containerPoint = this._map.mouseEventToContainerPoint(e.originalEvent);
+				layerPoint = this._map.containerPointToLayerPoint(containerPoint);
+				latlng = this._map.layerPointToLatLng(layerPoint);
+			}
+			this._tooltip.setLatLng(latlng);
+		}
+	});
+
+
+
+	/*
+	 * Tooltip extension to L.Marker, adding tooltip-related methods.
+	 */
+
+	L.Marker.include({
+		_getTooltipAnchor: function () {
+			return this.options.icon.options.tooltipAnchor || [0, 0];
 		}
 	});
 
@@ -18369,7 +19005,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @method invoke(methodName: string, …): this
+		// @method invoke(methodName: String, …): this
 		// Calls `methodName` on every layer contained in this group, passing any
 		// additional parameters. Has no effect if the layers contained do not
 		// implement `methodName`.
@@ -18557,6 +19193,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.Renderer = L.Layer.extend({
 
+		// @section
+		// @aka Renderer options
 		options: {
 			// @option padding: Number = 0.1
 			// How much to extend the clip area around the map view (relative to its size)
@@ -18685,7 +19323,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/*
 	 * @class Path
 	 * @aka L.Path
-	 * @inherits Layer
+	 * @inherits Interactive layer
 	 *
 	 * An abstract class that contains options and constants shared between vector
 	 * overlays (Polygon, Polyline, Circle). Do not use it directly. Extends `Layer`.
@@ -18721,11 +19359,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			lineJoin: 'round',
 
 			// @option dashArray: String = null
-			// A string that defines the stroke [dash pattern](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dasharray). Doesn't work on canvas-powered layers (e.g. Android 2).
+			// A string that defines the stroke [dash pattern](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dasharray). Doesn't work on `Canvas`-powered layers in [some old browsers](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/setLineDash#Browser_compatibility).
 			dashArray: null,
 
 			// @option dashOffset: String = null
-			// A string that defines the [distance into the dash pattern to start the dash](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dashoffset). Doesn't work on canvas-powered layers
+			// A string that defines the [distance into the dash pattern to start the dash](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dashoffset). Doesn't work on `Canvas`-powered layers in [some old browsers](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/setLineDash#Browser_compatibility).
 			dashOffset: null,
 
 			// @option fill: Boolean = depends
@@ -18746,8 +19384,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// className: '',
 
-			// @option interactive: Boolean = true
-			// If `false`, the vector will not emit mouse events and will act as a part of the underlying map.
+			// Option inherited from "Interactive layer" abstract class
 			interactive: true
 		},
 
@@ -18939,6 +19576,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 
+		// @function clipSegment(a: Point, b: Point, bounds: Bounds, useLastCode?: Boolean, round?: Boolean): Point[]|Boolean
 		// Clips the segment a to b by rectangular bounds with the
 		// [Cohen-Sutherland algorithm](https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm)
 		// (modifying the segment points directly!). Used by Leaflet to only show polyline
@@ -18954,10 +19592,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			while (true) {
 				// if a,b is inside the clip window (trivial accept)
-				if (!(codeA | codeB)) { return [a, b]; }
+				if (!(codeA | codeB)) {
+					return [a, b];
+				}
 
 				// if a,b is outside the clip window (trivial reject)
-				if (codeA & codeB) { return false; }
+				if (codeA & codeB) {
+					return false;
+				}
 
 				// other cases
 				codeOut = codeA || codeB;
@@ -19096,13 +19738,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.Polyline = L.Path.extend({
 
+		// @section
+		// @aka Polyline options
 		options: {
 			// @option smoothFactor: Number = 1.0
 			// How much to simplify the polyline on each zoom level. More means
 			// better performance and smoother look, and less means more accurate representation.
 			smoothFactor: 1.0,
 
-			// @option noClip: Boolean: false
+			// @option noClip: Boolean = false
 			// Disable polyline clipping.
 			noClip: false
 		},
@@ -19333,7 +19977,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		}
 	});
 
-	// @factory L.polyline(latlngs: LatLng[], options?: Path options)
+	// @factory L.polyline(latlngs: LatLng[], options?: Polyline options)
 	// Instantiates a polyline object given an array of geographical points and
 	// optionally an options object. You can create a `Polyline` object with
 	// multiple separate lines (`MultiPolyline`) by passing an array of arrays
@@ -19624,6 +20268,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.CircleMarker = L.Path.extend({
 
+		// @section
+		// @aka CircleMarker options
 		options: {
 			fill: true,
 
@@ -19701,8 +20347,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	});
 
 
-	// @factory L.circleMarker(latlng: LatLng, options? CircleMarker options)
-	//
+	// @factory L.circleMarker(latlng: LatLng, options?: CircleMarker options)
+	// Instantiates a circle marker object given a geographical point, and an optional options object.
 	L.circleMarker = function (latlng, options) {
 		return new L.CircleMarker(latlng, options);
 	};
@@ -19737,6 +20383,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			if (isNaN(this.options.radius)) { throw new Error('Circle radius cannot be NaN'); }
 
+			// @section
+			// @aka Circle options
 			// @option radius: Number; Radius of the circle, in meters.
 			this._mRadius = this.options.radius;
 		},
@@ -19802,11 +20450,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		}
 	});
 
-	// @factory L.circle(latlng: LatLng, options?: Path options)
+	// @factory L.circle(latlng: LatLng, options?: Circle options)
 	// Instantiates a circle object given a geographical point, and an options object
 	// which contains the circle radius.
 	// @alternative
-	// @factory L.circle(latlng: LatLng, radius: Number, options?: Path options)
+	// @factory L.circle(latlng: LatLng, radius: Number, options?: Circle options)
 	// Obsolete way of instantiating a circle, for compatibility with 0.7.x code.
 	// Do not use in new applications or plugins.
 	L.circle = function (latlng, options, legacyOptions) {
@@ -19903,7 +20551,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			var path = layer._path = L.SVG.create('path');
 
 			// @namespace Path
-			// @option className: string = null
+			// @option className: String = null
 			// Custom class name set on an element. Only for SVG renderer.
 			if (layer.options.className) {
 				L.DomUtil.addClass(path, layer.options.className);
@@ -20013,7 +20661,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return document.createElementNS('http://www.w3.org/2000/svg', name);
 		},
 
-		// @function pointsToPath(rings: [], closed: Boolean): String
+		// @function pointsToPath(rings: Point[], closed: Boolean): String
 		// Generates a SVG path string for multiple rings, with each ring turning
 		// into "M..L..L.." instructions
 		pointsToPath: function (rings, closed) {
@@ -20043,7 +20691,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	// @namespace SVG
-	// @factory L.svg(options?: SVG options)
+	// @factory L.svg(options?: Renderer options)
 	// Creates a SVG renderer with the given options.
 	L.svg = function (options) {
 		return L.Browser.svg || L.Browser.vml ? new L.SVG(options) : null;
@@ -20360,7 +21008,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			for (var id in this._layers) {
 				layer = this._layers[id];
-				if (!bounds || layer._pxBounds.intersects(bounds)) {
+				if (!bounds || (layer._pxBounds && layer._pxBounds.intersects(bounds))) {
 					layer._updatePath();
 				}
 				if (clear && layer._removed) {
@@ -20462,7 +21110,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			for (var id in this._layers) {
 				layer = this._layers[id];
-				if (layer.options.interactive && layer._containsPoint(point)) {
+				if (layer.options.interactive && layer._containsPoint(point) && !this._map._draggableMoved(layer)) {
 					L.DomEvent._fakeStop(e);
 					layers.push(layer);
 				}
@@ -20525,7 +21173,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}());
 
 	// @namespace Canvas
-	// @factory L.canvas(options?: Canvas options)
+	// @factory L.canvas(options?: Renderer options)
 	// Creates a Canvas renderer with the given options.
 	L.canvas = function (options) {
 		return L.Browser.canvas ? new L.Canvas(options) : null;
@@ -20629,11 +21277,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		 * ```
 		 *
 		 * @option onEachFeature: Function = *
-		 * A `Function` that will be called once for each created `Layer`, after it has
+		 * A `Function` that will be called once for each created `Feature`, after it has
 		 * been created and styled. Useful for attaching events and popups to features.
 		 * The default is to do nothing with the newly created layers:
 		 * ```js
-		 * function (layer) {}
+		 * function (feature, layer) {}
 		 * ```
 		 *
 		 * @option filter: Function = *
@@ -20660,6 +21308,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 		},
 
+		// @function addData( <GeoJSON> data ): Layer
+		// Adds a GeoJSON object to the layer.
 		addData: function (geojson) {
 			var features = L.Util.isArray(geojson) ? geojson : geojson.features,
 			    i, len, feature;
@@ -20695,6 +21345,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this.addLayer(layer);
 		},
 
+		// @function resetStyle( <Path> layer ): Layer
+		// Resets the given vector layer's style to the original GeoJSON style, useful for resetting style after hover events.
 		resetStyle: function (layer) {
 			// reset any custom styles
 			layer.options = L.Util.extend({}, layer.defaultOptions);
@@ -20702,6 +21354,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
+		// @function setStyle( <Function> style ): Layer
+		// Changes styles of GeoJSON vector layers with the given style function.
 		setStyle: function (style) {
 			return this.eachLayer(function (layer) {
 				this._setLayerStyle(layer, style);
@@ -21005,14 +21659,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @function off(el: HTMLElement, types: String, fn: Function, context?: Object)
+		// @function off(el: HTMLElement, types: String, fn: Function, context?: Object): this
 		// Removes a previously added listener function. If no function is specified,
 		// it will remove all the listeners of that particular DOM event from the element.
 		// Note that if you passed a custom context to on, you must pass the same
 		// context to `off` in order to remove the listener.
 
 		// @alternative
-		// @function off(el: HTMLElement, types: eventMap: Object, context?: Object): this
+		// @function off(el: HTMLElement, eventMap: Object, context?: Object): this
+		// Removes a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
 		off: function (obj, types, fn, context) {
 
 			if (typeof types === 'object') {
@@ -21192,19 +21847,26 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				e.clientY - rect.top - container.clientTop);
 		},
 
+		// Chrome on Win scrolls double the pixels as in other platforms (see #4538),
+		// and Firefox scrolls device pixels, not CSS pixels
+		_wheelPxFactor: (L.Browser.win && L.Browser.chrome) ? 2 :
+		                L.Browser.gecko ? window.devicePixelRatio :
+		                1,
+
 		// @function getWheelDelta(ev: DOMEvent): Number
 		// Gets normalized wheel delta from a mousewheel DOM event, in vertical
 		// pixels scrolled (negative if scrolling down).
 		// Events from pointing devices without precise scrolling are mapped to
-		// a best guess of between 50-60 pixels.
+		// a best guess of 60 pixels.
 		getWheelDelta: function (e) {
-			return (e.deltaY && e.deltaMode === 0) ? -e.deltaY :        // Pixels
-			       (e.deltaY && e.deltaMode === 1) ? -e.deltaY * 18 :   // Lines
-			       (e.deltaY && e.deltaMode === 2) ? -e.deltaY * 52 :   // Pages
+			return (L.Browser.edge) ? e.wheelDeltaY / 2 : // Don't trust window-geometry-based delta
+			       (e.deltaY && e.deltaMode === 0) ? -e.deltaY / L.DomEvent._wheelPxFactor : // Pixels
+			       (e.deltaY && e.deltaMode === 1) ? -e.deltaY * 20 : // Lines
+			       (e.deltaY && e.deltaMode === 2) ? -e.deltaY * 60 : // Pages
 			       (e.deltaX || e.deltaZ) ? 0 :	// Skip horizontal/depth wheel events
 			       e.wheelDelta ? (e.wheelDeltaY || e.wheelDelta) / 2 : // Legacy IE pixels
-			       (e.detail && Math.abs(e.detail) < 32765) ? -e.detail * 18 : // Legacy Moz lines
-			       e.detail ? e.detail / -32765 * 52 : // Legacy Moz pages
+			       (e.detail && Math.abs(e.detail) < 32765) ? -e.detail * 20 : // Legacy Moz lines
+			       e.detail ? e.detail / -32765 * 60 : // Legacy Moz pages
 			       0;
 		},
 
@@ -21343,7 +22005,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Ignore simulated events, since we handle both touch and
 			// mouse explicitly; otherwise we risk getting duplicates of
 			// touch events, see #4315.
-			if (e._simulated) { return; }
+			// Also ignore the event if disabled; this happens in IE11
+			// under some circumstances, see #3666.
+			if (e._simulated || !this._enabled) { return; }
 
 			this._moved = false;
 
@@ -21368,7 +22032,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			var first = e.touches ? e.touches[0] : e;
 
 			this._startPoint = new L.Point(first.clientX, first.clientY);
-			this._startPos = this._newPos = L.DomUtil.getPosition(this._element);
 
 			L.DomEvent
 				.on(document, L.Draggable.MOVE[e.type], this._onMove, this)
@@ -21379,7 +22042,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Ignore simulated events, since we handle both touch and
 			// mouse explicitly; otherwise we risk getting duplicates of
 			// touch events, see #4315.
-			if (e._simulated) { return; }
+			// Also ignore the event if disabled; this happens in IE11
+			// under some circumstances, see #3666.
+			if (e._simulated || !this._enabled) { return; }
 
 			if (e.touches && e.touches.length > 1) {
 				this._moved = true;
@@ -21431,7 +22096,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this.fire('predrag', e);
 			L.DomUtil.setPosition(this._element, this._newPos);
 
-			// @event predrag: Event
+			// @event drag: Event
 			// Fired continuously during dragging.
 			this.fire('drag', e);
 		},
@@ -21440,7 +22105,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Ignore simulated events, since we handle both touch and
 			// mouse explicitly; otherwise we risk getting duplicates of
 			// touch events, see #4315.
-			if (e._simulated) { return; }
+			// Also ignore the event if disabled; this happens in IE11
+			// under some circumstances, see #3666.
+			if (e._simulated || !this._enabled) { return; }
 
 			L.DomUtil.removeClass(document.body, 'leaflet-dragging');
 
@@ -21462,7 +22129,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				// ensure drag is not fired after dragend
 				L.Util.cancelAnimFrame(this._animRequest);
 
-				// @event dragend: Event
+				// @event dragend: DragEndEvent
 				// Fired when the drag ends.
 				this.fire('dragend', {
 					distance: this._newPos.distanceTo(this._startPos)
@@ -21490,22 +22157,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._map = map;
 		},
 
-		// @method enable()
+		// @method enable(): this
 		// Enables the handler
 		enable: function () {
-			if (this._enabled) { return; }
+			if (this._enabled) { return this; }
 
 			this._enabled = true;
 			this.addHooks();
+			return this;
 		},
 
-		// @method disable()
+		// @method disable(): this
 		// Disables the handler
 		disable: function () {
-			if (!this._enabled) { return; }
+			if (!this._enabled) { return this; }
 
 			this._enabled = false;
 			this.removeHooks();
+			return this;
 		},
 
 		// @method enabled(): Boolean
@@ -21592,7 +22261,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					map.whenReady(this._onZoomEnd, this);
 				}
 			}
-			L.DomUtil.addClass(this._map._container, 'leaflet-grab');
+			L.DomUtil.addClass(this._map._container, 'leaflet-grab leaflet-touch-drag');
 			this._draggable.enable();
 			this._positions = [];
 			this._times = [];
@@ -21600,6 +22269,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		removeHooks: function () {
 			L.DomUtil.removeClass(this._map._container, 'leaflet-grab');
+			L.DomUtil.removeClass(this._map._container, 'leaflet-touch-drag');
 			this._draggable.disable();
 		},
 
@@ -21760,7 +22430,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// @section Interaction Options
 
 	L.Map.mergeOptions({
-		// @option doubleClickZoom: Boolean = true
+		// @option doubleClickZoom: Boolean|String = true
 		// Whether the map can be zoomed in by double clicking on it and
 		// zoomed out by double clicking while holding shift. If passed
 		// `'center'`, double-click zoom will zoom to the center of the
@@ -21815,7 +22485,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// @section Interaction Options
 	L.Map.mergeOptions({
 		// @section Mousewheel options
-		// @option scrollWheelZoom: Boolean = true
+		// @option scrollWheelZoom: Boolean|String = true
 		// Whether the map can be zoomed by using the mouse wheel. If passed `'center'`,
 		// it will zoom to the center of the view regardless of where the mouse was.
 		scrollWheelZoom: true,
@@ -21825,11 +22495,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// user can't zoom via wheel more often than once per 40 ms.
 		wheelDebounceTime: 40,
 
-		// @option wheelPxPerZoomLevel: Number = 50
+		// @option wheelPxPerZoomLevel: Number = 60
 		// How many scroll pixels (as reported by [L.DomEvent.getWheelDelta](#domevent-getwheeldelta))
 		// mean a change of one full zoom level. Smaller values will make wheel-zooming
 		// faster (and vice versa).
-		wheelPxPerZoomLevel: 50
+		wheelPxPerZoomLevel: 60
 	});
 
 	L.Map.ScrollWheelZoom = L.Handler.extend({
@@ -22130,7 +22800,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// @section Interaction Options
 	L.Map.mergeOptions({
 		// @section Touch interaction options
-		// @option touchZoom: Boolean = *
+		// @option touchZoom: Boolean|String = *
 		// Whether the map can be zoomed by touch-dragging with two fingers. If
 		// passed `'center'`, it will zoom to the center of the view regardless of
 		// where the touch events (fingers) were. Enabled for touch-capable web
@@ -22145,10 +22815,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	L.Map.TouchZoom = L.Handler.extend({
 		addHooks: function () {
+			L.DomUtil.addClass(this._map._container, 'leaflet-touch-zoom');
 			L.DomEvent.on(this._map._container, 'touchstart', this._onTouchStart, this);
 		},
 
 		removeHooks: function () {
+			L.DomUtil.removeClass(this._map._container, 'leaflet-touch-zoom');
 			L.DomEvent.off(this._map._container, 'touchstart', this._onTouchStart, this);
 		},
 
@@ -22233,9 +22905,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			    .off(document, 'touchmove', this._onTouchMove)
 			    .off(document, 'touchend', this._onTouchEnd);
 
-			// Pinch updates GridLayers' levels only when snapZoom is off, so snapZoom becomes noUpdate.
+			// Pinch updates GridLayers' levels only when zoomSnap is off, so zoomSnap becomes noUpdate.
 			if (this._map.options.zoomAnimation) {
-				this._map._animateZoom(this._center, this._map._limitZoom(this._zoom), true, this._map.options.snapZoom);
+				this._map._animateZoom(this._center, this._map._limitZoom(this._zoom), true, this._map.options.zoomSnap);
 			} else {
 				this._map._resetView(this._center, this._map._limitZoom(this._zoom));
 			}
@@ -22744,6 +23416,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// @event movestart: Event
 			// Fired when the marker starts moving (because of dragging).
+
+			this._oldLatLng = this._marker.getLatLng();
 			this._marker
 			    .closePopup()
 			    .fire('movestart')
@@ -22763,6 +23437,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			marker._latlng = latlng;
 			e.latlng = latlng;
+			e.oldLatLng = this._oldLatLng;
 
 			// @event drag: Event
 			// Fired repeatedly while the user drags the marker.
@@ -22777,6 +23452,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// @event moveend: Event
 			// Fired when the marker stops moving (because of dragging).
+			delete this._oldLatLng;
 			this._marker
 			    .fire('moveend')
 			    .fire('dragend', e);
@@ -22892,15 +23568,31 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		return new L.Control(options);
 	};
 
+	/* @section Extension methods
+	 * @uninheritable
+	 *
+	 * Every control should extend from `L.Control` and (re-)implement the following methods.
+	 *
+	 * @method onAdd(map: Map): HTMLElement
+	 * Should return the container DOM element for the control and add listeners on relevant map events. Called on [`control.addTo(map)`](#control-addTo).
+	 *
+	 * @method onRemove(map: Map)
+	 * Optional method. Should contain all clean up code that removes the listeners previously added in [`onAdd`](#control-onadd). Called on [`control.remove()`](#control-remove).
+	 */
 
-	// adds control-related methods to L.Map
-
+	/* @namespace Map
+	 * @section Methods for Layers and Controls
+	 */
 	L.Map.include({
+		// @method addControl(control: Control): this
+		// Adds the given control to the map
 		addControl: function (control) {
 			control.addTo(this);
 			return this;
 		},
 
+		// @method removeControl(control: Control): this
+		// Removes the given control from the map
 		removeControl: function (control) {
 			control.remove();
 			return this;
@@ -22995,13 +23687,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_zoomIn: function (e) {
-			if (!this._disabled) {
+			if (!this._disabled && this._map._zoom < this._map.getMaxZoom()) {
 				this._map.zoomIn(this._map.options.zoomDelta * (e.shiftKey ? 3 : 1));
 			}
 		},
 
 		_zoomOut: function (e) {
-			if (!this._disabled) {
+			if (!this._disabled && this._map._zoom > this._map.getMinZoom()) {
 				this._map.zoomOut(this._map.options.zoomDelta * (e.shiftKey ? 3 : 1));
 			}
 		},
@@ -23406,8 +24098,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		onRemove: function () {
 			this._map.off('zoomend', this._checkDisabledLayers, this);
 
-			for (var id in this._layers) {
-				this._layers[id].layer.off('add remove', this._onLayerChange, this);
+			for (var i = 0; i < this._layers.length; i++) {
+				this._layers[i].layer.off('add remove', this._onLayerChange, this);
 			}
 		},
 
@@ -23431,7 +24123,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			layer.off('add remove', this._onLayerChange, this);
 
 			var obj = this._getLayer(L.stamp(layer));
-			this._layers.splice(this._layers.indexOf(obj), 1);
+			if (obj) {
+				this._layers.splice(this._layers.indexOf(obj), 1);
+			}
 			return (this._map) ? this._update() : this;
 		},
 
@@ -23511,8 +24205,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_getLayer: function (id) {
-			for (var i = 0; i <= this._layers.length; i++) {
-				if (L.stamp(this._layers[i].layer) === id) {
+			for (var i = 0; i < this._layers.length; i++) {
+
+				if (this._layers[i] && L.stamp(this._layers[i].layer) === id) {
 					return this._layers[i];
 				}
 			}
@@ -23541,7 +24236,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			var baseLayersPresent, overlaysPresent, i, obj, baseLayersCount = 0;
 
-			for (i in this._layers) {
+			for (i = 0; i < this._layers.length; i++) {
 				obj = this._layers[i];
 				this._addItem(obj);
 				overlaysPresent = overlaysPresent || obj.overlay;
@@ -23712,7 +24407,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @example
 	 * ```js
 	 * var fx = new L.PosAnimation();
-	 f x.run(el, [300, 500], 0.5);*
+	 * fx.run(el, [300, 500], 0.5);
 	 * ```
 	 *
 	 * @constructor L.PosAnimation()
@@ -24159,10 +24854,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		// @method locate(options?: Locate options): this
-		// Tries to locate the user using the Geolocation API, firing a `locationfound`
-		// event with location data on success or a `locationerror` event on failure,
+		// Tries to locate the user using the Geolocation API, firing a [`locationfound`](#map-locationfound)
+		// event with location data on success or a [`locationerror`](#map-locationerror) event on failure,
 		// and optionally sets the map view to the user's location with respect to
 		// detection accuracy (or to the world view if geolocation failed).
+		// Note that, if your page doesn't use HTTPS, this method will fail in
+		// modern browsers ([Chrome 50 and newer](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins))
 		// See `Locate options` for more details.
 		locate: function (options) {
 
@@ -24251,6 +24948,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this.fire('locationfound', data);
 		}
 	});
+
 
 
 	}(window, document));
@@ -27048,6 +27746,231 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	}(window, document));
+
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var define = false;
+
+	/**
+	 * Leaflet.FeatureGroup.SubGroup 1.0.0 (44a6572)
+	 * Creates a Feature Group that adds its child layers into a parent group when added to a map (e.g. through L.Control.Layers).
+	 * (c) 2015-2016 Boris Seang
+	 * BSD 2-Clause "Simplified" License
+	 */
+	(function (root, factory) {
+	    if (typeof define === "function" && define.amd) {
+	        define(["leaflet"], function (L) {
+	            return (root.L.FeatureGroup.SubGroup = factory(L));
+	        });
+	    } else if (typeof module === "object" && module.exports) {
+	        module.exports = factory(__webpack_require__(3));
+	    } else {
+	        root.L.FeatureGroup.SubGroup = factory(root.L);
+	    }
+	}(this, function (L) {
+
+	var FG = L.FeatureGroup,
+	    FGproto = FG.prototype,
+	    LG = L.LayerGroup;
+
+
+	var SubGroup = FG.extend({
+
+	    statics: {
+	        version: "1.0.0"
+	    },
+
+	    /**
+	     * Instantiates a SubGroup.
+	     * @param parentGroup (L.LayerGroup) (optional)
+	     * @param layersArray (L.Layer[]) (optional)
+	     */
+	    initialize: function (parentGroup, layersArray) {
+	        FGproto.initialize.call(this, layersArray);
+
+	        this.setParentGroup(parentGroup);
+	    },
+
+	    /**
+	     * Changes the parent group into which child markers are added to /
+	     * removed from.
+	     * @param parentGroup (L.LayerGroup)
+	     * @returns {SubGroup} this
+	     */
+	    setParentGroup: function (parentGroup) {
+	        var pgInstanceOfLG = parentGroup instanceof LG;
+
+	        this._parentGroup = parentGroup;
+
+	        // onAdd
+	        this.onAdd =
+	            pgInstanceOfLG ?
+	                (
+	                    typeof parentGroup.addLayers === "function" ?
+	                        this._onAddToGroupBatch :
+	                        this._onAddToGroup
+	                ) :
+	                this._onAddToMap;
+
+	        // onRemove
+	        this.onRemove =
+	            pgInstanceOfLG ?
+	                (
+	                    typeof parentGroup.removeLayers === "function" ?
+	                        this._onRemoveFromGroupBatch :
+	                        this._onRemoveFromGroup
+	                ) :
+	                this._onRemoveFromMap;
+
+	        // addLayer
+	        this.addLayer = pgInstanceOfLG ?
+	            this._addLayerToGroup :
+	            this._addLayerToMap;
+
+	        // removeLayer
+	        this.removeLayer = pgInstanceOfLG ?
+	            this._removeLayerFromGroup :
+	            this._removeLayerFromMap;
+
+	        return this;
+	    },
+
+	    /**
+	     * Removes the current sub-group from map before changing the parent
+	     * group. Re-adds the sub-group to map if it was before changing.
+	     * @param parentGroup (L.LayerGroup)
+	     * @returns {SubGroup} this
+	     */
+	    setParentGroupSafe: function (parentGroup) {
+	        var map = this._map;
+
+	        if (map) {
+	            map.removeLayer(this);
+	        }
+
+	        this.setParentGroup(parentGroup);
+
+	        if (map) {
+	            map.addLayer(this);
+	        }
+
+	        return this;
+	    },
+
+	    /**
+	     * Returns the current parent group.
+	     * @returns {*}
+	     */
+	    getParentGroup: function () {
+	        return this._parentGroup;
+	    },
+
+
+	    // For parent groups with batch methods (addLayers and removeLayers)
+	    // like MarkerCluster.
+	    _onAddToGroupBatch: function (map) {
+	        var layersArray = this.getLayers();
+
+	        this._map = map;
+	        this._parentGroup.addLayers(layersArray);
+	    },
+
+	    _onRemoveFromGroupBatch: function () {
+	        var layersArray = this.getLayers();
+
+	        this._parentGroup.removeLayers(layersArray);
+	        this._map = null;
+	    },
+
+
+	    // For other parent layer groups.
+	    _onAddToGroup: function (map) {
+	        var parentGroup = this._parentGroup;
+
+	        this._map = map;
+	        this.eachLayer(parentGroup.addLayer, parentGroup);
+	    },
+
+	    _onRemoveFromGroup: function () {
+	        var parentGroup = this._parentGroup;
+
+	        this.eachLayer(parentGroup.removeLayer, parentGroup);
+	        this._map = null;
+	    },
+
+
+	    // Defaults to standard FeatureGroup behaviour when parent group is not
+	    // specified or is not a type of LayerGroup.
+	    _onAddToMap: FGproto.onAdd,
+	    _onRemoveFromMap: FGproto.onRemove,
+
+
+	    _addLayerToGroup: function (layer) {
+	        if (this.hasLayer(layer)) {
+	            return this;
+	        }
+
+	        layer.addEventParent(this);
+
+	        var id = this.getLayerId(layer);
+
+	        this._layers[id] = layer;
+
+	        if (this._map) {
+	            // Add to parent group instead of directly to map.
+	            this._parentGroup.addLayer(layer);
+	        }
+
+	        return this.fire("layeradd", {layer: layer});
+	    },
+
+	    _removeLayerFromGroup: function (layer) {
+	        if (!this.hasLayer(layer)) {
+	            return this;
+	        }
+	        if (layer in this._layers) {
+	            layer = this._layers[layer];
+	        }
+
+	                    layer.removeEventParent(this);
+
+	        var id = layer in this._layers ? layer : this.getLayerId(layer);
+
+	        if (this._map && this._layers[id]) {
+	            // Remove from parent group instead of directly from map.
+	            this._parentGroup.removeLayer(id);
+	        }
+
+	        delete this._layers[id];
+
+	        return this.fire("layerremove", {layer: layer});
+	    },
+
+	    // Defaults to standard FeatureGroup behaviour when parent group is not
+	    // specified or is not a type of LayerGroup.
+	    _addLayerToMap: FGproto.addLayer,
+	    _removeLayerFromMap: FGproto.removeLayer
+
+	});
+
+
+
+	// Supply with a factory for consistency with Leaflet.
+	L.featureGroup.subGroup = function (parentGroup, options) {
+	    //return new FG.SubGroup(parentGroup, options);
+	    return new SubGroup(parentGroup, options);
+	};
+
+
+
+	    return SubGroup; // Must be the same identifier as in src!
+
+	}));
 
 
 
