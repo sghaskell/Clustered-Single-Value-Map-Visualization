@@ -172,8 +172,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.layerGroup.clearLayers();
 	                var markers = this.markers;
 	                this.markers.clearLayers();
-	                var markerList = this.markerList;
-	                this.markerList = [];
 	                var clearMap = this.clearMap;
 	                this.clearMap = false;
 	                // remove layers from map and clear out marker data
@@ -319,7 +317,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                }
 
 
-	                this.markerList = [];
 	                this.chunk = 50000;
 	                this.offset = 0;
 					this.isInitializedDom = true;         
@@ -547,8 +544,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    }, this);
 
 	                    if(!lg.layerExists) {
+	                        // update blue to awesome-marker blue color
+	                        if(lg.icon.options.markerColor == "blue") {
+	                            lg.icon.options.markerColor = "#38AADD"
+	                        }
 	                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
-	                        console.log(iconHtml);
 	                        this.control.addOverlay(lg.group, iconHtml);
 	                        lg.layerExists = true;
 	                    }
@@ -556,14 +556,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            }
 
+
 	            // Chunk through data 50k results at a time
 	            if(dataRows.length === this.chunk) {
 	                this.offset += this.chunk;
 	                this.updateDataParams({count: this.chunk, offset: this.offset});
-	            } else if (typeof data.meta.done !== 'undefined' && data.meta.done) {
-	                console.log("search done!!");
-	                this.markerList = [];
-	                this.clearMap = true;
+	            // New feature in 6.5, checking to see if search is done to properly reset map on new search
+	            } else if (data.meta && typeof data.meta !== 'undefined') {
+	                if(data.meta.done) {
+	                    console.log("search done!!");
+	                    this.clearMap = true;
+	                }
 	            }
 
 	            return this;
