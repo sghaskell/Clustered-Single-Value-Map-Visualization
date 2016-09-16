@@ -155,6 +155,23 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                .appendTo("head");
 	        },
 
+	        addLayerToControl: function(lg, control) {
+	            if(!lg.layerExists) {
+	                // update blue to awesome-marker blue color
+	                if(lg.icon.options.markerColor === "blue") {
+	                    var styleColor = "#38AADD";
+	                }
+	                else {
+	                    var styleColor = lg.icon.options.markerColor;
+	                }
+
+	                var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + styleColor + "\"></i> " + lg.title;
+	                control.addOverlay(lg.group, iconHtml);
+	                lg.layerExists = true;
+	            }
+
+	        },
+
 	        updateView: function(data, config) {
 	            // viz gets passed empty config until you click the 'format' dropdown
 	            // intialize with defaults
@@ -477,8 +494,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.control.remove();
 	            }
 
+	            // Clustered
 	            if (this.isArgTrue(cluster)) {           
-
 	                _.each(this.layerFilter, function(lg, i) { 
 	                    // Create temp clustered layergroup and add markerlist
 	                    this.tmpFG = L.featureGroup.subGroup(this.markers, lg.markerList);
@@ -486,72 +503,27 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    // add temp layergroup to layer filter layergroup and add to map
 	                    lg.group.addLayer(this.tmpFG);
 	                    lg.group.addTo(this.map);
-	                        //console.log(iconDiv);
-	                        //console.log($(iconDiv)[0].outerHTML);
-	                        //var iconHtml = $(iconDiv)[0].outerHTML;
-	                        //var iconHtml = "<div class=\"awesome-marker-icon-red awesome-marker\"><i style=\"color: white\" class=\"fa fa-exclamation  \"></i>" + lg.title + " </div>";
-	                        //console.log(iconHtml);
-	                        //var foo = $(iconDiv).append($('').clone()).html();
-	                        //console.log(iconDiv);
-	                        //console.log("text ", $(iconDiv).html(), "end");
-	                        //console.log("text ", $(iconDiv).outerHTML(), "end");
-	                        //var iconString = "<html><body>" + lg.icon.createIcon() + "</body></html>";
-	                        //console.log(lg.icon.createIcon()); 
-	                        //console.log(iconDiv);
-	                        //console.log($(iconDiv).find("awesome-marker").text());
-	                        //var iconHtml= "<div class=\"awesome-marker-icon-" + lg.color + " awesome-marker\">" + "<i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title + "</div>";
-	                        //var iconHtml= "<div class=\"awesome-marker awesome-marker-icon-" + lg.icon.options.markerColor + "\"><i class=\"legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.iconColor + "\"></i>  " + lg.title + "</div>";
-	                        //var iconHtml= "<i class=\"awesome-marker-icon-" + lg.color + " awesome-marker legend-toggle-icon " + lg.prefix + " " + lg.prefix + "-" + lg.icon.options.icon + " style=\"color: white\"></i>" + lg.title;
 
-	                    // create control icon overlay and add to layergroup if it doesn't already exist
-	                    if(!lg.layerExists) {
-	                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
-	                        console.log(iconHtml);
-	                        //console.log(iconString);
-	                        this.control.addOverlay(lg.group, iconHtml);
-	                        lg.layerExists = true;
-	                    }
-	                        //this.control.addOverlay(lg.group, iconString);
-	                        //this.icons.push(lg.icon);
-	                        //this.baseLayers[iconHtml] = lg.group;
+	                    this.addLayerToControl(lg, this.control);
 
-	                    //lg.group.addLayer(this.tmpFG);
-	                    //lg.group.addTo(this.map);
 	                }, this);
 	            } else {
-	                console.log("Single Value"); 
-	                //this.control.addTo(this.map);
-
+	                // Single value
 	                // Loop through layer filters
 	                _.each(this.layerFilter, function(lg, i) { 
-
-	                    this.tmpFG = L.layerGroup(lg.markerList);
-	                    lg.group.addLayer(this.tmpFG);
 	                    lg.group.addTo(this.map);
 
-	                    console.log(lg.markerList[0]);
+	                    // Loop through markers and add to map
 	                    _.each(lg.markerList, function(m, k) {
 	                        if(this.isArgTrue(allPopups)) {
-	                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']).openPopup();
-	                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']).openPopup();
-	                            //m.addTo(lg.group).openPopup();
 	                            m.addTo(lg.group).bindPopup(m.options.icon.options.description).openPopup();
 	                        } else {
-	                            //L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).addTo(layerGroup).bindPopup(userData['description']);
-	                            //var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title}).bindPopup(userData['description']);
 	                            m.addTo(lg.group);
 	                        }
 	                    }, this);
 
-	                    if(!lg.layerExists) {
-	                        // update blue to awesome-marker blue color
-	                        if(lg.icon.options.markerColor == "blue") {
-	                            lg.icon.options.markerColor = "#38AADD"
-	                        }
-	                        var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + lg.icon.options.markerColor + "\"></i> " + lg.title;
-	                        this.control.addOverlay(lg.group, iconHtml);
-	                        lg.layerExists = true;
-	                    }
+	                    // Add layer controls
+	                    this.addLayerToControl(lg, this.control);
 	                }, this);
 
 	            }
