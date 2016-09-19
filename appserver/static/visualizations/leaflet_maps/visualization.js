@@ -526,17 +526,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            }
 
-
 	            // Chunk through data 50k results at a time
 	            if(dataRows.length === this.chunk) {
 	                this.offset += this.chunk;
 	                this.updateDataParams({count: this.chunk, offset: this.offset});
-	            // New feature in 6.5, checking to see if search is done to properly reset map on new search
-	            } else if (data.meta && typeof data.meta !== 'undefined') {
-	                if(data.meta.done) {
-	                    console.log("search done!!");
-	                    this.clearMap = true;
-	                }
+	            } else {
+	                this.clearMap = true;
 	            }
 
 	            return this;
