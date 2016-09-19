@@ -80,6 +80,7 @@ define([
             this.clearMap = false;
         },
 
+        // Convert hex values to RGB for marker icon colors
         hexToRgb: function(hex) {
             var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? {
@@ -89,6 +90,7 @@ define([
             } : null;
         },
 
+        // Convert string '1/0' or 'true/false' to boolean true/false
         isArgTrue: function(arg) {
             if(arg === 1 || arg === 'true') {
                 return true;
@@ -96,7 +98,8 @@ define([
                 return false;
             }
         },
-       
+      
+        // Create RGBA string and corresponding HTML to dynamically set marker CSS in HTML head
         createMarkerStyle: function(bgHex, fgHex, markerName) {
             var bgRgb = this.hexToRgb(bgHex);
             var fgRgb = this.hexToRgb(fgHex);
@@ -110,6 +113,7 @@ define([
                 .appendTo("head");
         },
 
+        // Create a control icon and description in the layer control legend
         addLayerToControl: function(lg, control) {
             if(!lg.layerExists) {
                 // update blue to awesome-marker blue color
@@ -127,6 +131,7 @@ define([
 
         },
 
+        // Do the work of creating the viz
         updateView: function(data, config) {
             // viz gets passed empty config until you click the 'format' dropdown
             // intialize with defaults
@@ -140,8 +145,6 @@ define([
                 this.offset = 0; // reset offset
                 this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
                 this.invalidateUpdateView();  // redraw map
-                var layerGroup = this.layerGroup;
-                this.layerGroup.clearLayers();
                 var markers = this.markers;
                 this.markers.clearLayers();
                 var clearMap = this.clearMap;
@@ -155,7 +158,6 @@ define([
 
             // get data
             var dataRows = data.results;
-
 
             // check for data
             if (!dataRows || dataRows.length === 0 || dataRows[0].length === 0) {
@@ -203,6 +205,7 @@ define([
             this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
 
+            // Initialize the DOM
             if (!this.isInitializedDom) {
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
@@ -234,16 +237,17 @@ define([
                 } else {
             	    var map = this.map = new L.Map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
                 }
-                
+               
+                // Setup the tile layer with map tile, zoom and attribution
 				this.tileLayer = L.tileLayer(this.activeTile, {
                     attribution: this.attribution,
                     minZoom: minZoom,
                     maxZoom: maxZoom
 				});
 
+                // Add tile layer to map
                 this.map.addLayer(this.tileLayer);   
 
-	            this.layerGroup = new L.LayerGroup().addTo(map);
                 this.markers = new L.MarkerClusterGroup({ 
                     chunkedLoading: true,
                     maxClusterRadius: maxClusterRadius,
@@ -265,11 +269,7 @@ define([
                     }
                 });
 
-                //this.group1 = L.featureGroup.subGroup(this.markers);
-                //console.log(this.group1);
-                //this.control = L.control.layers(null, null, { collapsed: true});
                 this.control = L.control.layers(null, null, { collapsed: this.isArgTrue(layerControlCollapsed)});
-                //console.log(this.control);
                 this.markers.addTo(this.map);
            
                 // Get parent element of div to resize
@@ -288,7 +288,7 @@ define([
                     $("div[data-cid=" + parentEl + "]").css("height", defaultHeight);
                 }
 
-
+                // Init defaults
                 this.chunk = 50000;
                 this.offset = 0;
 				this.isInitializedDom = true;         
@@ -318,12 +318,8 @@ define([
                 this.map.setZoom(mapCenterZoom);
             }
 
-      		if (data.length == 0) {
-      			return;
-      		}
-
-            var layerGroup = this.layerGroup;
-
+            // Iterate through each row creating layer groups per icon type
+            // and create markers appending to a markerList in each layerfilter object
             _.each(dataRows, function(userData, i) {
                 // Set icon options
                 if(Object.keys(userData).length > 2) {
@@ -335,13 +331,14 @@ define([
 
                     }
 
-                    // Create Clustered icon layer
+                    // Create Clustered featuregroup subgroup layer
                     if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
                         this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
                                                   'markerList' : [],
                                                   'iconStyle' : icon,
                                                   'layerExists' : false
                                                  };
+                    // Create normal layergroup
                     } else if (typeof this.layerFilter[icon] == 'undefined') {
                         this.layerFilter[icon] = {'group' : L.layerGroup(),
                                                   'markerList' : [],
@@ -402,6 +399,7 @@ define([
                         var description = "";
                     }    
 
+                    // Create marker icon
                     var markerIcon = L.AwesomeMarkers.icon({
                         icon: icon,
                         markerColor: markerColor,
@@ -462,8 +460,8 @@ define([
                     this.addLayerToControl(lg, this.control);
 
                 }, this);
+            // Single value
             } else {
-                // Single value
                 // Loop through layer filters
                 _.each(this.layerFilter, function(lg, i) { 
                     lg.group.addTo(this.map);
