@@ -8,7 +8,7 @@
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
 
-Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) for all the feature requests and extensive testing.
+Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 
 # Compatibility
 This app only works with **Splunk 6.4** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
