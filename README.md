@@ -1,3 +1,15 @@
+#Credits
+### Included Open Source Software
+##### [Leaflet Maps](http://leafletjs.com/)
+##### [Leaflet Markercluster Plugin](https://github.com/Leaflet/Leaflet.markercluster)
+##### [Leaflet Awesome Markers Plugin](https://www.npmjs.com/package/drmonty-leaflet-awesome-markers)
+##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
+##### [Jquery](https://jquery.com/)
+##### [Underscore.js](http://underscorejs.org/)
+##### [Webpack](https://webpack.github.io/)
+
+Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) for all the feature requests and extensive testing.
+
 # Compatibility
 This app only works with **Splunk 6.4** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
@@ -10,6 +22,7 @@ This app only works with **Splunk 6.4** as it relies on the new [Custom Visualiz
 **longitude** - Longitude Coordinates
 # Optional Fields
 **descirption** - Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
+**layerDescription** - Description that is added next to the icon in the layer control legend. **this field supports HTML**
 
 # Style Markers And Icons Dynamically Through SPL
 ### Feature Description
@@ -21,6 +34,9 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 **iconColor** - Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
 **prefix** - 'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
 **extraClasses** - Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+
+### Layer Controls
+Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
 
 # Search Examples
 ### Basic plot of latitude and longitude
@@ -42,11 +58,11 @@ Select one of six available map tiles
 ###### Map Tile Override
 Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png. Find more tiles [here](http://wiki.openstreetmap.org/wiki/Tiles)
 ###### Map Attribution Override
-Use your own attribution. - **Requires browser refresh**
+Use your own attribution. - **Requires browser Refresh**
 ###### Scroll Wheel Zoom
 Enable or disable scroll wheel zoom.
 ###### Full Screen Mode
-Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize.
+Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize. - **Requires browser Refresh**
 ###### Default Height
 Initial Height Of Map (Default: 600)
 ###### Map Zoom
@@ -62,23 +78,24 @@ Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)
 
 ### Clustering
 ###### Enable Clustering
-Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets. - **Requires browser refresh**
+Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets. - **Requires browser Refresh**
 ###### Show All Popups
-Display all popups on page load. Only works with clustering disabled. - **Requires browser refresh**
+Display all popups on page load. Only works with clustering disabled. - **Requires browser Refresh**
 ###### Allow Multiple Popups
-Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups. - **Requires browser refresh**
+Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups. - **Requires browser Refresh**
 ###### Animate
-Animate cluster separation on zoom - **Requires browser refresh**
+Animate cluster separation on zoom - **Requires browser Refresh**
 ###### Single Marker Mode 
-Re-style single marker icon to marker cluster style (round) - **Requires browser refresh**
+Re-style single marker icon to marker cluster style (round) - **Requires browser Refresh**
 ###### Max Cluster Radius
-A cluster will cover at most this many pixels from its center (Default: 80) - **Requires browser refresh**
+A cluster will cover at most this many pixels from its center (Default: 80) - **Requires browser Refresh**
 ###### Cluster Warning Size
 Display an alert warning that the cluster exceeds threshold at max-zoom and do not show underlying markers. Browser may hang and die if a single point exceeds a very large number.(Default: 100) - **Requires browser refresh**
 ###### Distance Multiplier
 Increase to increase the distance away that markers appear from the center when expanded at max zoom. (Default: 1) - **Requires browser refresh**
 
 ### Cluster Colors
+#### Cluster color changes require browser refresh
 ###### Range One Background
 (Default: #B5E28C)
 ###### Range One Foreground
