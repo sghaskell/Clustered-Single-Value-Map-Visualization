@@ -169,7 +169,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    var styleColor = lg.icon.options.markerColor;
 	                }
 
-	                var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + styleColor + "\"></i> " + lg.title;
+	                var iconHtml= "<i class=\"legend-toggle-icon " + lg.icon.options.prefix + " " + lg.icon.options.prefix + "-" + lg.icon.options.icon + "\" style=\"color: " + styleColor + "\"></i> " + lg.layerDescription;
 	                control.addOverlay(lg.group, iconHtml);
 	                lg.layerExists = true;
 	            }
@@ -392,14 +392,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                                                 };
 	                    }
 
-	                    if("title" in userData) {
-	                        var title = userData["title"];
+	                    if("layerDescription" in userData) {
+	                        var layerDescription = userData["layerDescription"];
 	                    } else {
-	                        var title = "";
+	                        var layerDescription = "";
 	                    }
 
 	                    if (typeof this.layerFilter[icon] !== 'undefined') {
-	                        this.layerFilter[icon].title = title;
+	                        this.layerFilter[icon].layerDescription = layerDescription;
 	                    }
 
 	                    if("markerColor" in userData) {
@@ -472,7 +472,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                }
 
 	                // Create marker
-	                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, title: title});
+	                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
 
 	                // Bind description popup if description exists
 	                if(userData["description"]) {
