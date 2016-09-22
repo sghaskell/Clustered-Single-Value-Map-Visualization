@@ -93,7 +93,7 @@
 </form>
 <form class="splunk-formatter-section" section-label="Clustering">
     <div class="control-group">
-    	<label class="control-label">Enable Clustering</label>
+        <label class="control-label">Enable Clustering</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="1">
                 <option value="1">Yes</option>
@@ -101,9 +101,9 @@
             </splunk-radio-input> 
             <span class="help-block ">Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
-    	<label class="control-label">Show All Popups</label>
+        <label class="control-label">Show All Popups</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="0">
                 <option value="1">Yes</option>
@@ -111,9 +111,9 @@
             </splunk-radio-input> 
             <span class="help-block ">Display all popups on page load. Only works with clustering disabled.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
-    	<label class="control-label">Allow Multiple Popups</label>
+        <label class="control-label">Allow Multiple Popups</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="0">
                 <option value="1">Yes</option>
@@ -121,7 +121,7 @@
             </splunk-radio-input> 
             <span class="help-block ">Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
         <label class="control-label">Animate</label>
         <div class="controls controls-fill ">
@@ -185,6 +185,15 @@
                 <option value="0">Disabled</option>
             </splunk-radio-input>
             <span class="help-block ">Collapse or expand layer control widget. If collapsed, mousing over icon will expand.</span>
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Overlays">
+    <div class="control-group">
+        <label class="control-label">KML Overlay</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay"></splunk-text-input>
+            <span class="help-block ">Comma separated list of KML file names copied into kml directory of app (file1.kml, file2.kml)</span> 
         </div>
     </div>
 </form>
