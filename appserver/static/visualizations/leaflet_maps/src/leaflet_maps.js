@@ -284,8 +284,10 @@ define([
                         var vh = $(window).height() - 120;
                         $("div[data-cid=" + parentEl + "]").css("height", vh);
                     });
+                    this.map.invalidateSize();
                 } else {
                     $("div[data-cid=" + parentEl + "]").css("height", defaultHeight);
+                    this.map.invalidateSize();
                 }
 
                 // Init defaults
