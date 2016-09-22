@@ -52,7 +52,7 @@ Copy any KML files into the following directory
 
 If you use a deployer (search head clustering) or a deployment server to manage your search heads, unarchive the app and place your KML files into the above directory and then re-compress the app for distribution. 
 
-Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
+Click 'Format' and select the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
 
 ```file1.kml,file2.kml```
 
