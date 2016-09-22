@@ -25642,11 +25642,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            }
 
 	            if(options.iconColor) {
-	                if(options.iconColor === 'white' || options.iconColor === 'black') {
-	                    iconColorClass = "icon-" + options.iconColor;
-	                } else {
-	                    iconColorStyle = "style='color: " + options.iconColor + "' ";
-	                }
+	                //if(options.iconColor === 'white' || options.iconColor === 'black') {
+	                //    iconColorClass = "icon-" + options.iconColor;
+	                //} else {
+	                //    iconColorStyle = "style='color: " + options.iconColor + "' ";
+	                //}
+	                iconColorStyle = "style='color: " + options.iconColor + "' ";
 	            }
 
 	            return "<i " + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + iconClass + " " + iconSpinClass + " " + iconColorClass + "'></i>";
