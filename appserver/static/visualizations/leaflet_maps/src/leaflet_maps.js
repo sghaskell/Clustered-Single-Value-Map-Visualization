@@ -2,6 +2,7 @@ define([
             'jquery',
             'underscore',
             'leaflet',
+            'togeojson',
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
@@ -12,6 +13,7 @@ define([
             $,
             _,
             L,
+            toGeoJSON,
             SplunkVisualizationBase,
             SplunkVisualizationUtils
         ) {
@@ -21,6 +23,7 @@ define([
         maxResults: 0,
         tileLayer: null,
         layerFilter: {},
+        contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
         defaultConfig:  {
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups': 0,
@@ -43,6 +46,7 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold': 55,
@@ -193,6 +197,7 @@ define([
                 mapCenterLon = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon']),
                 minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']),
                 maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']),
+                kmlOverlay  = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay'],
                 rangeOneBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor'],
                 rangeOneFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor'],
                 warningThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold'],
@@ -288,6 +293,30 @@ define([
                 } else {
                     $("div[data-cid=" + parentEl + "]").css("height", defaultHeight);
                     this.map.invalidateSize();
+                }
+               
+                // Iterate through KML files and load overlays into layers on map 
+                if(kmlOverlay) {
+                    L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
+                    var kmlFiles = kmlOverlay.split(/\s*,\s*/);
+
+                    _.each(kmlFiles, function(file, i) {
+                        $.ajax({url: location.origin + this.contribUri + 'kml/' + file,
+                                context: this}).done(function(xml) {
+                            var kmlText = $.parseXML(xml);
+                            console.log("got " + kmlText);
+                            var geojson = toGeoJSON.kml(kmlText);
+
+                            L.geoJson(geojson.features, {
+                                style: function (feature) {
+                                     return feature.properties.style;
+                                 },
+                                 onEachFeature: function (feature, layer) {
+                                     layer.bindPopup(feature.properties.name);
+                                }
+                            }).addTo(this.map);
+                    });
+                    }, this);
                 }
 
                 // Init defaults
