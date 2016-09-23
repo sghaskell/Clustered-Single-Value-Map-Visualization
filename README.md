@@ -5,6 +5,8 @@
 ##### [Leaflet Awesome Markers Plugin](https://www.npmjs.com/package/drmonty-leaflet-awesome-markers)
 ##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
 ##### [togeojson](https://github.com/mapbox/togeojson)
+##### [JSZip](https://stuk.github.io/jszip/)
+##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
@@ -40,24 +42,22 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
 
 ### Overlays
-Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implments a KML overlay feature. If you have existing KML files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
+Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implments a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
 
 #### Usage
 
-##### KML Overlay
-Copy any KML files into the following directory
+##### KML/KMZ Overlay
+Copy any KML or KMZ files into the following directory
 
 ```$SPLUNK_HOME/etc/apps/leaflet_maps_app/appserver/static/visualizations/leaflet_maps/contrib/kml```
-
-**If you have KMZ files, please unzip them and place the extracted KML into this directory. The app does not currently read KMZ files.**
 
 If you use a deployer (search head clustering) or a deployment server to manage your search heads, unarchive the app and place your KML files into the above directory and then re-compress the app for distribution. 
 
 Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
 
-```file1.kml,file2.kml```
+```file1.kml,file2.kmz```
 
-The KML files will be dynamically loaded when the map is rendered.
+The files will be asynchronously loaded when the map is rendered.
 
 # Search Examples
 ### Basic plot of latitude and longitude
