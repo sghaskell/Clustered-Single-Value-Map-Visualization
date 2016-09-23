@@ -42,7 +42,7 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
 
 ### Overlays
-Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implments a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
+Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implements a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
 
 #### Usage
 
