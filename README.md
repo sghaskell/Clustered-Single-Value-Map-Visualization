@@ -38,10 +38,10 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 **prefix** - 'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
 **extraClasses** - Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
 
-### Layer Controls
+# Layer Controls
 Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
 
-### Overlays
+# Overlays
 Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implements a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
 
 #### Usage
