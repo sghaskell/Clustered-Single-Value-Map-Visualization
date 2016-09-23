@@ -19,6 +19,8 @@
     "underscore": "^1.8.3",
     "leaflet": "^1.0.0-rc.3",
     "drmonty-leaflet-awesome-markers": "^2.0.2",
-    "togeojson": "^0.14.2"
+    "togeojson": "^0.14.2",
+    "jszip": "^3.1.2",
+    "jszip-utils": "0.0.2"
   }
 }

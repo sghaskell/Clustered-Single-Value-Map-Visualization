@@ -3,6 +3,8 @@ define([
             'underscore',
             'leaflet',
             'togeojson',
+            'jszip',
+            'jszip-utils',
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
@@ -14,6 +16,8 @@ define([
             _,
             L,
             toGeoJSON,
+            JSZip,
+            JSZipUtils,
             SplunkVisualizationBase,
             SplunkVisualizationUtils
         ) {
@@ -133,6 +137,49 @@ define([
                 lg.layerExists = true;
             }
 
+        },
+
+        // Fetch KMZ or KML files and add to map
+        fetchKmlAndMap: function(url, file, map) {
+            // Test if it's a kmz file
+            if(/.*\.kmz/.test(file)) {
+                JSZipUtils.getBinaryContent(url, function (e, d) {
+                    var z = new JSZip();
+
+                    z.loadAsync(d)
+                    .then(function(zip) {
+                        return zip.file(/.*\.kml/)[0].async("string");
+                    })
+                    .then(function (text) {
+                        var kmlText = $.parseXML(text);
+                        var geojson = toGeoJSON.kml(kmlText);
+
+                        L.geoJson(geojson.features, {
+                            style: function (feature) {
+                                 return feature.properties.style;
+                             },
+                             onEachFeature: function (feature, layer) {
+                                 layer.bindPopup(feature.properties.name);
+                            }
+                        }).addTo(map);
+                    });
+                });
+            // it's a kml file
+            } else {
+                $.ajax({url: url, context: this}).done(function(text) {
+                    var kmlText = $.parseXML(text);
+                    var geojson = toGeoJSON.kml(kmlText);
+
+                    L.geoJson(geojson.features, {
+                        style: function (feature) {
+                             return feature.properties.style;
+                         },
+                         onEachFeature: function (feature, layer) {
+                             layer.bindPopup(feature.properties.name);
+                        }
+                    }).addTo(map);
+                });
+            }
         },
 
         // Do the work of creating the viz
@@ -294,31 +341,22 @@ define([
                     $("div[data-cid=" + parentEl + "]").css("height", defaultHeight);
                     this.map.invalidateSize();
                 }
-               
+
                 // Iterate through KML files and load overlays into layers on map 
                 if(kmlOverlay) {
+                    // Set default image path
                     L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
+
+                    // Create array of kml/kmz files
                     var kmlFiles = kmlOverlay.split(/\s*,\s*/);
 
+                    // Loop through each file and load it onto the map
                     _.each(kmlFiles, function(file, i) {
-                        $.ajax({url: location.origin + this.contribUri + 'kml/' + file,
-                                context: this}).done(function(xml) {
-                            var kmlText = $.parseXML(xml);
-                            console.log("got " + kmlText);
-                            var geojson = toGeoJSON.kml(kmlText);
-
-                            L.geoJson(geojson.features, {
-                                style: function (feature) {
-                                     return feature.properties.style;
-                                 },
-                                 onEachFeature: function (feature, layer) {
-                                     layer.bindPopup(feature.properties.name);
-                                }
-                            }).addTo(this.map);
-                    });
+                        var url = location.origin + this.contribUri + 'kml/' + file;
+                        this.fetchKmlAndMap(url, file, this.map);
                     }, this);
                 }
-
+               
                 // Init defaults
                 this.chunk = 50000;
                 this.offset = 0;
