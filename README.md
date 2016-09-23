@@ -51,7 +51,7 @@ Copy any KML or KMZ files into the following directory
 
 ```$SPLUNK_HOME/etc/apps/leaflet_maps_app/appserver/static/visualizations/leaflet_maps/contrib/kml```
 
-If you use a deployer (search head clustering) or a deployment server to manage your search heads, unarchive the app and place your KML files into the above directory and then re-compress the app for distribution. 
+If you use a deployer (search head clustering) or a deployment server to manage your search heads, uncompress the app and place your KML files into the above directory and then recompress the app for distribution. 
 
 Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
 
