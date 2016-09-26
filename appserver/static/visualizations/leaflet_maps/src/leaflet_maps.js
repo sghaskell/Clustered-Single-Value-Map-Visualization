@@ -52,7 +52,6 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool' : 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold': 55,
@@ -60,7 +59,16 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor': "#F0C20C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold': 80,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor': "#FD9C73",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor': "#F18017"
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor': "#F18017",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool': 1,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureIconPosition': "topright",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit': "feet",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit': "miles",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit': "acres",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit': "sqmiles",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor': "#00ff00",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor': "#0066ff",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en"
         },
         ATTRIBUTIONS: {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
@@ -247,7 +255,6 @@ define([
                 minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']),
                 maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']),
                 kmlOverlay  = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay'],
-                measureTool = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool']),
                 rangeOneBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor'],
                 rangeOneFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor'],
                 warningThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold'],
@@ -255,7 +262,16 @@ define([
                 rangeTwoFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor'],
                 criticalThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold'],
                 rangeThreeBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor'],
-                rangeThreeFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor']
+                rangeThreeFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor'],
+                measureTool = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool']),
+                measureIconPosition = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureIconPosition'],
+                measurePrimaryLengthUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit'],
+                measureSecondaryLengthUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit'],
+                measurePrimaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit'],
+                measureSecondaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit'],
+                measureActiveColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor'],
+                measureCompletedColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor'],
+                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization']
 
             this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -350,9 +366,14 @@ define([
 
                 // Enable measure tool plugin and add to map
                 if(this.isArgTrue(measureTool)) {
-                    var measureOptions = { position: 'topright',
-                                           activeColor: '#00ff00',
-                                           completedColor: '#0066ff'};
+                    var measureOptions = { position: measureIconPosition,
+                                           activeColor: measureActiveColor,
+                                           completedColor: measureCompletedColor,
+                                           primaryLengthUnit: measurePrimaryLengthUnit,
+                                           secondaryLengthUnit: measureSecondaryLengthUnit,
+                                           primaryAreaUnit: measurePrimaryAreaUnit,
+                                           secondaryAreaUnit: measureSecondaryAreaUnit
+                                           localization: measureLocalization};
 
                     var measureControl = new L.Control.Measure(measureOptions);
                     measureControl.addTo(this.map);
