@@ -166,37 +166,6 @@
         </div>
     </div>
 </form>
-<form class="splunk-formatter-section" section-label="Layer Controls">
-    <div class="control-group">
-        <label class="control-label">Layer Control</label>
-        <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl" value="1">
-                <option value="1">Enabled</option>
-                <option value="0">Disabled</option>
-            </splunk-radio-input>
-            <span class="help-block ">Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map.</span>
-        </div>
-    </div>
-    <div class="control-group">
-        <label class="control-label">Control Collapsed</label>
-        <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed" value="1">
-                <option value="1">Enabled</option>
-                <option value="0">Disabled</option>
-            </splunk-radio-input>
-            <span class="help-block ">Collapse or expand layer control widget. If collapsed, mousing over icon will expand.</span>
-        </div>
-    </div>
-</form>
-<form class="splunk-formatter-section" section-label="Overlays">
-    <div class="control-group">
-        <label class="control-label">KML Overlay</label>
-        <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay"></splunk-text-input>
-            <span class="help-block ">Comma separated list of KML file names copied into kml directory of app (file1.kml, file2.kml)</span> 
-        </div>
-    </div>
-</form>
 <form class="splunk-formatter-section" section-label="Cluster Colors">
     <div class="control-group">
         <label class="control-label">Range One Background</label>
@@ -258,6 +227,49 @@
             <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor" value="#F18017">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #F18017)</span> 
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Layer Controls">
+    <div class="control-group">
+        <label class="control-label">Layer Control</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Control Collapsed</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Collapse or expand layer control widget. If collapsed, mousing over icon will expand.</span>
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Overlays">
+    <div class="control-group">
+        <label class="control-label">KML Overlay</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay"></splunk-text-input>
+            <span class="help-block ">Comma separated list of KML file names copied into kml directory of app (file1.kml, file2.kml)</span> 
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Measure">
+    <div class="control-group">
+        <label class="control-label">Enable Measurement Plugin</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable measurement plugin to allow path and area measurement on map. (Default: Enabled)</span>
         </div>
     </div>
 </form>
