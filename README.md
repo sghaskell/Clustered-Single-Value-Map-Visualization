@@ -7,6 +7,7 @@
 ##### [togeojson](https://github.com/mapbox/togeojson)
 ##### [JSZip](https://stuk.github.io/jszip/)
 ##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
+##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
@@ -58,6 +59,9 @@ Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of fil
 ```file1.kml,file2.kmz```
 
 The files will be asynchronously loaded when the map is rendered.
+
+# Measurement Plugin
+Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and areas on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
 
 # Search Examples
 ### Basic plot of latitude and longitude
@@ -133,3 +137,36 @@ Number at which cluster group three starts
 (Default: #FD9C73)
 ###### Range Three Foreground
 (Default: #F18017)
+
+### Layer Controls
+#### Layer control changes require browser refresh
+###### Layer Control
+Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map. (Default: Enabled)
+###### Control Collapsed
+Collapse or expand layer control widget. If collapsed, mousing over icon will expand. (Default: Collapsed)
+
+### Overlays
+#### Layer control changes require browser refresh
+###### KML/KMZ Overlay
+Comma separated list of KML or KMZ file names copied into kml directory of app (file1.kml, file2.kml)
+
+### Measure
+#### Layer control changes require browser refresh
+###### Enable Measurement Plugin
+Enable or disable measurement plugin to allow path and area measurement on map. (Default: Enabled)
+###### Localization
+Language (Default: English)
+###### Icon Position
+Position of measurement icon on map (Default: Top Right)
+###### Primary Length Unit
+Primary unit for length measurement (Default: feet)
+###### Secondary Length Unit
+Secondary unit for length measurement (Default: miles)
+###### Primary Area Unit
+Primary unit for area measurement (Default: acres)
+###### Secondary Area Unit
+Secondary unit for area measurement (Default: square miles)
+###### Active Color
+Color of measurement when actively drawing (Default: #00ff00)
+###### Completed Color
+Color of measurement when drawing is complete (Default: #0066ff)
