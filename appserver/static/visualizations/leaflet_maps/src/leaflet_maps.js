@@ -372,7 +372,7 @@ define([
                                            primaryLengthUnit: measurePrimaryLengthUnit,
                                            secondaryLengthUnit: measureSecondaryLengthUnit,
                                            primaryAreaUnit: measurePrimaryAreaUnit,
-                                           secondaryAreaUnit: measureSecondaryAreaUnit
+                                           secondaryAreaUnit: measureSecondaryAreaUnit,
                                            localization: measureLocalization};
 
                     var measureControl = new L.Control.Measure(measureOptions);
