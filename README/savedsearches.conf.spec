@@ -21,6 +21,7 @@ display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon = <floa
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay = <string>
+display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold = <int>

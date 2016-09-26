@@ -9,7 +9,8 @@ define([
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
             '../contrib/leaflet.markercluster-src',
-            '../contrib/leaflet.featuregroup.subgroup-src'
+            '../contrib/leaflet.featuregroup.subgroup-src',
+            '../contrib/leaflet-measure'
         ],
         function(
             $,
@@ -51,6 +52,7 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool' : 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold': 55,
@@ -245,6 +247,7 @@ define([
                 minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']),
                 maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']),
                 kmlOverlay  = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay'],
+                measureTool = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool'],
                 rangeOneBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor'],
                 rangeOneFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor'],
                 warningThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold'],
@@ -259,6 +262,9 @@ define([
 
             // Initialize the DOM
             if (!this.isInitializedDom) {
+                // Set defaul icon image path
+                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
+
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
                 this.createMarkerStyle(rangeTwoBgColor, rangeTwoFgColor, "two");
@@ -342,11 +348,18 @@ define([
                     this.map.invalidateSize();
                 }
 
+                // Enable measure tool plugin and add to map
+                if(this.isArgTrue(measureTool)) {
+                    var measureOptions = { position: 'topright',
+                                           activeColor: '#00ff00',
+                                           completedColor: '#0066ff'};
+
+                    var measureControl = new L.Control.Measure(measureOptions);
+                    measureControl.addTo(this.map);
+                }
+
                 // Iterate through KML files and load overlays into layers on map 
                 if(kmlOverlay) {
-                    // Set default image path
-                    L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
-
                     // Create array of kml/kmz files
                     var kmlFiles = kmlOverlay.split(/\s*,\s*/);
 
