@@ -11,6 +11,8 @@
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
+##### [transform-loader](https://www.npmjs.com/package/transform-loader)
+##### [brfs](https://www.npmjs.com/package/brfs)
 
 Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 
