@@ -63,7 +63,7 @@ Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of fil
 The files will be asynchronously loaded when the map is rendered.
 
 # Measurement Plugin
-Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and areas on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
+Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and area on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
 
 # Search Examples
 ### Basic plot of latitude and longitude
