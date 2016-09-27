@@ -21,7 +21,15 @@ module.exports = {
             {
                 test: /leaflet\.awesome-markers\.js$/,
                 loader: 'imports-loader?L=leaflet'
-            } 
+            },
+            {
+                test: /leaflet\.featuregroup\.subgroup-src\.js$/,
+                loader: 'imports-loader?define=>false'
+            },
+            {
+                test: /leaflet-measure\.js$/,
+                loaders: ['imports-loader?L=leaflet', 'transform/cacheable?brfs']
+            }
         ]
     },
     externals: [

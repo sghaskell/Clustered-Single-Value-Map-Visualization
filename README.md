@@ -3,14 +3,19 @@
 ##### [Leaflet Maps](http://leafletjs.com/)
 ##### [Leaflet Markercluster Plugin](https://github.com/Leaflet/Leaflet.markercluster)
 ##### [Leaflet Awesome Markers Plugin](https://www.npmjs.com/package/drmonty-leaflet-awesome-markers)
+##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
+##### [togeojson](https://github.com/mapbox/togeojson)
+##### [JSZip](https://stuk.github.io/jszip/)
+##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
+##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
 
-Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) for all the feature requests and extensive testing.
+Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 
 # Compatibility
-This app only works with **Splunk 6.4** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
+This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
@@ -21,6 +26,7 @@ This app only works with **Splunk 6.4** as it relies on the new [Custom Visualiz
 **longitude** - Longitude Coordinates
 # Optional Fields
 **descirption** - Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
+**layerDescription** - Description that is added next to the icon in the layer control legend. **this field supports HTML**
 
 # Style Markers And Icons Dynamically Through SPL
 ### Feature Description
@@ -32,6 +38,30 @@ Version 1.1 introduces new features to dynamically style map markers and add ico
 **iconColor** - Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
 **prefix** - 'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
 **extraClasses** - Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+
+# Layer Controls
+Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
+
+# Overlays
+Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implements a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
+
+#### Usage
+
+##### KML/KMZ Overlay
+Copy any KML or KMZ files into the following directory
+
+```$SPLUNK_HOME/etc/apps/leaflet_maps_app/appserver/static/visualizations/leaflet_maps/contrib/kml```
+
+If you use a deployer (search head clustering) or a deployment server to manage your search heads, uncompress the app and place your KML files into the above directory and then recompress the app for distribution. 
+
+Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
+
+```file1.kml,file2.kmz```
+
+The files will be asynchronously loaded when the map is rendered.
+
+# Measurement Plugin
+Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and areas on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
 
 # Search Examples
 ### Basic plot of latitude and longitude
@@ -107,3 +137,36 @@ Number at which cluster group three starts
 (Default: #FD9C73)
 ###### Range Three Foreground
 (Default: #F18017)
+
+### Layer Controls
+#### Layer control changes require browser refresh
+###### Layer Control
+Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map. (Default: Enabled)
+###### Control Collapsed
+Collapse or expand layer control widget. If collapsed, mousing over icon will expand. (Default: Collapsed)
+
+### Overlays
+#### Layer control changes require browser refresh
+###### KML/KMZ Overlay
+Comma separated list of KML or KMZ file names copied into kml directory of app (file1.kml, file2.kml)
+
+### Measure
+#### Layer control changes require browser refresh
+###### Enable Measurement Plugin
+Enable or disable measurement plugin to allow path and area measurement on map. (Default: Enabled)
+###### Localization
+Language (Default: English)
+###### Icon Position
+Position of measurement icon on map (Default: Top Right)
+###### Primary Length Unit
+Primary unit for length measurement (Default: feet)
+###### Secondary Length Unit
+Secondary unit for length measurement (Default: miles)
+###### Primary Area Unit
+Primary unit for area measurement (Default: acres)
+###### Secondary Area Unit
+Secondary unit for area measurement (Default: square miles)
+###### Active Color
+Color of measurement when actively drawing (Default: #00ff00)
+###### Completed Color
+Color of measurement when drawing is complete (Default: #0066ff)

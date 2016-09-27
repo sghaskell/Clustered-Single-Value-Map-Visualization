@@ -93,7 +93,7 @@
 </form>
 <form class="splunk-formatter-section" section-label="Clustering">
     <div class="control-group">
-    	<label class="control-label">Enable Clustering</label>
+        <label class="control-label">Enable Clustering</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="1">
                 <option value="1">Yes</option>
@@ -101,9 +101,9 @@
             </splunk-radio-input> 
             <span class="help-block ">Disable clustering and plot all markers. WARNING - This comes at a significant performance penalty for large datasets.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
-    	<label class="control-label">Show All Popups</label>
+        <label class="control-label">Show All Popups</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="0">
                 <option value="1">Yes</option>
@@ -111,9 +111,9 @@
             </splunk-radio-input> 
             <span class="help-block ">Display all popups on page load. Only works with clustering disabled.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
-    	<label class="control-label">Allow Multiple Popups</label>
+        <label class="control-label">Allow Multiple Popups</label>
         <div class="controls controls-fill ">
             <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="0">
                 <option value="1">Yes</option>
@@ -121,7 +121,7 @@
             </splunk-radio-input> 
             <span class="help-block ">Allow multiple popups to dispaly on screen without closing previous. Will disappear at higher zoom levels with clustering enabled. Enabled by default when showing all popups.</span> 
         </div>
-	</div>
+    </div>
     <div class="control-group">
         <label class="control-label">Animate</label>
         <div class="controls controls-fill ">
@@ -227,6 +227,148 @@
             <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor" value="#F18017">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #F18017)</span> 
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Layer Controls">
+    <div class="control-group">
+        <label class="control-label">Layer Control</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable dynamic filtering of layer groups on map. Each icon type's visibility can be toggled via control in upper right corner of map.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Control Collapsed</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Collapse or expand layer control widget. If collapsed, mousing over icon will expand.</span>
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Overlays">
+    <div class="control-group">
+        <label class="control-label">KML/KMZ Overlay</label>
+        <div class="controls controls-block">
+            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay"></splunk-text-input>
+            <span class="help-block ">Comma separated list of KML or KMZ file names copied into kml directory of app (file1.kml, file2.kml)</span> 
+        </div>
+    </div>
+</form>
+<form class="splunk-formatter-section" section-label="Measure">
+    <div class="control-group">
+        <label class="control-label">Enable Measurement Plugin</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Enable or disable measurement plugin to allow path and area measurement on map. (Default: Enabled)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Localization</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization" value="en">
+              <option value="cn">Chinese</option>
+              <option value="de">German</option>
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="it">Italian</option>
+              <option value="nl">Dutch</option>
+              <option value="pt_BR">Brazilian Portuguese</option>
+              <option value="pt_PT">European Portuguese</option>
+              <option value="ru">Russian</option>
+              <option value="es">Spanish</option>
+              <option value="tr">Turkish</option>
+            </splunk-select>
+            <span class="help-block ">Language (Default: English)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Icon Position</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureIconPosition" value="topright">
+              <option value="topleft">Top Left</option>
+              <option value="topright">Top Right</option>
+              <option value="bottomleft">Bottom Left</option>
+              <option value="bottomright">Bottom Right</option>
+            </splunk-select>
+            <span class="help-block ">Position of measurement icon on map (Default: Top Right)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Primary Length Unit</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit" value="feet">
+              <option value="feet">Feet</option>
+              <option value="meters">Meters</option>
+              <option value="miles">Miles</option>
+              <option value="kilometers">Kilometers</option>
+            </splunk-select>
+            <span class="help-block ">Primary unit for length measurement (Default: feet)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Secondary Length Unit</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit" value="miles">
+              <option value="feet">Feet</option>
+              <option value="meters">Meters</option>
+              <option value="miles">Miles</option>
+              <option value="kilometers">Kilometers</option>
+              <option value="">None</option>
+            </splunk-select>
+            <span class="help-block ">Secondary unit for length measurement (Default: miles)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Primary Area Unit</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit" value="acres">
+              <option value="acres">Acres</option>
+              <option value="hectares">Hectares</option>
+              <option value="sqfeet">Square Feet</option>
+              <option value="sqmeters">Square Meters</option>
+              <option value="sqmiles">Square Miles</option>
+            </splunk-select>
+            <span class="help-block ">Primary unit for area measurement (Default: acres)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Secondary Area Unit</label>
+        <div class="controls controls-block">
+            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit" value="sqmiles">
+              <option value="acres">Acres</option>
+              <option value="hectares">Hectares</option>
+              <option value="sqfeet">Square Feet</option>
+              <option value="sqmeters">Square Meters</option>
+              <option value="sqmiles">Square Miles</option>
+              <option value="">None</option>
+            </splunk-select>
+            <span class="help-block ">Secondary unit for area measurement (Default: square miles)</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Active Color</label>
+        <div class="controls controls-block">
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor" value="#00ff00">
+            </splunk-color-picker> 
+            <span class="help-block ">Color of measurement when actively drawing (Default: #00ff00)</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Completed Color</label>
+        <div class="controls controls-block">
+            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor" value="#0066ff">
+            </splunk-color-picker> 
+            <span class="help-block ">Color of measurement when drawing is complete (Default: #0066ff)</span> 
         </div>
     </div>
 </form>
