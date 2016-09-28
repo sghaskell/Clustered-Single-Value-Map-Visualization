@@ -515,6 +515,15 @@ define([
                     }); 
                 }
                 else {
+                    if (typeof this.layerFilter[icon] == 'undefined') {
+                        this.layerFilter[icon] = {'group' : L.layerGroup(),
+                                                  'markerList' : [],
+                                                  'iconStyle' : icon,
+                                                  'layerExists' : false,
+                                                  'layerDescription': ""
+                                                 };
+                    }
+
                     // Default marker
                     var markerIcon = L.AwesomeMarkers.icon({
                         icon: "circle",
