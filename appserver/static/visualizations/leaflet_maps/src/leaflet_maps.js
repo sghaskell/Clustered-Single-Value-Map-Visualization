@@ -425,113 +425,93 @@ define([
             // and create markers appending to a markerList in each layerfilter object
             _.each(dataRows, function(userData, i) {
                 // Set icon options
-                if(Object.keys(userData).length > 2) {
-                    if("icon" in userData) {
-                        var icon = userData["icon"];
+                if("icon" in userData) {
+                    var icon = userData["icon"];
 
-                    } else {
-                        var icon = "circle";
+                } else {
+                    var icon = "circle";
 
-                    }
+                }
 
-                    // Create Clustered featuregroup subgroup layer
-                    if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
-                        this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
-                                                  'markerList' : [],
-                                                  'iconStyle' : icon,
-                                                  'layerExists' : false
-                                                 };
-                    // Create normal layergroup
-                    } else if (typeof this.layerFilter[icon] == 'undefined') {
-                        this.layerFilter[icon] = {'group' : L.layerGroup(),
-                                                  'markerList' : [],
-                                                  'iconStyle' : icon,
-                                                  'layerExists' : false
-                                                 };
-                    }
+                // Create Clustered featuregroup subgroup layer
+                if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
+                    this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
+                                              'markerList' : [],
+                                              'iconStyle' : icon,
+                                              'layerExists' : false
+                                             };
+                // Create normal layergroup
+                } else if (typeof this.layerFilter[icon] == 'undefined') {
+                    this.layerFilter[icon] = {'group' : L.layerGroup(),
+                                              'markerList' : [],
+                                              'iconStyle' : icon,
+                                              'layerExists' : false
+                                             };
+                }
 
-                    if("layerDescription" in userData) {
-                        var layerDescription = userData["layerDescription"];
-                    } else {
-                        var layerDescription = "";
-                    }
+                if("layerDescription" in userData) {
+                    var layerDescription = userData["layerDescription"];
+                } else {
+                    var layerDescription = "";
+                }
 
-                    if (typeof this.layerFilter[icon] !== 'undefined') {
-                        this.layerFilter[icon].layerDescription = layerDescription;
-                    }
+                if (typeof this.layerFilter[icon] !== 'undefined') {
+                    this.layerFilter[icon].layerDescription = layerDescription;
+                }
 
-                    if("markerColor" in userData) {
-                        var markerColor = userData["markerColor"];
-                    } else {
-                        var markerColor = "blue";
-                    }
+                if("markerColor" in userData) {
+                    var markerColor = userData["markerColor"];
+                } else {
+                    var markerColor = "blue";
+                }
 
-                    if("iconColor" in userData) {
-                        var iconColor = userData["iconColor"];
-                    } else {
-                        var iconColor = "white";
-                    }
+                if("iconColor" in userData) {
+                    var iconColor = userData["iconColor"];
+                } else {
+                    var iconColor = "white";
+                }
 
-                    if("prefix" in userData && userData["prefix"] === "ion") {
-                        var prefix = "ion";
-                    } else {
-                        var prefix = "fa";
-                    }
+                if("prefix" in userData && userData["prefix"] === "ion") {
+                    var prefix = "ion";
+                } else {
+                    var prefix = "fa";
+                }
 
-                    if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
-                        var className = "";
-                        var popupAnchor = [-3, -35];
-                    } else {
-                        var className = "awesome-marker";
-                        extraClasses = "";
-                        var popupAnchor = [1, -35];
-                    }
+                if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
+                    var className = "";
+                    var popupAnchor = [-3, -35];
+                } else {
+                    var className = "awesome-marker";
+                    extraClasses = "";
+                    var popupAnchor = [1, -35];
+                }
 
-                    if("extraClasses" in userData) {
-                        var extraClasses = userData["extraClasses"];
-                    } else if (prefix === "fa") {
-                        var extraClasses = "fa-4x";
-                    } else {
-                        var extraClasses = "";
-                    }
-                
-                    if("description" in userData) {
-                        var description = userData["description"]
-                    }
-                    else {
-                        var description = "";
-                    }    
-
-                    // Create marker icon
-                    var markerIcon = L.AwesomeMarkers.icon({
-                        icon: icon,
-                        markerColor: markerColor,
-                        iconColor: iconColor,
-                        prefix: prefix,
-                        className: className,
-                        extraClasses: extraClasses,
-                        popupAnchor: popupAnchor,
-                        description: description
-                    }); 
+                if("extraClasses" in userData) {
+                    var extraClasses = userData["extraClasses"];
+                } else if (prefix === "fa") {
+                    var extraClasses = "fa-4x";
+                } else {
+                    var extraClasses = "";
+                }
+            
+                if("description" in userData) {
+                    var description = userData["description"]
                 }
                 else {
-                    if (typeof this.layerFilter[icon] == 'undefined') {
-                        this.layerFilter[icon] = {'group' : L.layerGroup(),
-                                                  'markerList' : [],
-                                                  'iconStyle' : icon,
-                                                  'layerExists' : false,
-                                                  'layerDescription': ""
-                                                 };
-                    }
+                    var description = "";
+                }    
 
-                    // Default marker
-                    var markerIcon = L.AwesomeMarkers.icon({
-                        icon: "circle",
-                        markerColor: "blue",
-                        iconColor: "white",
-                        prefix: "fa"
-                    });
-                }
+                // Create marker icon
+                var markerIcon = L.AwesomeMarkers.icon({
+                    icon: icon,
+                    markerColor: markerColor,
+                    iconColor: iconColor,
+                    prefix: prefix,
+                    className: className,
+                    extraClasses: extraClasses,
+                    popupAnchor: popupAnchor,
+                    description: description
+                }); 
 
                 // Add the icon so we can access properties for overlay
                 if (typeof this.layerFilter[icon] !== 'undefined') {
