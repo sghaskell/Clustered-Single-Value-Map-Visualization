@@ -72,7 +72,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    return SplunkVisualizationBase.extend({
 	        maxResults: 0,
 	        tileLayer: null,
-	        layerFilter: {},
 	        contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
 	        defaultConfig:  {
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
@@ -326,6 +325,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                // Set defaul icon image path
 	                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
 
+	                // Create layer filter object
+	                var layerFilter = this.layerFilter = {};
+
 	                // Setup cluster marker CSS
 	                this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
 	                this.createMarkerStyle(rangeTwoBgColor, rangeTwoFgColor, "two");
@@ -465,7 +467,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            if (this.map.getZoom() != mapCenterZoom) {
 	                this.map.setZoom(mapCenterZoom);
 	            }
-
+	            
 	            // Iterate through each row creating layer groups per icon type
 	            // and create markers appending to a markerList in each layerfilter object
 	            _.each(dataRows, function(userData, i) {
