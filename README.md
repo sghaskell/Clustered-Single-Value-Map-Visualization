@@ -16,6 +16,8 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
+##### [transform-loader](https://www.npmjs.com/package/transform-loader)
+##### [brfs](https://www.npmjs.com/package/brfs)
 
 Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 
@@ -24,7 +26,7 @@ This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom 
 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
-`base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses ]`
+`base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses | layerDescription]`
 
 # Required Fields
 **latitude** - Latitude Coordinates
@@ -66,7 +68,7 @@ Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of fil
 The files will be asynchronously loaded when the map is rendered.
 
 # Measurement Plugin
-Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and areas on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
+Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and area on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
 
 # Search Examples
 ### Basic plot of latitude and longitude
@@ -175,3 +177,6 @@ Secondary unit for area measurement (Default: square miles)
 Color of measurement when actively drawing (Default: #00ff00)
 ###### Completed Color
 Color of measurement when drawing is complete (Default: #0066ff)
+
+# Support
+This app is supported by Scott Haskell ([shaskell@splunk.com](mailto:shaskell@splunk.com))
