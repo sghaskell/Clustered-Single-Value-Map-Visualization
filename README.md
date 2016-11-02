@@ -172,3 +172,6 @@ Secondary unit for area measurement (Default: square miles)
 Color of measurement when actively drawing (Default: #00ff00)
 ###### Completed Color
 Color of measurement when drawing is complete (Default: #0066ff)
+
+# Support
+This app is supported by Scott Haskell ([shaskell@splunk.com](mailto:shaskell@splunk.com))
