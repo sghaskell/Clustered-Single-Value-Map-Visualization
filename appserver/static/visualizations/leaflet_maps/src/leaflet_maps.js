@@ -97,6 +97,31 @@ define([
             this.clearMap = false;
         },
 
+        // Build object of key/value paris for invalid fields
+        // to be used as data for _drilldown action
+        validateFields: function(obj) {
+            var invalidFields = {};
+            var validFields = ['latitude','longitude','title','description','icon','markerColor','iconColor','prefix','extraClasses', 'layerDescription'];
+            $.each(obj, function(key, value) {
+                if($.inArray(key, validFields) === -1) {
+                    invalidFields[key] = value;
+                }
+            });
+
+            return(invalidFields);
+        },
+
+		// Custom drilldown behavior for markers
+        _drilldown: function(resource) {
+            payload = {
+                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+                data: resource.target.options.icon.options.drilldownFields
+            };
+
+            this.drilldown(payload);
+        },
+
+
         // Convert hex values to RGB for marker icon colors
         hexToRgb: function(hex) {
             var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -503,25 +528,48 @@ define([
                     var description = "";
                 }    
 
-                // Create marker icon
-                var markerIcon = L.AwesomeMarkers.icon({
-                    icon: icon,
-                    markerColor: markerColor,
-                    iconColor: iconColor,
-                    prefix: prefix,
-                    className: className,
-                    extraClasses: extraClasses,
-                    popupAnchor: popupAnchor,
-                    description: description
-                }); 
+                if (this.isArgTrue(drilldown)) {
+                    var drilldownFields = this.validateFields(userData);
+
+                    // Create marker icon
+                    var markerIcon = L.AwesomeMarkers.icon({
+                        icon: icon,
+                        markerColor: markerColor,
+                        iconColor: iconColor,
+                        prefix: prefix,
+                        className: className,
+                        extraClasses: extraClasses,
+                        popupAnchor: popupAnchor,
+                        description: description,
+                        drilldownFields: drilldownFields
+                    });
+                } else {
+                    // Create marker icon
+                    var markerIcon = L.AwesomeMarkers.icon({
+                        icon: icon,
+                        markerColor: markerColor,
+                        iconColor: iconColor,
+                        prefix: prefix,
+                        className: className,
+                        extraClasses: extraClasses,
+                        popupAnchor: popupAnchor,
+                        description: description
+                    });
+                }
+
 
                 // Add the icon so we can access properties for overlay
                 if (typeof this.layerFilter[icon] !== 'undefined') {
                     this.layerFilter[icon].icon = markerIcon;
                 }
 
+
                 // Create marker
-                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
+                if (this.isArgTrue(drilldown)) {
+                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription}).on('dblclick', this._drilldown.bind(this));
+                } else {
+                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
+                }
 
                 // Bind description popup if description exists
                 if(userData["description"]) {

@@ -1,4 +1,4 @@
-define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_108__) { return /******/ (function(modules) { // webpackBootstrap
+define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_114__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -46,17 +46,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	            __webpack_require__(2),
-	            __webpack_require__(107),
+	            __webpack_require__(113),
 	            __webpack_require__(3),
 	            __webpack_require__(4),
 	            __webpack_require__(7),
-	            __webpack_require__(106),
+	            __webpack_require__(112),
 	            __webpack_require__(1),
-	            __webpack_require__(108),
-	            __webpack_require__(109),
-	            __webpack_require__(110),
-	            __webpack_require__(111),
-	            __webpack_require__(112)
+	            __webpack_require__(114),
+	            __webpack_require__(115),
+	            __webpack_require__(116),
+	            __webpack_require__(117),
+	            __webpack_require__(118)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -141,6 +141,31 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        setupView: function() {
 	            this.clearMap = false;
 	        },
+
+	        // Build object of key/value paris for invalid fields
+	        // to be used as data for _drilldown action
+	        validateFields: function(obj) {
+	            var invalidFields = {};
+	            var validFields = ['latitude','longitude','title','description','icon','markerColor','iconColor','prefix','extraClasses', 'layerDescription'];
+	            $.each(obj, function(key, value) {
+	                if($.inArray(key, validFields) === -1) {
+	                    invalidFields[key] = value;
+	                }
+	            });
+
+	            return(invalidFields);
+	        },
+
+			// Custom drilldown behavior for markers
+	        _drilldown: function(resource) {
+	            payload = {
+	                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+	                data: resource.target.options.icon.options.drilldownFields
+	            };
+
+	            this.drilldown(payload);
+	        },
+
 
 	        // Convert hex values to RGB for marker icon colors
 	        hexToRgb: function(hex) {
@@ -548,25 +573,48 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    var description = "";
 	                }    
 
-	                // Create marker icon
-	                var markerIcon = L.AwesomeMarkers.icon({
-	                    icon: icon,
-	                    markerColor: markerColor,
-	                    iconColor: iconColor,
-	                    prefix: prefix,
-	                    className: className,
-	                    extraClasses: extraClasses,
-	                    popupAnchor: popupAnchor,
-	                    description: description
-	                }); 
+	                if (this.isArgTrue(drilldown)) {
+	                    var drilldownFields = this.validateFields(userData);
+
+	                    // Create marker icon
+	                    var markerIcon = L.AwesomeMarkers.icon({
+	                        icon: icon,
+	                        markerColor: markerColor,
+	                        iconColor: iconColor,
+	                        prefix: prefix,
+	                        className: className,
+	                        extraClasses: extraClasses,
+	                        popupAnchor: popupAnchor,
+	                        description: description,
+	                        drilldownFields: drilldownFields
+	                    });
+	                } else {
+	                    // Create marker icon
+	                    var markerIcon = L.AwesomeMarkers.icon({
+	                        icon: icon,
+	                        markerColor: markerColor,
+	                        iconColor: iconColor,
+	                        prefix: prefix,
+	                        className: className,
+	                        extraClasses: extraClasses,
+	                        popupAnchor: popupAnchor,
+	                        description: description
+	                    });
+	                }
+
 
 	                // Add the icon so we can access properties for overlay
 	                if (typeof this.layerFilter[icon] !== 'undefined') {
 	                    this.layerFilter[icon].icon = markerIcon;
 	                }
 
+
 	                // Create marker
-	                var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
+	                if (this.isArgTrue(drilldown)) {
+	                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription}).on('dblclick', this._drilldown.bind(this));
+	                } else {
+	                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
+	                }
 
 	                // Bind description popup if description exists
 	                if(userData["description"]) {
@@ -10465,12 +10513,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
-	 Leaflet 1.0.0-rc.3, a JS library for interactive maps. http://leafletjs.com
-	 (c) 2010-2015 Vladimir Agafonkin, (c) 2010-2011 CloudMade
+	 Leaflet 1.0.2, a JS library for interactive maps. http://leafletjs.com
+	 (c) 2010-2016 Vladimir Agafonkin, (c) 2010-2011 CloudMade
 	*/
 	(function (window, document, undefined) {
 	var L = {
-		version: "1.0.0-rc.3"
+		version: "1.0.2"
 	};
 
 	function expose() {
@@ -10963,10 +11011,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			/* get/init listeners for type */
 			var typeListeners = this._events[type];
 			if (!typeListeners) {
-				typeListeners = {
-					listeners: [],
-					count: 0
-				};
+				typeListeners = [];
 				this._events[type] = typeListeners;
 			}
 
@@ -10975,7 +11020,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				context = undefined;
 			}
 			var newListener = {fn: fn, ctx: context},
-			    listeners = typeListeners.listeners;
+			    listeners = typeListeners;
 
 			// check if fn already there
 			for (var i = 0, len = listeners.length; i < len; i++) {
@@ -10989,20 +11034,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_off: function (type, fn, context) {
-			var typeListeners,
-			    listeners,
+			var listeners,
 			    i,
 			    len;
 
 			if (!this._events) { return; }
 
-			typeListeners = this._events[type];
+			listeners = this._events[type];
 
-			if (!typeListeners) {
+			if (!listeners) {
 				return;
 			}
-
-			listeners = typeListeners.listeners;
 
 			if (!fn) {
 				// Set all removed listeners to noop so they are not called if remove happens in fire
@@ -11013,7 +11055,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				delete this._events[type];
 				return;
 			}
-
 
 			if (context === this) {
 				context = undefined;
@@ -11029,11 +11070,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 						// set the removed listener to noop so that's not called if remove happens in fire
 						l.fn = L.Util.falseFn;
-						typeListeners.count--;
 
-						if (this._isFiring) {
+						if (this._firingCount) {
 							/* copy array in case events are being fired */
-							listeners = listeners.slice();
+							this._events[type] = listeners = listeners.slice();
 						}
 						listeners.splice(i, 1);
 
@@ -11046,24 +11086,23 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @method fire(type: String, data?: Object, propagate?: Boolean): this
 		// Fires an event of the specified type. You can optionally provide an data
 		// object — the first argument of the listener function will contain its
-		// properties. The event might can optionally be propagated to event parents.
+		// properties. The event can optionally be propagated to event parents.
 		fire: function (type, data, propagate) {
 			if (!this.listens(type, propagate)) { return this; }
 
 			var event = L.Util.extend({}, data, {type: type, target: this});
 
 			if (this._events) {
-				var typeListeners = this._events[type];
+				var listeners = this._events[type];
 
-				if (typeListeners) {
-					this._isFiring = true;
-					var listeners = typeListeners.listeners;
+				if (listeners) {
+					this._firingCount = (this._firingCount + 1) || 1;
 					for (var i = 0, len = listeners.length; i < len; i++) {
 						var l = listeners[i];
 						l.fn.call(l.ctx || this, event);
 					}
 
-					this._isFiring = false;
+					this._firingCount--;
 				}
 			}
 
@@ -11078,8 +11117,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @method listens(type: String): Boolean
 		// Returns `true` if a particular event type has any listeners attached to it.
 		listens: function (type, propagate) {
-			var typeListeners = this._events && this._events[type];
-			if (typeListeners && typeListeners.count) { return true; }
+			var listeners = this._events && this._events[type];
+			if (listeners && listeners.length) { return true; }
 
 			if (propagate) {
 				// also check parents for listeners if event propagates
@@ -11340,7 +11379,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 */
 
 	L.Point = function (x, y, round) {
+		// @property x: Number; The `x` coordinate of the point
 		this.x = (round ? Math.round(x) : x);
+		// @property y: Number; The `y` coordinate of the point
 		this.y = (round ? Math.round(y) : y);
 	};
 
@@ -11709,7 +11750,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	L.Transformation.prototype = {
 		// @method transform(point: Point, scale?: Number): Point
 		// Returns a transformed point, optionally multiplied by the given scale.
-		// Only accepts real `L.Point` instances, not arrays.
+		// Only accepts actual `L.Point` instances, not arrays.
 		transform: function (point, scale) { // (Point, Number) -> Point
 			return this._transform(point.clone(), scale);
 		},
@@ -11724,7 +11765,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @method untransform(point: Point, scale?: Number): Point
 		// Returns the reverse transformation of the given point, optionally divided
-		// by the given scale. Only accepts real `L.Point` instances, not arrays.
+		// by the given scale. Only accepts actual `L.Point` instances, not arrays.
 		untransform: function (point, scale) {
 			scale = scale || 1;
 			return new L.Point(
@@ -12199,9 +12240,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @example
 	 *
 	 * ```js
-	 * var southWest = L.latLng(40.712, -74.227),
-	 * northEast = L.latLng(40.774, -74.125),
-	 * bounds = L.latLngBounds(southWest, northEast);
+	 * var corner1 = L.latLng(40.712, -74.227),
+	 * corner2 = L.latLng(40.774, -74.125),
+	 * bounds = L.latLngBounds(corner1, corner2);
 	 * ```
 	 *
 	 * All Leaflet methods that accept LatLngBounds objects also accept them in a simple Array form (unless noted otherwise), so the bounds example above can be passed like this:
@@ -12212,12 +12253,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * 	[40.774, -74.125]
 	 * ]);
 	 * ```
+	 *
+	 * Caution: if the area crosses the antimeridian (often confused with the International Date Line), you must specify corners _outside_ the [-180, 180] degrees longitude range.
 	 */
 
-	L.LatLngBounds = function (southWest, northEast) { // (LatLng, LatLng) or (LatLng[])
-		if (!southWest) { return; }
+	L.LatLngBounds = function (corner1, corner2) { // (LatLng, LatLng) or (LatLng[])
+		if (!corner1) { return; }
 
-		var latlngs = northEast ? [southWest, northEast] : southWest;
+		var latlngs = corner2 ? [corner1, corner2] : corner1;
 
 		for (var i = 0, len = latlngs.length; i < len; i++) {
 			this.extend(latlngs[i]);
@@ -12419,8 +12462,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	// TODO International date line?
 
-	// @factory L.latLngBounds(southWest: LatLng, northEast: LatLng)
-	// Creates a `LatLngBounds` object by defining south-west and north-east corners of the rectangle.
+	// @factory L.latLngBounds(corner1: LatLng, corner2: LatLng)
+	// Creates a `LatLngBounds` object by defining two diagonally opposite corners of the rectangle.
 
 	// @alternative
 	// @factory L.latLngBounds(latlngs: LatLng[])
@@ -12560,13 +12603,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		// @method zoom(scale: Number): Number
-		// Inverse of `scale()`, returns the zoom level correspondingto a scale
+		// Inverse of `scale()`, returns the zoom level corresponding to a scale
 		// factor of `scale`.
 		zoom: function (scale) {
 			return Math.log(scale / 256) / Math.LN2;
 		},
 
-		// @method getProjectedBounds(zoom): Bounds
+		// @method getProjectedBounds(zoom: Number): Bounds
 		// Returns the projection's bounds scaled and transformed for the provided `zoom`.
 		getProjectedBounds: function (zoom) {
 			if (this.infinite) { return null; }
@@ -12579,7 +12622,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return L.bounds(min, max);
 		},
 
-		// @method distance(latlng1: LatLng, latlng1: LatLng): Number
+		// @method distance(latlng1: LatLng, latlng2: LatLng): Number
 		// Returns the distance between two geographical coordinates.
 
 		// @property code: String
@@ -12710,6 +12753,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @crs L.CRS.EPSG4326
 	 *
 	 * A common CRS among GIS enthusiasts. Uses simple Equirectangular projection.
+	 *
+	 * Leaflet 1.0.x complies with the [TMS coordinate scheme for EPSG:4326](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification#global-geodetic),
+	 * which is a breaking change from 0.7.x behaviour.  If you are using a `TileLayer`
+	 * with this CRS, ensure that there are two 256x256 pixel tiles covering the
+	 * whole earth at zoom level zero, and that the tile coordinate origin is (-180,+90),
+	 * or (-180,-90) for `TileLayer`s with [the `tms` option](#tilelayer-tms) set.
 	 */
 
 	L.CRS.EPSG4326 = L.extend({}, L.CRS.Earth, {
@@ -12782,6 +12831,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 			// @section Animation Options
+			// @option zoomAnimation: Boolean = true
+			// Whether the map zoom animation is enabled. By default it's enabled
+			// in all browsers that support CSS3 Transitions except Android.
+			zoomAnimation: true,
+
+			// @option zoomAnimationThreshold: Number = 4
+			// Won't animate zoom if the zoom difference exceeds this value.
+			zoomAnimationThreshold: 4,
+
 			// @option fadeAnimation: Boolean = true
 			// Whether the tile fade animation is enabled. By default it's enabled
 			// in all browsers that support CSS3 Transitions except Android.
@@ -12850,6 +12908,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			this.callInitHooks();
 
+			// don't animate on browsers without hardware-accelerated transitions or old Android/Opera
+			this._zoomAnimated = L.DomUtil.TRANSITION && L.Browser.any3d && !L.Browser.mobileOpera &&
+					this.options.zoomAnimation;
+
+			// zoom transitions run with the same duration for all layers, so if one of transitionend events
+			// happens after starting zoom animation (propagating to the map pane), we know that it ended globally
+			if (this._zoomAnimated) {
+				this._createAnimProxy();
+				L.DomEvent.on(this._proxy, L.DomUtil.TRANSITION_END, this._catchTransitionEnd, this);
+			}
+
 			this._addLayers(this.options.layers);
 		},
 
@@ -12859,10 +12928,36 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @method setView(center: LatLng, zoom: Number, options?: Zoom/pan options): this
 		// Sets the view of the map (geographical center and zoom) with the given
 		// animation options.
-		setView: function (center, zoom) {
-			// replaced by animation-powered implementation in Map.PanAnimation.js
-			zoom = zoom === undefined ? this.getZoom() : zoom;
-			this._resetView(L.latLng(center), zoom);
+		setView: function (center, zoom, options) {
+
+			zoom = zoom === undefined ? this._zoom : this._limitZoom(zoom);
+			center = this._limitCenter(L.latLng(center), zoom, this.options.maxBounds);
+			options = options || {};
+
+			this._stop();
+
+			if (this._loaded && !options.reset && options !== true) {
+
+				if (options.animate !== undefined) {
+					options.zoom = L.extend({animate: options.animate}, options.zoom);
+					options.pan = L.extend({animate: options.animate, duration: options.duration}, options.pan);
+				}
+
+				// try animating pan or zoom
+				var moved = (this._zoom !== zoom) ?
+					this._tryAnimatedZoom && this._tryAnimatedZoom(center, zoom, options.zoom) :
+					this._tryAnimatedPan(center, options.pan);
+
+				if (moved) {
+					// prevent resize handler call, the view will refresh after animation anyway
+					clearTimeout(this._sizeTimer);
+					return this;
+				}
+			}
+
+			// animation didn't start, just reset the map view
+			this._resetView(center, zoom);
+
 			return this;
 		},
 
@@ -12961,14 +13056,135 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		// @method panBy(offset: Point): this
 		// Pans the map by a given number of pixels (animated).
-		panBy: function (offset) { // (Point)
-			// replaced with animated panBy in Map.PanAnimation.js
-			this.fire('movestart');
+		panBy: function (offset, options) {
+			offset = L.point(offset).round();
+			options = options || {};
 
-			this._rawPanBy(L.point(offset));
+			if (!offset.x && !offset.y) {
+				return this.fire('moveend');
+			}
+			// If we pan too far, Chrome gets issues with tiles
+			// and makes them disappear or appear in the wrong place (slightly offset) #2602
+			if (options.animate !== true && !this.getSize().contains(offset)) {
+				this._resetView(this.unproject(this.project(this.getCenter()).add(offset)), this.getZoom());
+				return this;
+			}
 
-			this.fire('move');
-			return this.fire('moveend');
+			if (!this._panAnim) {
+				this._panAnim = new L.PosAnimation();
+
+				this._panAnim.on({
+					'step': this._onPanTransitionStep,
+					'end': this._onPanTransitionEnd
+				}, this);
+			}
+
+			// don't fire movestart if animating inertia
+			if (!options.noMoveStart) {
+				this.fire('movestart');
+			}
+
+			// animate pan unless animate: false specified
+			if (options.animate !== false) {
+				L.DomUtil.addClass(this._mapPane, 'leaflet-pan-anim');
+
+				var newPos = this._getMapPanePos().subtract(offset).round();
+				this._panAnim.run(this._mapPane, newPos, options.duration || 0.25, options.easeLinearity);
+			} else {
+				this._rawPanBy(offset);
+				this.fire('move').fire('moveend');
+			}
+
+			return this;
+		},
+
+		// @method flyTo(latlng: LatLng, zoom?: Number, options?: Zoom/pan options): this
+		// Sets the view of the map (geographical center and zoom) performing a smooth
+		// pan-zoom animation.
+		flyTo: function (targetCenter, targetZoom, options) {
+
+			options = options || {};
+			if (options.animate === false || !L.Browser.any3d) {
+				return this.setView(targetCenter, targetZoom, options);
+			}
+
+			this._stop();
+
+			var from = this.project(this.getCenter()),
+			    to = this.project(targetCenter),
+			    size = this.getSize(),
+			    startZoom = this._zoom;
+
+			targetCenter = L.latLng(targetCenter);
+			targetZoom = targetZoom === undefined ? startZoom : targetZoom;
+
+			var w0 = Math.max(size.x, size.y),
+			    w1 = w0 * this.getZoomScale(startZoom, targetZoom),
+			    u1 = (to.distanceTo(from)) || 1,
+			    rho = 1.42,
+			    rho2 = rho * rho;
+
+			function r(i) {
+				var s1 = i ? -1 : 1,
+				    s2 = i ? w1 : w0,
+				    t1 = w1 * w1 - w0 * w0 + s1 * rho2 * rho2 * u1 * u1,
+				    b1 = 2 * s2 * rho2 * u1,
+				    b = t1 / b1,
+				    sq = Math.sqrt(b * b + 1) - b;
+
+				    // workaround for floating point precision bug when sq = 0, log = -Infinite,
+				    // thus triggering an infinite loop in flyTo
+				    var log = sq < 0.000000001 ? -18 : Math.log(sq);
+
+				return log;
+			}
+
+			function sinh(n) { return (Math.exp(n) - Math.exp(-n)) / 2; }
+			function cosh(n) { return (Math.exp(n) + Math.exp(-n)) / 2; }
+			function tanh(n) { return sinh(n) / cosh(n); }
+
+			var r0 = r(0);
+
+			function w(s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); }
+			function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
+
+			function easeOut(t) { return 1 - Math.pow(1 - t, 1.5); }
+
+			var start = Date.now(),
+			    S = (r(1) - r0) / rho,
+			    duration = options.duration ? 1000 * options.duration : 1000 * S * 0.8;
+
+			function frame() {
+				var t = (Date.now() - start) / duration,
+				    s = easeOut(t) * S;
+
+				if (t <= 1) {
+					this._flyToFrame = L.Util.requestAnimFrame(frame, this);
+
+					this._move(
+						this.unproject(from.add(to.subtract(from).multiplyBy(u(s) / u1)), startZoom),
+						this.getScaleZoom(w0 / w(s), startZoom),
+						{flyTo: true});
+
+				} else {
+					this
+						._move(targetCenter, targetZoom)
+						._moveEnd(true);
+				}
+			}
+
+			this._moveStart(true);
+
+			frame.call(this);
+			return this;
+		},
+
+		// @method flyToBounds(bounds: LatLngBounds, options?: fitBounds options): this
+		// Sets the view of the map with a smooth animation like [`flyTo`](#map-flyto),
+		// but takes a bounds parameter like [`fitBounds`](#map-fitbounds).
+		flyToBounds: function (bounds, options) {
+			var target = this._getBoundsCenterZoom(bounds, options);
+			return this.flyTo(target.center, target.zoom, options);
 		},
 
 		// @method setMaxBounds(bounds: Bounds): this
@@ -13101,6 +13317,108 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this._stop();
 		},
 
+		// @section Geolocation methods
+		// @method locate(options?: Locate options): this
+		// Tries to locate the user using the Geolocation API, firing a [`locationfound`](#map-locationfound)
+		// event with location data on success or a [`locationerror`](#map-locationerror) event on failure,
+		// and optionally sets the map view to the user's location with respect to
+		// detection accuracy (or to the world view if geolocation failed).
+		// Note that, if your page doesn't use HTTPS, this method will fail in
+		// modern browsers ([Chrome 50 and newer](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins))
+		// See `Locate options` for more details.
+		locate: function (options) {
+
+			options = this._locateOptions = L.extend({
+				timeout: 10000,
+				watch: false
+				// setView: false
+				// maxZoom: <Number>
+				// maximumAge: 0
+				// enableHighAccuracy: false
+			}, options);
+
+			if (!('geolocation' in navigator)) {
+				this._handleGeolocationError({
+					code: 0,
+					message: 'Geolocation not supported.'
+				});
+				return this;
+			}
+
+			var onResponse = L.bind(this._handleGeolocationResponse, this),
+			    onError = L.bind(this._handleGeolocationError, this);
+
+			if (options.watch) {
+				this._locationWatchId =
+				        navigator.geolocation.watchPosition(onResponse, onError, options);
+			} else {
+				navigator.geolocation.getCurrentPosition(onResponse, onError, options);
+			}
+			return this;
+		},
+
+		// @method stopLocate(): this
+		// Stops watching location previously initiated by `map.locate({watch: true})`
+		// and aborts resetting the map view if map.locate was called with
+		// `{setView: true}`.
+		stopLocate: function () {
+			if (navigator.geolocation && navigator.geolocation.clearWatch) {
+				navigator.geolocation.clearWatch(this._locationWatchId);
+			}
+			if (this._locateOptions) {
+				this._locateOptions.setView = false;
+			}
+			return this;
+		},
+
+		_handleGeolocationError: function (error) {
+			var c = error.code,
+			    message = error.message ||
+			            (c === 1 ? 'permission denied' :
+			            (c === 2 ? 'position unavailable' : 'timeout'));
+
+			if (this._locateOptions.setView && !this._loaded) {
+				this.fitWorld();
+			}
+
+			// @section Location events
+			// @event locationerror: ErrorEvent
+			// Fired when geolocation (using the [`locate`](#map-locate) method) failed.
+			this.fire('locationerror', {
+				code: c,
+				message: 'Geolocation error: ' + message + '.'
+			});
+		},
+
+		_handleGeolocationResponse: function (pos) {
+			var lat = pos.coords.latitude,
+			    lng = pos.coords.longitude,
+			    latlng = new L.LatLng(lat, lng),
+			    bounds = latlng.toBounds(pos.coords.accuracy),
+			    options = this._locateOptions;
+
+			if (options.setView) {
+				var zoom = this.getBoundsZoom(bounds);
+				this.setView(latlng, options.maxZoom ? Math.min(zoom, options.maxZoom) : zoom);
+			}
+
+			var data = {
+				latlng: latlng,
+				bounds: bounds,
+				timestamp: pos.timestamp
+			};
+
+			for (var i in pos.coords) {
+				if (typeof pos.coords[i] === 'number') {
+					data[i] = pos.coords[i];
+				}
+			}
+
+			// @event locationfound: LocationEvent
+			// Fired when geolocation (using the [`locate`](#map-locate) method)
+			// went successfully.
+			this.fire('locationfound', data);
+		},
 
 		// TODO handler.addTo
 		// TODO Appropiate docs section?
@@ -13127,11 +13445,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			this._initEvents(true);
 
+			if (this._containerId !== this._container._leaflet_id) {
+				throw new Error('Map container is being reused by another instance');
+			}
+
 			try {
 				// throws error in IE6-8
-				delete this._container._leaflet;
+				delete this._container._leaflet_id;
+				delete this._containerId;
 			} catch (e) {
-				this._container._leaflet = undefined;
+				/*eslint-disable */
+				this._container._leaflet_id = undefined;
+				/*eslint-enable */
+				this._containerId = undefined;
 			}
 
 			L.DomUtil.remove(this._mapPane);
@@ -13323,7 +13649,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		getScaleZoom: function (scale, fromZoom) {
 			var crs = this.options.crs;
 			fromZoom = fromZoom === undefined ? this._zoom : fromZoom;
-			return crs.zoom(scale * crs.scale(fromZoom));
+			var zoom = crs.zoom(scale * crs.scale(fromZoom));
+			return isNaN(zoom) ? Infinity : zoom;
 		},
 
 		// @method project(latlng: LatLng, zoom: Number): Point
@@ -13434,12 +13761,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			if (!container) {
 				throw new Error('Map container not found.');
-			} else if (container._leaflet) {
+			} else if (container._leaflet_id) {
 				throw new Error('Map container is already initialized.');
 			}
 
 			L.DomEvent.addListener(container, 'scroll', this._onScroll, this);
-			container._leaflet = true;
+			this._containerId = L.Util.stamp(container);
 		},
 
 		_initLayout: function () {
@@ -13565,14 +13892,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._pixelOrigin = this._getNewPixelOrigin(center);
 
 			// @event zoom: Event
-			// Fired repeteadly during any change in zoom level, including zoom
+			// Fired repeatedly during any change in zoom level, including zoom
 			// and fly animations.
 			if (zoomChanged || (data && data.pinch)) {	// Always fire 'zoom' if pinching because #3530
 				this.fire('zoom', data);
 			}
 
 			// @event move: Event
-			// Fired repeteadly during any movement of the map, including pan and
+			// Fired repeatedly during any movement of the map, including pan and
 			// fly animations.
 			return this.fire('move', data);
 		},
@@ -13648,7 +13975,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// default browser context menu from showing if there are listeners on
 			// this event. Also fired on mobile when the user holds a single touch
 			// for a second (also called long press).
-			// @event keypress: Event
+			// @event keypress: KeyboardEvent
 			// Fired when the user presses a key from the keyboard while the map is focused.
 			L.DomEvent[onOff](this._container, 'click dblclick mousedown mouseup ' +
 				'mouseover mouseout mousemove contextmenu keypress', this._handleDOMEvent, this);
@@ -13822,6 +14149,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this.project(latlng, zoom)._subtract(topLeft);
 		},
 
+		_latLngBoundsToNewLayerBounds: function (latLngBounds, zoom, center) {
+			var topLeft = this._getNewPixelOrigin(center, zoom);
+			return L.bounds([
+				this.project(latLngBounds.getSouthWest(), zoom)._subtract(topLeft),
+				this.project(latLngBounds.getNorthWest(), zoom)._subtract(topLeft),
+				this.project(latLngBounds.getSouthEast(), zoom)._subtract(topLeft),
+				this.project(latLngBounds.getNorthEast(), zoom)._subtract(topLeft)
+			]);
+		},
+
 		// layer point of the current center
 		_getCenterLayerPoint: function () {
 			return this.containerPointToLayerPoint(this.getSize()._divideBy(2));
@@ -13891,6 +14228,125 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				zoom = Math.round(zoom / snap) * snap;
 			}
 			return Math.max(min, Math.min(max, zoom));
+		},
+
+		_onPanTransitionStep: function () {
+			this.fire('move');
+		},
+
+		_onPanTransitionEnd: function () {
+			L.DomUtil.removeClass(this._mapPane, 'leaflet-pan-anim');
+			this.fire('moveend');
+		},
+
+		_tryAnimatedPan: function (center, options) {
+			// difference between the new and current centers in pixels
+			var offset = this._getCenterOffset(center)._floor();
+
+			// don't animate too far unless animate: true specified in options
+			if ((options && options.animate) !== true && !this.getSize().contains(offset)) { return false; }
+
+			this.panBy(offset, options);
+
+			return true;
+		},
+
+		_createAnimProxy: function () {
+
+			var proxy = this._proxy = L.DomUtil.create('div', 'leaflet-proxy leaflet-zoom-animated');
+			this._panes.mapPane.appendChild(proxy);
+
+			this.on('zoomanim', function (e) {
+				var prop = L.DomUtil.TRANSFORM,
+				    transform = proxy.style[prop];
+
+				L.DomUtil.setTransform(proxy, this.project(e.center, e.zoom), this.getZoomScale(e.zoom, 1));
+
+				// workaround for case when transform is the same and so transitionend event is not fired
+				if (transform === proxy.style[prop] && this._animatingZoom) {
+					this._onZoomTransitionEnd();
+				}
+			}, this);
+
+			this.on('load moveend', function () {
+				var c = this.getCenter(),
+				    z = this.getZoom();
+				L.DomUtil.setTransform(proxy, this.project(c, z), this.getZoomScale(z, 1));
+			}, this);
+		},
+
+		_catchTransitionEnd: function (e) {
+			if (this._animatingZoom && e.propertyName.indexOf('transform') >= 0) {
+				this._onZoomTransitionEnd();
+			}
+		},
+
+		_nothingToAnimate: function () {
+			return !this._container.getElementsByClassName('leaflet-zoom-animated').length;
+		},
+
+		_tryAnimatedZoom: function (center, zoom, options) {
+
+			if (this._animatingZoom) { return true; }
+
+			options = options || {};
+
+			// don't animate if disabled, not supported or zoom difference is too large
+			if (!this._zoomAnimated || options.animate === false || this._nothingToAnimate() ||
+			        Math.abs(zoom - this._zoom) > this.options.zoomAnimationThreshold) { return false; }
+
+			// offset is the pixel coords of the zoom origin relative to the current center
+			var scale = this.getZoomScale(zoom),
+			    offset = this._getCenterOffset(center)._divideBy(1 - 1 / scale);
+
+			// don't animate if the zoom origin isn't within one screen from the current center, unless forced
+			if (options.animate !== true && !this.getSize().contains(offset)) { return false; }
+
+			L.Util.requestAnimFrame(function () {
+				this
+				    ._moveStart(true)
+				    ._animateZoom(center, zoom, true);
+			}, this);
+
+			return true;
+		},
+
+		_animateZoom: function (center, zoom, startAnim, noUpdate) {
+			if (startAnim) {
+				this._animatingZoom = true;
+
+				// remember what center/zoom to set after animation
+				this._animateToCenter = center;
+				this._animateToZoom = zoom;
+
+				L.DomUtil.addClass(this._mapPane, 'leaflet-zoom-anim');
+			}
+
+			// @event zoomanim: ZoomAnimEvent
+			// Fired on every frame of a zoom animation
+			this.fire('zoomanim', {
+				center: center,
+				zoom: zoom,
+				noUpdate: noUpdate
+			});
+
+			// Work around webkit not firing 'transitionend', see https://github.com/Leaflet/Leaflet/issues/3689, 2693
+			setTimeout(L.bind(this._onZoomTransitionEnd, this), 250);
+		},
+
+		_onZoomTransitionEnd: function () {
+			if (!this._animatingZoom) { return; }
+
+			L.DomUtil.removeClass(this._mapPane, 'leaflet-zoom-anim');
+
+			this._animatingZoom = false;
+
+			this._move(this._animateToCenter, this._animateToZoom);
+
+			// This anim frame should prevent an obscure iOS webkit tile loading race condition.
+			L.Util.requestAnimFrame(function () {
+				this._moveEnd(true);
+			}, this);
 		}
 	});
 
@@ -13943,7 +14399,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// @option pane: String = 'overlayPane'
 			// By default the layer will be added to the map's [overlay pane](#map-overlaypane). Overriding this option will cause the layer to be placed on another pane by default.
 			pane: 'overlayPane',
-			nonBubblingEvents: []  // Array of events that should not be bubbled to DOM parents (like the map)
+			nonBubblingEvents: [],  // Array of events that should not be bubbled to DOM parents (like the map),
+
+			// @option attribution: String = null
+			// String to be shown in the attribution control, describes the layer data, e.g. "© Mapbox".
+			attribution: null,
 		},
 
 		/* @section
@@ -13986,6 +14446,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		removeInteractiveTarget: function (targetEl) {
 			delete this._map._targets[L.stamp(targetEl)];
 			return this;
+		},
+
+		// @method getAttribution: String
+		// Used by the `attribution control`, returns the [attribution option](#gridlayer-attribution).
+		getAttribution: function () {
+			return this.options.attribution;
 		},
 
 		_layerAdd: function (e) {
@@ -14162,6 +14628,422 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			if (oldZoomSpan !== this._getZoomSpan()) {
 				this.fire('zoomlevelschange');
 			}
+
+			if (this.options.maxZoom === undefined && this._layersMaxZoom && this.getZoom() > this._layersMaxZoom) {
+				this.setZoom(this._layersMaxZoom);
+			}
+			if (this.options.minZoom === undefined && this._layersMinZoom && this.getZoom() < this._layersMinZoom) {
+				this.setZoom(this._layersMinZoom);
+			}
+		}
+	});
+
+
+
+	/*
+	 * @namespace DomEvent
+	 * Utility functions to work with the [DOM events](https://developer.mozilla.org/docs/Web/API/Event), used by Leaflet internally.
+	 */
+
+	// Inspired by John Resig, Dean Edwards and YUI addEvent implementations.
+
+
+
+	var eventsKey = '_leaflet_events';
+
+	L.DomEvent = {
+
+		// @function on(el: HTMLElement, types: String, fn: Function, context?: Object): this
+		// Adds a listener function (`fn`) to a particular DOM event type of the
+		// element `el`. You can optionally specify the context of the listener
+		// (object the `this` keyword will point to). You can also pass several
+		// space-separated types (e.g. `'click dblclick'`).
+
+		// @alternative
+		// @function on(el: HTMLElement, eventMap: Object, context?: Object): this
+		// Adds a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
+		on: function (obj, types, fn, context) {
+
+			if (typeof types === 'object') {
+				for (var type in types) {
+					this._on(obj, type, types[type], fn);
+				}
+			} else {
+				types = L.Util.splitWords(types);
+
+				for (var i = 0, len = types.length; i < len; i++) {
+					this._on(obj, types[i], fn, context);
+				}
+			}
+
+			return this;
+		},
+
+		// @function off(el: HTMLElement, types: String, fn: Function, context?: Object): this
+		// Removes a previously added listener function. If no function is specified,
+		// it will remove all the listeners of that particular DOM event from the element.
+		// Note that if you passed a custom context to on, you must pass the same
+		// context to `off` in order to remove the listener.
+
+		// @alternative
+		// @function off(el: HTMLElement, eventMap: Object, context?: Object): this
+		// Removes a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
+		off: function (obj, types, fn, context) {
+
+			if (typeof types === 'object') {
+				for (var type in types) {
+					this._off(obj, type, types[type], fn);
+				}
+			} else {
+				types = L.Util.splitWords(types);
+
+				for (var i = 0, len = types.length; i < len; i++) {
+					this._off(obj, types[i], fn, context);
+				}
+			}
+
+			return this;
+		},
+
+		_on: function (obj, type, fn, context) {
+			var id = type + L.stamp(fn) + (context ? '_' + L.stamp(context) : '');
+
+			if (obj[eventsKey] && obj[eventsKey][id]) { return this; }
+
+			var handler = function (e) {
+				return fn.call(context || obj, e || window.event);
+			};
+
+			var originalHandler = handler;
+
+			if (L.Browser.pointer && type.indexOf('touch') === 0) {
+				this.addPointerListener(obj, type, handler, id);
+
+			} else if (L.Browser.touch && (type === 'dblclick') && this.addDoubleTapListener) {
+				this.addDoubleTapListener(obj, handler, id);
+
+			} else if ('addEventListener' in obj) {
+
+				if (type === 'mousewheel') {
+					obj.addEventListener('onwheel' in obj ? 'wheel' : 'mousewheel', handler, false);
+
+				} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
+					handler = function (e) {
+						e = e || window.event;
+						if (L.DomEvent._isExternalTarget(obj, e)) {
+							originalHandler(e);
+						}
+					};
+					obj.addEventListener(type === 'mouseenter' ? 'mouseover' : 'mouseout', handler, false);
+
+				} else {
+					if (type === 'click' && L.Browser.android) {
+						handler = function (e) {
+							return L.DomEvent._filterClick(e, originalHandler);
+						};
+					}
+					obj.addEventListener(type, handler, false);
+				}
+
+			} else if ('attachEvent' in obj) {
+				obj.attachEvent('on' + type, handler);
+			}
+
+			obj[eventsKey] = obj[eventsKey] || {};
+			obj[eventsKey][id] = handler;
+
+			return this;
+		},
+
+		_off: function (obj, type, fn, context) {
+
+			var id = type + L.stamp(fn) + (context ? '_' + L.stamp(context) : ''),
+			    handler = obj[eventsKey] && obj[eventsKey][id];
+
+			if (!handler) { return this; }
+
+			if (L.Browser.pointer && type.indexOf('touch') === 0) {
+				this.removePointerListener(obj, type, id);
+
+			} else if (L.Browser.touch && (type === 'dblclick') && this.removeDoubleTapListener) {
+				this.removeDoubleTapListener(obj, id);
+
+			} else if ('removeEventListener' in obj) {
+
+				if (type === 'mousewheel') {
+					obj.removeEventListener('onwheel' in obj ? 'wheel' : 'mousewheel', handler, false);
+
+				} else {
+					obj.removeEventListener(
+						type === 'mouseenter' ? 'mouseover' :
+						type === 'mouseleave' ? 'mouseout' : type, handler, false);
+				}
+
+			} else if ('detachEvent' in obj) {
+				obj.detachEvent('on' + type, handler);
+			}
+
+			obj[eventsKey][id] = null;
+
+			return this;
+		},
+
+		// @function stopPropagation(ev: DOMEvent): this
+		// Stop the given event from propagation to parent elements. Used inside the listener functions:
+		// ```js
+		// L.DomEvent.on(div, 'click', function (ev) {
+		// 	L.DomEvent.stopPropagation(ev);
+		// });
+		// ```
+		stopPropagation: function (e) {
+
+			if (e.stopPropagation) {
+				e.stopPropagation();
+			} else if (e.originalEvent) {  // In case of Leaflet event.
+				e.originalEvent._stopped = true;
+			} else {
+				e.cancelBubble = true;
+			}
+			L.DomEvent._skipped(e);
+
+			return this;
+		},
+
+		// @function disableScrollPropagation(el: HTMLElement): this
+		// Adds `stopPropagation` to the element's `'mousewheel'` events (plus browser variants).
+		disableScrollPropagation: function (el) {
+			return L.DomEvent.on(el, 'mousewheel', L.DomEvent.stopPropagation);
+		},
+
+		// @function disableClickPropagation(el: HTMLElement): this
+		// Adds `stopPropagation` to the element's `'click'`, `'doubleclick'`,
+		// `'mousedown'` and `'touchstart'` events (plus browser variants).
+		disableClickPropagation: function (el) {
+			var stop = L.DomEvent.stopPropagation;
+
+			L.DomEvent.on(el, L.Draggable.START.join(' '), stop);
+
+			return L.DomEvent.on(el, {
+				click: L.DomEvent._fakeStop,
+				dblclick: stop
+			});
+		},
+
+		// @function preventDefault(ev: DOMEvent): this
+		// Prevents the default action of the DOM Event `ev` from happening (such as
+		// following a link in the href of the a element, or doing a POST request
+		// with page reload when a `<form>` is submitted).
+		// Use it inside listener functions.
+		preventDefault: function (e) {
+
+			if (e.preventDefault) {
+				e.preventDefault();
+			} else {
+				e.returnValue = false;
+			}
+			return this;
+		},
+
+		// @function stop(ev): this
+		// Does `stopPropagation` and `preventDefault` at the same time.
+		stop: function (e) {
+			return L.DomEvent
+				.preventDefault(e)
+				.stopPropagation(e);
+		},
+
+		// @function getMousePosition(ev: DOMEvent, container?: HTMLElement): Point
+		// Gets normalized mouse position from a DOM event relative to the
+		// `container` or to the whole page if not specified.
+		getMousePosition: function (e, container) {
+			if (!container) {
+				return new L.Point(e.clientX, e.clientY);
+			}
+
+			var rect = container.getBoundingClientRect();
+
+			return new L.Point(
+				e.clientX - rect.left - container.clientLeft,
+				e.clientY - rect.top - container.clientTop);
+		},
+
+		// Chrome on Win scrolls double the pixels as in other platforms (see #4538),
+		// and Firefox scrolls device pixels, not CSS pixels
+		_wheelPxFactor: (L.Browser.win && L.Browser.chrome) ? 2 :
+		                L.Browser.gecko ? window.devicePixelRatio :
+		                1,
+
+		// @function getWheelDelta(ev: DOMEvent): Number
+		// Gets normalized wheel delta from a mousewheel DOM event, in vertical
+		// pixels scrolled (negative if scrolling down).
+		// Events from pointing devices without precise scrolling are mapped to
+		// a best guess of 60 pixels.
+		getWheelDelta: function (e) {
+			return (L.Browser.edge) ? e.wheelDeltaY / 2 : // Don't trust window-geometry-based delta
+			       (e.deltaY && e.deltaMode === 0) ? -e.deltaY / L.DomEvent._wheelPxFactor : // Pixels
+			       (e.deltaY && e.deltaMode === 1) ? -e.deltaY * 20 : // Lines
+			       (e.deltaY && e.deltaMode === 2) ? -e.deltaY * 60 : // Pages
+			       (e.deltaX || e.deltaZ) ? 0 :	// Skip horizontal/depth wheel events
+			       e.wheelDelta ? (e.wheelDeltaY || e.wheelDelta) / 2 : // Legacy IE pixels
+			       (e.detail && Math.abs(e.detail) < 32765) ? -e.detail * 20 : // Legacy Moz lines
+			       e.detail ? e.detail / -32765 * 60 : // Legacy Moz pages
+			       0;
+		},
+
+		_skipEvents: {},
+
+		_fakeStop: function (e) {
+			// fakes stopPropagation by setting a special event flag, checked/reset with L.DomEvent._skipped(e)
+			L.DomEvent._skipEvents[e.type] = true;
+		},
+
+		_skipped: function (e) {
+			var skipped = this._skipEvents[e.type];
+			// reset when checking, as it's only used in map container and propagates outside of the map
+			this._skipEvents[e.type] = false;
+			return skipped;
+		},
+
+		// check if element really left/entered the event target (for mouseenter/mouseleave)
+		_isExternalTarget: function (el, e) {
+
+			var related = e.relatedTarget;
+
+			if (!related) { return true; }
+
+			try {
+				while (related && (related !== el)) {
+					related = related.parentNode;
+				}
+			} catch (err) {
+				return false;
+			}
+			return (related !== el);
+		},
+
+		// this is a horrible workaround for a bug in Android where a single touch triggers two click events
+		_filterClick: function (e, handler) {
+			var timeStamp = (e.timeStamp || (e.originalEvent && e.originalEvent.timeStamp)),
+			    elapsed = L.DomEvent._lastClick && (timeStamp - L.DomEvent._lastClick);
+
+			// are they closer together than 500ms yet more than 100ms?
+			// Android typically triggers them ~300ms apart while multiple listeners
+			// on the same event should be triggered far faster;
+			// or check if click is simulated on the element, and if it is, reject any non-simulated events
+
+			if ((elapsed && elapsed > 100 && elapsed < 500) || (e.target._simulatedClick && !e._simulated)) {
+				L.DomEvent.stop(e);
+				return;
+			}
+			L.DomEvent._lastClick = timeStamp;
+
+			handler(e);
+		}
+	};
+
+	// @function addListener(…): this
+	// Alias to [`L.DomEvent.on`](#domevent-on)
+	L.DomEvent.addListener = L.DomEvent.on;
+
+	// @function removeListener(…): this
+	// Alias to [`L.DomEvent.off`](#domevent-off)
+	L.DomEvent.removeListener = L.DomEvent.off;
+
+
+
+	/*
+	 * @class PosAnimation
+	 * @aka L.PosAnimation
+	 * @inherits Evented
+	 * Used internally for panning animations, utilizing CSS3 Transitions for modern browsers and a timer fallback for IE6-9.
+	 *
+	 * @example
+	 * ```js
+	 * var fx = new L.PosAnimation();
+	 * fx.run(el, [300, 500], 0.5);
+	 * ```
+	 *
+	 * @constructor L.PosAnimation()
+	 * Creates a `PosAnimation` object.
+	 *
+	 */
+
+	L.PosAnimation = L.Evented.extend({
+
+		// @method run(el: HTMLElement, newPos: Point, duration?: Number, easeLinearity?: Number)
+		// Run an animation of a given element to a new position, optionally setting
+		// duration in seconds (`0.25` by default) and easing linearity factor (3rd
+		// argument of the [cubic bezier curve](http://cubic-bezier.com/#0,0,.5,1),
+		// `0.5` by default).
+		run: function (el, newPos, duration, easeLinearity) {
+			this.stop();
+
+			this._el = el;
+			this._inProgress = true;
+			this._duration = duration || 0.25;
+			this._easeOutPower = 1 / Math.max(easeLinearity || 0.5, 0.2);
+
+			this._startPos = L.DomUtil.getPosition(el);
+			this._offset = newPos.subtract(this._startPos);
+			this._startTime = +new Date();
+
+			// @event start: Event
+			// Fired when the animation starts
+			this.fire('start');
+
+			this._animate();
+		},
+
+		// @method stop()
+		// Stops the animation (if currently running).
+		stop: function () {
+			if (!this._inProgress) { return; }
+
+			this._step(true);
+			this._complete();
+		},
+
+		_animate: function () {
+			// animation loop
+			this._animId = L.Util.requestAnimFrame(this._animate, this);
+			this._step();
+		},
+
+		_step: function (round) {
+			var elapsed = (+new Date()) - this._startTime,
+			    duration = this._duration * 1000;
+
+			if (elapsed < duration) {
+				this._runFrame(this._easeOut(elapsed / duration), round);
+			} else {
+				this._runFrame(1);
+				this._complete();
+			}
+		},
+
+		_runFrame: function (progress, round) {
+			var pos = this._startPos.add(this._offset.multiplyBy(progress));
+			if (round) {
+				pos._round();
+			}
+			L.DomUtil.setPosition(this._el, pos);
+
+			// @event step: Event
+			// Fired continuously during the animation.
+			this.fire('step');
+		},
+
+		_complete: function () {
+			L.Util.cancelAnimFrame(this._animId);
+
+			this._inProgress = false;
+			// @event end: Event
+			// Fired when the animation ends.
+			this.fire('end');
+		},
+
+		_easeOut: function (t) {
+			return 1 - Math.pow(1 - t, this._easeOutPower);
 		}
 	});
 
@@ -14325,10 +15207,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Tiles will not update more than once every `updateInterval` milliseconds when panning.
 			updateInterval: 200,
 
-			// @option attribution: String = null
-			// String to be shown in the attribution control, describes the layer data, e.g. "© Mapbox".
-			attribution: null,
-
 			// @option zIndex: Number = 1
 			// The explicit zIndex of the tile layer.
 			zIndex: 1,
@@ -14365,7 +15243,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		initialize: function (options) {
-			options = L.setOptions(this, options);
+			L.setOptions(this, options);
 		},
 
 		onAdd: function () {
@@ -14410,13 +15288,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @method getAttribution: String
-		// Used by the `attribution control`, returns the [attribution option](#gridlayer-attribution).
-		getAttribution: function () {
-			return this.options.attribution;
-		},
-
-		// @method getContainer: String
+		// @method getContainer: HTMLElement
 		// Returns the HTML element that contains the tiles for this layer.
 		getContainer: function () {
 			return this._container;
@@ -14875,7 +15747,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			});
 
 			if (queue.length !== 0) {
-				// if its the first batch of tiles to load
+				// if it's the first batch of tiles to load
 				if (!this._loading) {
 					this._loading = true;
 					// @event loading: Event
@@ -14924,8 +15796,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			    nwPoint = coords.scaleBy(tileSize),
 			    sePoint = nwPoint.add(tileSize),
 
-			    nw = map.wrapLatLng(map.unproject(nwPoint, coords.z)),
-			    se = map.wrapLatLng(map.unproject(sePoint, coords.z));
+			    nw = map.unproject(nwPoint, coords.z),
+			    se = map.unproject(sePoint, coords.z);
+
+			if (!this.options.noWrap) {
+				nw = map.wrapLatLng(nw);
+				se = map.wrapLatLng(se);
+			}
 
 			return new L.LatLngBounds(nw, se);
 		},
@@ -15042,14 +15919,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				this._pruneTiles();
 			}
 
-			L.DomUtil.addClass(tile.el, 'leaflet-tile-loaded');
+			if (!err) {
+				L.DomUtil.addClass(tile.el, 'leaflet-tile-loaded');
 
-			// @event tileload: TileEvent
-			// Fired when a tile loads.
-			this.fire('tileload', {
-				tile: tile.el,
-				coords: coords
-			});
+				// @event tileload: TileEvent
+				// Fired when a tile loads.
+				this.fire('tileload', {
+					tile: tile.el,
+					coords: coords
+				});
+			}
 
 			if (this._noTilesToLoad()) {
 				this._loading = false;
@@ -15152,6 +16031,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// from `maxNativeZoom` level and auto-scaled.
 			maxNativeZoom: null,
 
+			// @option minNativeZoom: Number = null
+			// Minimum zoom number the tile source has available. If it is specified,
+			// the tiles on all zoom levels lower than `minNativeZoom` will be loaded
+			// from `minNativeZoom` level and auto-scaled.
+			minNativeZoom: null,
+
 			// @option subdomains: String|String[] = 'abc'
 			// Subdomains of the tile service. Can be passed in the form of one string (where each letter is a subdomain name) or an array of strings.
 			subdomains: 'abc',
@@ -15244,6 +16129,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			*/
 			tile.alt = '';
 
+			/*
+			 Set role="presentation" to force screen readers to ignore this
+			 https://www.w3.org/TR/wai-aria/roles#textalternativecomputation
+			*/
+			tile.setAttribute('role', 'presentation');
+
 			tile.src = this.getTileUrl(coords);
 
 			return tile;
@@ -15293,14 +16184,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		getTileSize: function () {
 			var map = this._map,
-			    tileSize = L.GridLayer.prototype.getTileSize.call(this),
-			    zoom = this._tileZoom + this.options.zoomOffset,
-			    zoomN = this.options.maxNativeZoom;
+			tileSize = L.GridLayer.prototype.getTileSize.call(this),
+			zoom = this._tileZoom + this.options.zoomOffset,
+			minNativeZoom = this.options.minNativeZoom,
+			maxNativeZoom = this.options.maxNativeZoom;
 
-			// increase tile size when overscaling
-			return zoomN !== null && zoom > zoomN ?
-					tileSize.divideBy(map.getZoomScale(zoomN, zoom)).round() :
-					tileSize;
+			// decrease tile size when scaling below minNativeZoom
+			if (minNativeZoom !== null && zoom < minNativeZoom) {
+				return tileSize.divideBy(map.getZoomScale(minNativeZoom, zoom)).round();
+			}
+
+			// increase tile size when scaling above maxNativeZoom
+			if (maxNativeZoom !== null && zoom > maxNativeZoom) {
+				return tileSize.divideBy(map.getZoomScale(maxNativeZoom, zoom)).round();
+			}
+
+			return tileSize;
 		},
 
 		_onTileRemove: function (e) {
@@ -15308,17 +16207,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_getZoomForUrl: function () {
+			var zoom = this._tileZoom,
+			maxZoom = this.options.maxZoom,
+			zoomReverse = this.options.zoomReverse,
+			zoomOffset = this.options.zoomOffset,
+			minNativeZoom = this.options.minNativeZoom,
+			maxNativeZoom = this.options.maxNativeZoom;
 
-			var options = this.options,
-			    zoom = this._tileZoom;
-
-			if (options.zoomReverse) {
-				zoom = options.maxZoom - zoom;
+			if (zoomReverse) {
+				zoom = maxZoom - zoom;
 			}
 
-			zoom += options.zoomOffset;
+			zoom += zoomOffset;
 
-			return options.maxNativeZoom !== null ? Math.min(zoom, options.maxNativeZoom) : zoom;
+			if (minNativeZoom !== null && zoom < minNativeZoom) {
+				return minNativeZoom;
+			}
+
+			if (maxNativeZoom !== null && zoom > maxNativeZoom) {
+				return maxNativeZoom;
+			}
+
+			return zoom;
 		},
 
 		_getSubdomain: function (tilePoint) {
@@ -15520,10 +16430,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// If `true`, the image overlay will emit [mouse events](#interactive-layer) when clicked or hovered.
 			interactive: false,
 
-			// @option attribution: String = null
-			// An optional string containing HTML to be shown on the `Attribution control`
-			attribution: null,
-
 			// @option crossOrigin: Boolean = false
 			// If true, the image will have its crossOrigin attribute set to ''. This is needed if you want to access image pixel data.
 			crossOrigin: false
@@ -15561,7 +16467,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 		},
 
-		// @method setOpacity(): this
+		// @method setOpacity(opacity: Number): this
 		// Sets the opacity of the overlay.
 		setOpacity: function (opacity) {
 			this.options.opacity = opacity;
@@ -15617,10 +16523,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		getAttribution: function () {
-			return this.options.attribution;
-		},
-
 		getEvents: function () {
 			var events = {
 				zoom: this._reset,
@@ -15661,7 +16563,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		_animateZoom: function (e) {
 			var scale = this._map.getZoomScale(e.zoom),
-			    offset = this._map._latLngToNewLayerPoint(this._bounds.getNorthWest(), e.zoom, e.center);
+			    offset = this._map._latLngBoundsToNewLayerBounds(this._bounds, e.zoom, e.center).min;
 
 			L.DomUtil.setTransform(this._image, offset, scale);
 		},
@@ -15840,12 +16742,27 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	/*
-	 * L.Icon.Default is the blue marker icon used by default in Leaflet.
+	 * @miniclass Icon.Default (Icon)
+	 * @aka L.Icon.Default
+	 * @section
+	 *
+	 * A trivial subclass of `Icon`, represents the icon to use in `Marker`s when
+	 * no icon is specified. Points to the blue marker image distributed with Leaflet
+	 * releases.
+	 *
+	 * In order to customize the default icon, just change the properties of `L.Icon.Default.prototype.options`
+	 * (which is a set of `Icon options`).
+	 *
+	 * If you want to _completely_ replace the default icon, override the
+	 * `L.Marker.prototype.options.icon` with your own icon instead.
 	 */
 
 	L.Icon.Default = L.Icon.extend({
 
 		options: {
+			iconUrl:       'marker-icon.png',
+			iconRetinaUrl: 'marker-icon-2x.png',
+			shadowUrl:     'marker-shadow.png',
 			iconSize:    [25, 41],
 			iconAnchor:  [12, 41],
 			popupAnchor: [1, -34],
@@ -15854,37 +16771,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_getIconUrl: function (name) {
-			var key = name + 'Url';
-
-			if (this.options[key]) {
-				return this.options[key];
+			if (!L.Icon.Default.imagePath) {	// Deprecated, backwards-compatibility only
+				L.Icon.Default.imagePath = this._detectIconPath();
 			}
 
-			var path = L.Icon.Default.imagePath;
+			// @option imagePath: String
+			// `L.Icon.Default` will try to auto-detect the absolute location of the
+			// blue icon images. If you are placing these images in a non-standard
+			// way, set this option to point to the right absolute path.
+			return (this.options.imagePath || L.Icon.Default.imagePath) + L.Icon.prototype._getIconUrl.call(this, name);
+		},
 
-			if (!path) {
-				throw new Error('Couldn\'t autodetect L.Icon.Default.imagePath, set it manually.');
-			}
+		_detectIconPath: function () {
+			var el = L.DomUtil.create('div',  'leaflet-default-icon-path', document.body);
+			var path = L.DomUtil.getStyle(el, 'background-image') ||
+			           L.DomUtil.getStyle(el, 'backgroundImage');	// IE8
 
-			return path + '/marker-' + name + (L.Browser.retina && name === 'icon' ? '-2x' : '') + '.png';
+			document.body.removeChild(el);
+
+			return path.indexOf('url') === 0 ?
+				path.replace(/^url\([\"\']?/, '').replace(/marker-icon\.png[\"\']?\)$/, '') : '';
 		}
 	});
-
-	L.Icon.Default.imagePath = (function () {
-		var scripts = document.getElementsByTagName('script'),
-		    leafletRe = /[\/^]leaflet[\-\._]?([\w\-\._]*)\.js\??/;
-
-		var i, len, src, path;
-
-		for (i = 0, len = scripts.length; i < len; i++) {
-			src = scripts[i].src || '';
-
-			if (src.match(leafletRe)) {
-				path = src.split(leafletRe)[0];
-				return (path ? path + '/' : '') + 'images';
-			}
-		}
-	}());
 
 
 
@@ -15907,7 +16815,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @aka Marker options
 		options: {
 			// @option icon: Icon = *
-			// Icon class to use for rendering the marker. See [Icon documentation](#L.Icon) for details on how to customize the marker icon. Set to new `L.Icon.Default()` by default.
+			// Icon class to use for rendering the marker. See [Icon documentation](#L.Icon) for details on how to customize the marker icon. If not specified, a new `L.Icon.Default` is used.
 			icon: new L.Icon.Default(),
 
 			// Option inherited from "Interactive layer" abstract class
@@ -16210,6 +17118,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		_resetZIndex: function () {
 			this._updateZIndex(0);
+		},
+
+		_getPopupAnchor: function () {
+			return this.options.icon.options.popupAnchor || [0, 0];
+		},
+
+		_getTooltipAnchor: function () {
+			return this.options.icon.options.tooltipAnchor || [0, 0];
 		}
 	});
 
@@ -16309,11 +17225,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// of the popup when opening it on some overlays.
 			offset: [0, 7],
 
-			// @option zoomAnimation: Boolean = true
-			// Whether to animate the popup on zoom. Disable it if you have
-			// problems with Flash content inside popups.
-			zoomAnimation: true,
-
 			// @option className: String = ''
 			// A custom CSS class name to assign to the popup.
 			className: '',
@@ -16330,7 +17241,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		onAdd: function (map) {
-			this._zoomAnimated = this._zoomAnimated && this.options.zoomAnimation;
+			this._zoomAnimated = map._zoomAnimated;
 
 			if (!this._container) {
 				this._initLayout();
@@ -16574,7 +17485,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Set it to `false` if you want to override the default behavior of
 			// the popup closing when user clicks the map (set globally by
 			// the Map's [closePopupOnClick](#map-closepopuponclick) option).
-			autoClose: true
+			autoClose: true,
+
+			// @option className: String = ''
+			// A custom CSS class name to assign to the popup.
+			className: ''
 		},
 
 		// @namespace Popup
@@ -16653,7 +17568,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			var prefix = 'leaflet-popup',
 			    container = this._container = L.DomUtil.create('div',
 				prefix + ' ' + (this.options.className || '') +
-				' leaflet-zoom-' + (this._zoomAnimated ? 'animated' : 'hide'));
+				' leaflet-zoom-animated');
 
 			if (this.options.closeButton) {
 				var closeButton = this._closeButton = L.DomUtil.create('a', prefix + '-close-button', container);
@@ -16720,9 +17635,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			    containerWidth = this._containerWidth,
 			    layerPos = new L.Point(this._containerLeft, -containerHeight - this._containerBottom);
 
-			if (this._zoomAnimated) {
-				layerPos._add(L.DomUtil.getPosition(this._container));
-			}
+			layerPos._add(L.DomUtil.getPosition(this._container));
 
 			var containerPos = map.layerPointToContainerPoint(layerPos),
 			    padding = L.point(this.options.autoPanPadding),
@@ -16828,8 +17741,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		}
 	});
-
-
 
 	/*
 	 * @namespace Layer
@@ -17007,18 +17918,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	/*
-	 * Popup extension to L.Marker, adding popup-related methods.
-	 */
-
-	L.Marker.include({
-		_getPopupAnchor: function () {
-			return this.options.icon.options.popupAnchor || [0, 0];
-		}
-	});
-
-
-
-	/*
 	 * @class Tooltip
 	 * @inherits DivOverlay
 	 * @aka L.Tooltip
@@ -17153,17 +18052,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			    anchor = this._getAnchor();
 
 			if (direction === 'top') {
-				pos = pos.add(L.point(-tooltipWidth / 2 + offset.x, -tooltipHeight + offset.y + anchor.y));
+				pos = pos.add(L.point(-tooltipWidth / 2 + offset.x, -tooltipHeight + offset.y + anchor.y, true));
 			} else if (direction === 'bottom') {
-				pos = pos.subtract(L.point(tooltipWidth / 2 - offset.x, -offset.y));
+				pos = pos.subtract(L.point(tooltipWidth / 2 - offset.x, -offset.y, true));
 			} else if (direction === 'center') {
-				pos = pos.subtract(L.point(tooltipWidth / 2 + offset.x, tooltipHeight / 2 - anchor.y + offset.y));
+				pos = pos.subtract(L.point(tooltipWidth / 2 + offset.x, tooltipHeight / 2 - anchor.y + offset.y, true));
 			} else if (direction === 'right' || direction === 'auto' && tooltipPoint.x < centerPoint.x) {
 				direction = 'right';
-				pos = pos.add([offset.x + anchor.x, anchor.y - tooltipHeight / 2 + offset.y]);
+				pos = pos.add(L.point(offset.x + anchor.x, anchor.y - tooltipHeight / 2 + offset.y, true));
 			} else {
 				direction = 'left';
-				pos = pos.subtract(L.point(tooltipWidth + anchor.x - offset.x, tooltipHeight / 2 - anchor.y - offset.y));
+				pos = pos.subtract(L.point(tooltipWidth + anchor.x - offset.x, tooltipHeight / 2 - anchor.y - offset.y, true));
 			}
 
 			L.DomUtil.removeClass(container, 'leaflet-tooltip-right');
@@ -17194,7 +18093,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		_getAnchor: function () {
 			// Where should we anchor the tooltip on the source layer?
-			return L.point(this._source._getTooltipAnchor && !this.options.sticky ? this._source._getTooltipAnchor() : [0, 0]);
+			return L.point(this._source && this._source._getTooltipAnchor && !this.options.sticky ? this._source._getTooltipAnchor() : [0, 0]);
 		}
 
 	});
@@ -17241,8 +18140,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		}
 
 	});
-
-
 
 	/*
 	 * @namespace Layer
@@ -17367,7 +18264,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		closeTooltip: function () {
 			if (this._tooltip) {
 				this._tooltip._close();
-				if (this._tooltip.options.interactive) {
+				if (this._tooltip.options.interactive && this._tooltip._container) {
 					L.DomUtil.removeClass(this._tooltip._container, 'leaflet-clickable');
 					this.removeInteractiveTarget(this._tooltip._container);
 				}
@@ -17426,18 +18323,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				latlng = this._map.layerPointToLatLng(layerPoint);
 			}
 			this._tooltip.setLatLng(latlng);
-		}
-	});
-
-
-
-	/*
-	 * Tooltip extension to L.Marker, adding tooltip-related methods.
-	 */
-
-	L.Marker.include({
-		_getTooltipAnchor: function () {
-			return this.options.icon.options.tooltipAnchor || [0, 0];
 		}
 	});
 
@@ -17610,14 +18495,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @aka L.FeatureGroup
 	 * @inherits LayerGroup
 	 *
-	 * Extended `LayerGroup` that also has mouse events (propagated from members of the group) and a shared bindPopup method.
+	 * Extended `LayerGroup` that makes it easier to do the same thing to all its member layers:
+	 *  * [`bindPopup`](#layer-bindpopup) binds a popup to all of the layers at once (likewise with [`bindTooltip`](#layer-bindtooltip))
+	 *  * Events are propagated to the `FeatureGroup`, so if the group has an event
+	 * handler, it will handle events from any of the layers. This includes mouse events
+	 * and custom events.
+	 *  * Has `layeradd` and `layerremove` events
 	 *
 	 * @example
 	 *
 	 * ```js
 	 * L.featureGroup([marker1, marker2, polyline])
 	 * 	.bindPopup('Hello world!')
-	 * 	.on('click', function() { alert('Clicked on a group!'); })
+	 * 	.on('click', function() { alert('Clicked on a member of the group!'); })
 	 * 	.addTo(map);
 	 * ```
 	 */
@@ -17633,6 +18523,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			L.LayerGroup.prototype.addLayer.call(this, layer);
 
+			// @event layeradd: LayerEvent
+			// Fired when a layer is added to this `FeatureGroup`
 			return this.fire('layeradd', {layer: layer});
 		},
 
@@ -17648,6 +18540,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			L.LayerGroup.prototype.removeLayer.call(this, layer);
 
+			// @event layerremove: LayerEvent
+			// Fired when a layer is removed from this `FeatureGroup`
 			return this.fire('layerremove', {layer: layer});
 		},
 
@@ -17705,6 +18599,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *
 	 * Do not use this class directly, use `SVG` and `Canvas` instead.
 	 *
+	 * @event update: Event
+	 * Fired when the renderer updates its bounds, center and zoom, for example when
+	 * its map has moved
 	 */
 
 	L.Renderer = L.Layer.extend({
@@ -17721,6 +18618,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		initialize: function (options) {
 			L.setOptions(this, options);
 			L.stamp(this);
+			this._layers = this._layers || {};
 		},
 
 		onAdd: function () {
@@ -17734,17 +18632,20 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			this.getPane().appendChild(this._container);
 			this._update();
+			this.on('update', this._updatePaths, this);
 		},
 
 		onRemove: function () {
 			L.DomUtil.remove(this._container);
+			this.off('update', this._updatePaths, this);
 		},
 
 		getEvents: function () {
 			var events = {
 				viewreset: this._reset,
 				zoom: this._onZoom,
-				moveend: this._update
+				moveend: this._update,
+				zoomend: this._onZoomEnd
 			};
 			if (this._zoomAnimated) {
 				events.zoomanim = this._onAnimZoom;
@@ -17780,10 +18681,27 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_reset: function () {
 			this._update();
 			this._updateTransform(this._center, this._zoom);
+
+			for (var id in this._layers) {
+				this._layers[id]._reset();
+			}
+		},
+
+		_onZoomEnd: function () {
+			for (var id in this._layers) {
+				this._layers[id]._project();
+			}
+		},
+
+		_updatePaths: function () {
+			for (var id in this._layers) {
+				this._layers[id]._update();
+			}
 		},
 
 		_update: function () {
-			// update pixel bounds of renderer container (for positioning/sizing/clipping later)
+			// Update pixel bounds of renderer container (for positioning/sizing/clipping later)
+			// Subclasses are responsible of firing the 'update' event.
 			var p = this.options.padding,
 			    size = this._map.getSize(),
 			    min = this._map.containerPointToLayerPoint(size.multiplyBy(-p)).round();
@@ -17918,14 +18836,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		onRemove: function () {
 			this._renderer._removePath(this);
-		},
-
-		getEvents: function () {
-			return {
-				zoomend: this._project,
-				moveend: this._update,
-				viewreset: this._reset
-			};
 		},
 
 		// @method redraw(): this
@@ -18321,6 +19231,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @method getCenter(): LatLng
 		// Returns the center ([centroid](http://en.wikipedia.org/wiki/Centroid)) of the polyline.
 		getCenter: function () {
+			// throws error when not yet added to map as this center calculation requires projected coordinates
+			if (!this._map) {
+				throw new Error('Must add layer to map before using getCenter()');
+			}
+
 			var i, halfDist, segDist, dist, p1, p2, ratio,
 			    points = this._rings[0],
 			    len = points.length;
@@ -18625,6 +19540,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		getCenter: function () {
+			// throws error when not yet added to map as this center calculation requires projected coordinates
+			if (!this._map) {
+				throw new Error('Must add layer to map before using getCenter()');
+			}
+
 			var i, j, p1, p2, f, area, x, y, center,
 			    points = this._rings[0],
 			    len = points.length;
@@ -18883,7 +19803,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @example
 	 *
 	 * ```js
-	 * L.circle([50.5, 30.5], 200).addTo(map);
+	 * L.circle([50.5, 30.5], {radius: 200}).addTo(map);
 	 * ```
 	 */
 
@@ -19001,7 +19921,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *
 	 * ```js
 	 * var map = L.map('map', {
-	 * 	renderer: L.svg();
+	 * 	renderer: L.svg()
 	 * });
 	 * ```
 	 *
@@ -19059,6 +19979,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// movement: update container viewBox so that we don't have to change coordinates of individual layers
 			L.DomUtil.setPosition(container, b.min);
 			container.setAttribute('viewBox', [b.min.x, b.min.y, size.x, size.y].join(' '));
+
+			this.fire('update');
 		},
 
 		// methods below are called by vector layers implementations
@@ -19078,6 +20000,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 
 			this._updateStyle(layer);
+			this._layers[L.stamp(layer)] = layer;
 		},
 
 		_addPath: function (layer) {
@@ -19088,6 +20011,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_removePath: function (layer) {
 			L.DomUtil.remove(layer._path);
 			layer.removeInteractiveTarget(layer._path);
+			delete this._layers[L.stamp(layer)];
 		},
 
 		_updatePath: function (layer) {
@@ -19255,6 +20179,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_update: function () {
 			if (this._map._animatingZoom) { return; }
 			L.Renderer.prototype._update.call(this);
+			this.fire('update');
 		},
 
 		_initPath: function (layer) {
@@ -19389,7 +20314,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *
 	 * ```js
 	 * var map = L.map('map', {
-	 * 	renderer: L.canvas();
+	 * 	renderer: L.canvas()
 	 * });
 	 * ```
 	 *
@@ -19408,8 +20333,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		onAdd: function () {
 			L.Renderer.prototype.onAdd.call(this);
 
-			this._layers = this._layers || {};
-
 			// Redraw vectors since canvas is cleared upon removal,
 			// in case of removing the renderer itself from the map.
 			this._draw();
@@ -19424,6 +20347,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				.on(container, 'mouseout', this._handleMouseOut, this);
 
 			this._ctx = container.getContext('2d');
+		},
+
+		_updatePaths: function () {
+			var layer;
+			this._redrawBounds = null;
+			for (var id in this._layers) {
+				layer = this._layers[id];
+				layer._update();
+			}
+			this._redraw();
 		},
 
 		_update: function () {
@@ -19452,27 +20385,61 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// translate so we use the same path coordinates after canvas element moves
 			this._ctx.translate(-b.min.x, -b.min.y);
+
+			// Tell paths to redraw themselves
+			this.fire('update');
 		},
 
 		_initPath: function (layer) {
 			this._updateDashArray(layer);
 			this._layers[L.stamp(layer)] = layer;
+
+			var order = layer._order = {
+				layer: layer,
+				prev: this._drawLast,
+				next: null
+			};
+			if (this._drawLast) { this._drawLast.next = order; }
+			this._drawLast = order;
+			this._drawFirst = this._drawFirst || this._drawLast;
 		},
 
-		_addPath: L.Util.falseFn,
+		_addPath: function (layer) {
+			this._requestRedraw(layer);
+		},
 
 		_removePath: function (layer) {
-			layer._removed = true;
+			var order = layer._order;
+			var next = order.next;
+			var prev = order.prev;
+
+			if (next) {
+				next.prev = prev;
+			} else {
+				this._drawLast = prev;
+			}
+			if (prev) {
+				prev.next = next;
+			} else {
+				this._drawFirst = next;
+			}
+
+			delete layer._order;
+
+			delete this._layers[L.stamp(layer)];
+
 			this._requestRedraw(layer);
 		},
 
 		_updatePath: function (layer) {
-			this._redrawBounds = layer._pxBounds;
-			this._draw(true);
+			// Redraw the union of the layer's old pixel
+			// bounds and the new pixel bounds.
+			this._extendRedrawBounds(layer);
 			layer._project();
 			layer._update();
-			this._draw();
-			this._redrawBounds = null;
+			// The redraw will extend the redraw bounds
+			// with the new pixel bounds.
+			this._requestRedraw(layer);
 		},
 
 		_updateStyle: function (layer) {
@@ -19495,47 +20462,62 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		_requestRedraw: function (layer) {
 			if (!this._map) { return; }
 
+			this._extendRedrawBounds(layer);
+			this._redrawRequest = this._redrawRequest || L.Util.requestAnimFrame(this._redraw, this);
+		},
+
+		_extendRedrawBounds: function (layer) {
 			var padding = (layer.options.weight || 0) + 1;
 			this._redrawBounds = this._redrawBounds || new L.Bounds();
 			this._redrawBounds.extend(layer._pxBounds.min.subtract([padding, padding]));
 			this._redrawBounds.extend(layer._pxBounds.max.add([padding, padding]));
-
-			this._redrawRequest = this._redrawRequest || L.Util.requestAnimFrame(this._redraw, this);
 		},
 
 		_redraw: function () {
 			this._redrawRequest = null;
 
-			this._draw(true); // clear layers in redraw bounds
+			this._clear(); // clear layers in redraw bounds
 			this._draw(); // draw layers
 
 			this._redrawBounds = null;
 		},
 
-		_draw: function (clear) {
-			this._clear = clear;
+		_clear: function () {
+			var bounds = this._redrawBounds;
+			if (bounds) {
+				var size = bounds.getSize();
+				this._ctx.clearRect(bounds.min.x, bounds.min.y, size.x, size.y);
+			} else {
+				this._ctx.clearRect(0, 0, this._container.width, this._container.height);
+			}
+		},
+
+		_draw: function () {
 			var layer, bounds = this._redrawBounds;
 			this._ctx.save();
 			if (bounds) {
+				var size = bounds.getSize();
 				this._ctx.beginPath();
-				this._ctx.rect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+				this._ctx.rect(bounds.min.x, bounds.min.y, size.x, size.y);
 				this._ctx.clip();
 			}
 
-			for (var id in this._layers) {
-				layer = this._layers[id];
+			this._drawing = true;
+
+			for (var order = this._drawFirst; order; order = order.next) {
+				layer = order.layer;
 				if (!bounds || (layer._pxBounds && layer._pxBounds.intersects(bounds))) {
 					layer._updatePath();
 				}
-				if (clear && layer._removed) {
-					delete layer._removed;
-					delete this._layers[id];
-				}
 			}
+
+			this._drawing = false;
+
 			this._ctx.restore();  // Restore state before clipping.
 		},
 
 		_updatePoly: function (layer, closed) {
+			if (!this._drawing) { return; }
 
 			var i, j, len2, p,
 			    parts = layer._parts,
@@ -19569,7 +20551,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 		_updateCircle: function (layer) {
 
-			if (layer._empty()) { return; }
+			if (!this._drawing || layer._empty()) { return; }
 
 			var p = layer._point,
 			    ctx = this._ctx,
@@ -19594,23 +20576,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_fillStroke: function (ctx, layer) {
-			var clear = this._clear,
-			    options = layer.options;
-
-			ctx.globalCompositeOperation = clear ? 'destination-out' : 'source-over';
+			var options = layer.options;
 
 			if (options.fill) {
-				ctx.globalAlpha = clear ? 1 : options.fillOpacity;
+				ctx.globalAlpha = options.fillOpacity;
 				ctx.fillStyle = options.fillColor || options.color;
 				ctx.fill(options.fillRule || 'evenodd');
 			}
 
 			if (options.stroke && options.weight !== 0) {
-				ctx.globalAlpha = clear ? 1 : options.opacity;
-
-				// if clearing shape, do it with the previously drawn line width
-				layer._prevWeight = ctx.lineWidth = clear ? layer._prevWeight + 1 : options.weight;
-
+				ctx.globalAlpha = options.opacity;
+				ctx.lineWidth = options.weight;
 				ctx.strokeStyle = options.color;
 				ctx.lineCap = options.lineCap;
 				ctx.lineJoin = options.lineJoin;
@@ -19622,17 +20598,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// so we emulate that by calculating what's under the mouse on mousemove/click manually
 
 		_onClick: function (e) {
-			var point = this._map.mouseEventToLayerPoint(e), layers = [], layer;
+			var point = this._map.mouseEventToLayerPoint(e), layer, clickedLayer;
 
-			for (var id in this._layers) {
-				layer = this._layers[id];
+			for (var order = this._drawFirst; order; order = order.next) {
+				layer = order.layer;
 				if (layer.options.interactive && layer._containsPoint(point) && !this._map._draggableMoved(layer)) {
-					L.DomEvent._fakeStop(e);
-					layers.push(layer);
+					clickedLayer = layer;
 				}
 			}
-			if (layers.length)  {
-				this._fireEvent(layers, e);
+			if (clickedLayer)  {
+				L.DomEvent._fakeStop(e);
+				this._fireEvent([clickedLayer], e);
 			}
 		},
 
@@ -19640,14 +20616,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			if (!this._map || this._map.dragging.moving() || this._map._animatingZoom) { return; }
 
 			var point = this._map.mouseEventToLayerPoint(e);
-			this._handleMouseOut(e, point);
 			this._handleMouseHover(e, point);
 		},
 
 
-		_handleMouseOut: function (e, point) {
+		_handleMouseOut: function (e) {
 			var layer = this._hoveredLayer;
-			if (layer && (e.type === 'mouseout' || !layer._containsPoint(point))) {
+			if (layer) {
 				// if we're leaving the layer, fire mouseout
 				L.DomUtil.removeClass(this._container, 'leaflet-interactive');
 				this._fireEvent([layer], e, 'mouseout');
@@ -19656,14 +20631,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		},
 
 		_handleMouseHover: function (e, point) {
-			var id, layer;
+			var layer, candidateHoveredLayer;
 
-			for (id in this._drawnLayers) {
-				layer = this._drawnLayers[id];
+			for (var order = this._drawFirst; order; order = order.next) {
+				layer = order.layer;
 				if (layer.options.interactive && layer._containsPoint(point)) {
+					candidateHoveredLayer = layer;
+				}
+			}
+
+			if (candidateHoveredLayer !== this._hoveredLayer) {
+				this._handleMouseOut(e);
+
+				if (candidateHoveredLayer) {
 					L.DomUtil.addClass(this._container, 'leaflet-interactive'); // change cursor
-					this._fireEvent([layer], e, 'mouseover');
-					this._hoveredLayer = layer;
+					this._fireEvent([candidateHoveredLayer], e, 'mouseover');
+					this._hoveredLayer = candidateHoveredLayer;
 				}
 			}
 
@@ -19676,10 +20659,61 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._map._fireDOMEvent(e, type || e.type, layers);
 		},
 
-		// TODO _bringToFront & _bringToBack, pretty tricky
+		_bringToFront: function (layer) {
+			var order = layer._order;
+			var next = order.next;
+			var prev = order.prev;
 
-		_bringToFront: L.Util.falseFn,
-		_bringToBack: L.Util.falseFn
+			if (next) {
+				next.prev = prev;
+			} else {
+				// Already last
+				return;
+			}
+			if (prev) {
+				prev.next = next;
+			} else if (next) {
+				// Update first entry unless this is the
+				// signle entry
+				this._drawFirst = next;
+			}
+
+			order.prev = this._drawLast;
+			this._drawLast.next = order;
+
+			order.next = null;
+			this._drawLast = order;
+
+			this._requestRedraw(layer);
+		},
+
+		_bringToBack: function (layer) {
+			var order = layer._order;
+			var next = order.next;
+			var prev = order.prev;
+
+			if (prev) {
+				prev.next = next;
+			} else {
+				// Already first
+				return;
+			}
+			if (next) {
+				next.prev = prev;
+			} else if (prev) {
+				// Update last entry unless this is the
+				// signle entry
+				this._drawLast = prev;
+			}
+
+			order.prev = null;
+
+			order.next = this._drawFirst;
+			this._drawFirst.prev = order;
+			this._drawFirst = order;
+
+			this._requestRedraw(layer);
+		}
 	});
 
 	// @namespace Browser; @property canvas: Boolean
@@ -19757,7 +20791,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * @example
 	 *
 	 * ```js
-	 * L.geoJson(data, {
+	 * L.geoJSON(data, {
 	 * 	style: function (feature) {
 	 * 		return {color: feature.properties.color};
 	 * 	}
@@ -19801,13 +20835,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		 * ```
 		 *
 		 * @option filter: Function = *
-		 * A `Function` that will be used to decide whether to show a feature or not.
-		 * The default is to show all features:
+		 * A `Function` that will be used to decide whether to include a feature or not.
+		 * The default is to include all features:
 		 * ```js
 		 * function (geoJsonFeature) {
 		 * 	return true;
 		 * }
 		 * ```
+		 * Note: dynamically changing the `filter` option will have effect only on newly
+		 * added data. It will _not_ re-evaluate already included features.
 		 *
 		 * @option coordsToLatLng: Function = *
 		 * A `Function` that will be used for converting GeoJSON coordinates to `LatLng`s.
@@ -19824,7 +20860,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			}
 		},
 
-		// @function addData( <GeoJSON> data ): Layer
+		// @method addData( <GeoJSON> data ): this
 		// Adds a GeoJSON object to the layer.
 		addData: function (geojson) {
 			var features = L.Util.isArray(geojson) ? geojson : geojson.features,
@@ -19861,7 +20897,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this.addLayer(layer);
 		},
 
-		// @function resetStyle( <Path> layer ): Layer
+		// @method resetStyle( <Path> layer ): this
 		// Resets the given vector layer's style to the original GeoJSON style, useful for resetting style after hover events.
 		resetStyle: function (layer) {
 			// reset any custom styles
@@ -19870,7 +20906,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			return this;
 		},
 
-		// @function setStyle( <Function> style ): Layer
+		// @method setStyle( <Function> style ): this
 		// Changes styles of GeoJSON vector layers with the given style function.
 		setStyle: function (style) {
 			return this.eachLayer(function (layer) {
@@ -20010,7 +21046,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		// @function asFeature(geojson: Object): Object
 		// Normalize GeoJSON geometries/features into GeoJSON features.
 		asFeature: function (geojson) {
-			if (geojson.type === 'Feature') {
+			if (geojson.type === 'Feature' || geojson.type === 'FeatureCollection') {
 				return geojson;
 			}
 
@@ -20031,6 +21067,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		}
 	};
 
+	// @namespace Marker
+	// @method toGeoJSON(): Object
+	// Returns a [`GeoJSON`](http://en.wikipedia.org/wiki/GeoJSON) representation of the marker (as a GeoJSON `Point` Feature).
 	L.Marker.include(PointToGeoJSON);
 
 	// @namespace CircleMarker
@@ -20137,317 +21176,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 	/*
-	 * @namespace DomEvent
-	 * Utility functions to work with the [DOM events](https://developer.mozilla.org/docs/Web/API/Event), used by Leaflet internally.
-	 */
-
-	// Inspired by John Resig, Dean Edwards and YUI addEvent implementations.
-
-
-
-	var eventsKey = '_leaflet_events';
-
-	L.DomEvent = {
-
-		// @function on(el: HTMLElement, types: String, fn: Function, context?: Object): this
-		// Adds a listener function (`fn`) to a particular DOM event type of the
-		// element `el`. You can optionally specify the context of the listener
-		// (object the `this` keyword will point to). You can also pass several
-		// space-separated types (e.g. `'click dblclick'`).
-
-		// @alternative
-		// @function on(el: HTMLElement, eventMap: Object, context?: Object): this
-		// Adds a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
-		on: function (obj, types, fn, context) {
-
-			if (typeof types === 'object') {
-				for (var type in types) {
-					this._on(obj, type, types[type], fn);
-				}
-			} else {
-				types = L.Util.splitWords(types);
-
-				for (var i = 0, len = types.length; i < len; i++) {
-					this._on(obj, types[i], fn, context);
-				}
-			}
-
-			return this;
-		},
-
-		// @function off(el: HTMLElement, types: String, fn: Function, context?: Object): this
-		// Removes a previously added listener function. If no function is specified,
-		// it will remove all the listeners of that particular DOM event from the element.
-		// Note that if you passed a custom context to on, you must pass the same
-		// context to `off` in order to remove the listener.
-
-		// @alternative
-		// @function off(el: HTMLElement, eventMap: Object, context?: Object): this
-		// Removes a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
-		off: function (obj, types, fn, context) {
-
-			if (typeof types === 'object') {
-				for (var type in types) {
-					this._off(obj, type, types[type], fn);
-				}
-			} else {
-				types = L.Util.splitWords(types);
-
-				for (var i = 0, len = types.length; i < len; i++) {
-					this._off(obj, types[i], fn, context);
-				}
-			}
-
-			return this;
-		},
-
-		_on: function (obj, type, fn, context) {
-			var id = type + L.stamp(fn) + (context ? '_' + L.stamp(context) : '');
-
-			if (obj[eventsKey] && obj[eventsKey][id]) { return this; }
-
-			var handler = function (e) {
-				return fn.call(context || obj, e || window.event);
-			};
-
-			var originalHandler = handler;
-
-			if (L.Browser.pointer && type.indexOf('touch') === 0) {
-				this.addPointerListener(obj, type, handler, id);
-
-			} else if (L.Browser.touch && (type === 'dblclick') && this.addDoubleTapListener) {
-				this.addDoubleTapListener(obj, handler, id);
-
-			} else if ('addEventListener' in obj) {
-
-				if (type === 'mousewheel') {
-					obj.addEventListener('onwheel' in obj ? 'wheel' : 'mousewheel', handler, false);
-
-				} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
-					handler = function (e) {
-						e = e || window.event;
-						if (L.DomEvent._isExternalTarget(obj, e)) {
-							originalHandler(e);
-						}
-					};
-					obj.addEventListener(type === 'mouseenter' ? 'mouseover' : 'mouseout', handler, false);
-
-				} else {
-					if (type === 'click' && L.Browser.android) {
-						handler = function (e) {
-							return L.DomEvent._filterClick(e, originalHandler);
-						};
-					}
-					obj.addEventListener(type, handler, false);
-				}
-
-			} else if ('attachEvent' in obj) {
-				obj.attachEvent('on' + type, handler);
-			}
-
-			obj[eventsKey] = obj[eventsKey] || {};
-			obj[eventsKey][id] = handler;
-
-			return this;
-		},
-
-		_off: function (obj, type, fn, context) {
-
-			var id = type + L.stamp(fn) + (context ? '_' + L.stamp(context) : ''),
-			    handler = obj[eventsKey] && obj[eventsKey][id];
-
-			if (!handler) { return this; }
-
-			if (L.Browser.pointer && type.indexOf('touch') === 0) {
-				this.removePointerListener(obj, type, id);
-
-			} else if (L.Browser.touch && (type === 'dblclick') && this.removeDoubleTapListener) {
-				this.removeDoubleTapListener(obj, id);
-
-			} else if ('removeEventListener' in obj) {
-
-				if (type === 'mousewheel') {
-					obj.removeEventListener('onwheel' in obj ? 'wheel' : 'mousewheel', handler, false);
-
-				} else {
-					obj.removeEventListener(
-						type === 'mouseenter' ? 'mouseover' :
-						type === 'mouseleave' ? 'mouseout' : type, handler, false);
-				}
-
-			} else if ('detachEvent' in obj) {
-				obj.detachEvent('on' + type, handler);
-			}
-
-			obj[eventsKey][id] = null;
-
-			return this;
-		},
-
-		// @function stopPropagation(ev: DOMEvent): this
-		// Stop the given event from propagation to parent elements. Used inside the listener functions:
-		// ```js
-		// L.DomEvent.on(div, 'click', function (ev) {
-		// 	L.DomEvent.stopPropagation(ev);
-		// });
-		// ```
-		stopPropagation: function (e) {
-
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else if (e.originalEvent) {  // In case of Leaflet event.
-				e.originalEvent._stopped = true;
-			} else {
-				e.cancelBubble = true;
-			}
-			L.DomEvent._skipped(e);
-
-			return this;
-		},
-
-		// @function disableScrollPropagation(el: HTMLElement): this
-		// Adds `stopPropagation` to the element's `'mousewheel'` events (plus browser variants).
-		disableScrollPropagation: function (el) {
-			return L.DomEvent.on(el, 'mousewheel', L.DomEvent.stopPropagation);
-		},
-
-		// @function disableClickPropagation(el: HTMLElement): this
-		// Adds `stopPropagation` to the element's `'click'`, `'doubleclick'`,
-		// `'mousedown'` and `'touchstart'` events (plus browser variants).
-		disableClickPropagation: function (el) {
-			var stop = L.DomEvent.stopPropagation;
-
-			L.DomEvent.on(el, L.Draggable.START.join(' '), stop);
-
-			return L.DomEvent.on(el, {
-				click: L.DomEvent._fakeStop,
-				dblclick: stop
-			});
-		},
-
-		// @function preventDefault(ev: DOMEvent): this
-		// Prevents the default action of the DOM Event `ev` from happening (such as
-		// following a link in the href of the a element, or doing a POST request
-		// with page reload when a `<form>` is submitted).
-		// Use it inside listener functions.
-		preventDefault: function (e) {
-
-			if (e.preventDefault) {
-				e.preventDefault();
-			} else {
-				e.returnValue = false;
-			}
-			return this;
-		},
-
-		// @function stop(ev): this
-		// Does `stopPropagation` and `preventDefault` at the same time.
-		stop: function (e) {
-			return L.DomEvent
-				.preventDefault(e)
-				.stopPropagation(e);
-		},
-
-		// @function getMousePosition(ev: DOMEvent, container?: HTMLElement): Point
-		// Gets normalized mouse position from a DOM event relative to the
-		// `container` or to the whole page if not specified.
-		getMousePosition: function (e, container) {
-			if (!container) {
-				return new L.Point(e.clientX, e.clientY);
-			}
-
-			var rect = container.getBoundingClientRect();
-
-			return new L.Point(
-				e.clientX - rect.left - container.clientLeft,
-				e.clientY - rect.top - container.clientTop);
-		},
-
-		// Chrome on Win scrolls double the pixels as in other platforms (see #4538),
-		// and Firefox scrolls device pixels, not CSS pixels
-		_wheelPxFactor: (L.Browser.win && L.Browser.chrome) ? 2 :
-		                L.Browser.gecko ? window.devicePixelRatio :
-		                1,
-
-		// @function getWheelDelta(ev: DOMEvent): Number
-		// Gets normalized wheel delta from a mousewheel DOM event, in vertical
-		// pixels scrolled (negative if scrolling down).
-		// Events from pointing devices without precise scrolling are mapped to
-		// a best guess of 60 pixels.
-		getWheelDelta: function (e) {
-			return (L.Browser.edge) ? e.wheelDeltaY / 2 : // Don't trust window-geometry-based delta
-			       (e.deltaY && e.deltaMode === 0) ? -e.deltaY / L.DomEvent._wheelPxFactor : // Pixels
-			       (e.deltaY && e.deltaMode === 1) ? -e.deltaY * 20 : // Lines
-			       (e.deltaY && e.deltaMode === 2) ? -e.deltaY * 60 : // Pages
-			       (e.deltaX || e.deltaZ) ? 0 :	// Skip horizontal/depth wheel events
-			       e.wheelDelta ? (e.wheelDeltaY || e.wheelDelta) / 2 : // Legacy IE pixels
-			       (e.detail && Math.abs(e.detail) < 32765) ? -e.detail * 20 : // Legacy Moz lines
-			       e.detail ? e.detail / -32765 * 60 : // Legacy Moz pages
-			       0;
-		},
-
-		_skipEvents: {},
-
-		_fakeStop: function (e) {
-			// fakes stopPropagation by setting a special event flag, checked/reset with L.DomEvent._skipped(e)
-			L.DomEvent._skipEvents[e.type] = true;
-		},
-
-		_skipped: function (e) {
-			var skipped = this._skipEvents[e.type];
-			// reset when checking, as it's only used in map container and propagates outside of the map
-			this._skipEvents[e.type] = false;
-			return skipped;
-		},
-
-		// check if element really left/entered the event target (for mouseenter/mouseleave)
-		_isExternalTarget: function (el, e) {
-
-			var related = e.relatedTarget;
-
-			if (!related) { return true; }
-
-			try {
-				while (related && (related !== el)) {
-					related = related.parentNode;
-				}
-			} catch (err) {
-				return false;
-			}
-			return (related !== el);
-		},
-
-		// this is a horrible workaround for a bug in Android where a single touch triggers two click events
-		_filterClick: function (e, handler) {
-			var timeStamp = (e.timeStamp || (e.originalEvent && e.originalEvent.timeStamp)),
-			    elapsed = L.DomEvent._lastClick && (timeStamp - L.DomEvent._lastClick);
-
-			// are they closer together than 500ms yet more than 100ms?
-			// Android typically triggers them ~300ms apart while multiple listeners
-			// on the same event should be triggered far faster;
-			// or check if click is simulated on the element, and if it is, reject any non-simulated events
-
-			if ((elapsed && elapsed > 100 && elapsed < 500) || (e.target._simulatedClick && !e._simulated)) {
-				L.DomEvent.stop(e);
-				return;
-			}
-			L.DomEvent._lastClick = timeStamp;
-
-			handler(e);
-		}
-	};
-
-	// @function addListener(…): this
-	// Alias to [`L.DomEvent.on`](#domevent-on)
-	L.DomEvent.addListener = L.DomEvent.on;
-
-	// @function removeListener(…): this
-	// Alias to [`L.DomEvent.off`](#domevent-off)
-	L.DomEvent.removeListener = L.DomEvent.off;
-
-
-
-	/*
 	 * @class Draggable
 	 * @aka L.Draggable
 	 * @inherits Evented
@@ -20511,6 +21239,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 		disable: function () {
 			if (!this._enabled) { return; }
 
+			// If we're currently dragging this draggable,
+			// disabling it counts as first ending the drag.
+			if (L.Draggable._dragging === this) {
+				this.finishDrag();
+			}
+
 			L.DomEvent.off(this._dragStartTarget, L.Draggable.START.join(' '), this._onDown, this);
 
 			this._enabled = false;
@@ -20529,8 +21263,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			if (L.DomUtil.hasClass(this._element, 'leaflet-zoom-anim')) { return; }
 
-			if (L.Draggable._dragging || e.shiftKey || ((e.which !== 1) && (e.button !== 1) && !e.touches) || !this._enabled) { return; }
-			L.Draggable._dragging = true;  // Prevent dragging multiple objects at once.
+			if (L.Draggable._dragging || e.shiftKey || ((e.which !== 1) && (e.button !== 1) && !e.touches)) { return; }
+			L.Draggable._dragging = this;  // Prevent dragging multiple objects at once.
 
 			if (this._preventOutline) {
 				L.DomUtil.preventOutline(this._element);
@@ -20624,7 +21358,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			// Also ignore the event if disabled; this happens in IE11
 			// under some circumstances, see #3666.
 			if (e._simulated || !this._enabled) { return; }
+			this.finishDrag();
+		},
 
+		finishDrag: function () {
 			L.DomUtil.removeClass(document.body, 'leaflet-dragging');
 
 			if (this._lastTarget) {
@@ -20655,6 +21392,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			this._moving = false;
 			L.Draggable._dragging = false;
 		}
+
 	});
 
 
@@ -21980,6 +22718,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/*
 	 * @class Control
 	 * @aka L.Control
+	 * @inherits Class
 	 *
 	 * L.Control is a base class for implementing map controls. Handles positioning.
 	 * All other controls extend from this class.
@@ -22219,6 +22958,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 			link.innerHTML = html;
 			link.href = '#';
 			link.title = title;
+
+			/*
+			 * Will force screen readers like VoiceOver to read this as "Zoom in - button"
+			 */
+			link.setAttribute('role', 'button');
+			link.setAttribute('aria-label', title);
 
 			L.DomEvent
 			    .on(link, 'mousedown dblclick', L.DomEvent.stopPropagation)
@@ -22582,7 +23327,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			// @option hideSingleBase: Boolean = false
 			// If `true`, the base layers in the control will be hidden when there is only one.
-			hideSingleBase: false
+			hideSingleBase: false,
+
+			// @option sortLayers: Boolean = false
+			// Whether to sort the layers. When `false`, layers will keep the order
+			// in which they were added to the control.
+			sortLayers: false,
+
+			// @option sortFunction: Function = *
+			// A [compare function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
+			// that will be used for sorting the layers, when `sortLayers` is `true`.
+			// The function receives both the `L.Layer` instances and their names, as in
+			// `sortFunction(layerA, layerB, nameA, nameB)`.
+			// By default, it sorts layers alphabetically by their name.
+			sortFunction: function (layerA, layerB, nameA, nameB) {
+				return nameA < nameB ? -1 : (nameB < nameA ? 1 : 0);
+			}
 		},
 
 		initialize: function (baseLayers, overlays, options) {
@@ -22682,34 +23442,34 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 			var form = this._form = L.DomUtil.create('form', className + '-list');
 
-			if (this.options.collapsed) {
-				if (!L.Browser.android) {
-					L.DomEvent.on(container, {
-						mouseenter: this.expand,
-						mouseleave: this.collapse
-					}, this);
-				}
-
-				var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
-				link.href = '#';
-				link.title = 'Layers';
-
-				if (L.Browser.touch) {
-					L.DomEvent
-					    .on(link, 'click', L.DomEvent.stop)
-					    .on(link, 'click', this.expand, this);
-				} else {
-					L.DomEvent.on(link, 'focus', this.expand, this);
-				}
-
-				// work around for Firefox Android issue https://github.com/Leaflet/Leaflet/issues/2033
-				L.DomEvent.on(form, 'click', function () {
-					setTimeout(L.bind(this._onInputClick, this), 0);
+			if (!L.Browser.android) {
+				L.DomEvent.on(container, {
+					mouseenter: this.expand,
+					mouseleave: this.collapse
 				}, this);
+			}
 
-				this._map.on('click', this.collapse, this);
-				// TODO keyboard accessibility
+			var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
+			link.href = '#';
+			link.title = 'Layers';
+
+			if (L.Browser.touch) {
+				L.DomEvent
+				    .on(link, 'click', L.DomEvent.stop)
+				    .on(link, 'click', this.expand, this);
 			} else {
+				L.DomEvent.on(link, 'focus', this.expand, this);
+			}
+
+			// work around for Firefox Android issue https://github.com/Leaflet/Leaflet/issues/2033
+			L.DomEvent.on(form, 'click', function () {
+				setTimeout(L.bind(this._onInputClick, this), 0);
+			}, this);
+
+			this._map.on('click', this.collapse, this);
+			// TODO keyboard accessibility
+
+			if (!this.options.collapsed) {
 				this.expand();
 			}
 
@@ -22737,6 +23497,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				name: name,
 				overlay: overlay
 			});
+
+			if (this.options.sortLayers) {
+				this._layers.sort(L.bind(function (a, b) {
+					return this.options.sortFunction(a.layer, b.layer, a.name, b.name);
+				}, this));
+			}
 
 			if (this.options.autoZIndex && layer.setZIndex) {
 				this._lastZIndex++;
@@ -22911,559 +23677,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	L.control.layers = function (baseLayers, overlays, options) {
 		return new L.Control.Layers(baseLayers, overlays, options);
 	};
-
-
-
-	/*
-	 * @class PosAnimation
-	 * @aka L.PosAnimation
-	 * @inherits Evented
-	 * Used internally for panning animations, utilizing CSS3 Transitions for modern browsers and a timer fallback for IE6-9.
-	 *
-	 * @example
-	 * ```js
-	 * var fx = new L.PosAnimation();
-	 * fx.run(el, [300, 500], 0.5);
-	 * ```
-	 *
-	 * @constructor L.PosAnimation()
-	 * Creates a `PosAnimation` object.
-	 *
-	 */
-
-	L.PosAnimation = L.Evented.extend({
-
-		// @method run(el: HTMLElement, newPos: Point, duration?: Number, easeLinearity?: Number)
-		// Run an animation of a given element to a new position, optionally setting
-		// duration in seconds (`0.25` by default) and easing linearity factor (3rd
-		// argument of the [cubic bezier curve](http://cubic-bezier.com/#0,0,.5,1),
-		// `0.5` by default).
-		run: function (el, newPos, duration, easeLinearity) {
-			this.stop();
-
-			this._el = el;
-			this._inProgress = true;
-			this._duration = duration || 0.25;
-			this._easeOutPower = 1 / Math.max(easeLinearity || 0.5, 0.2);
-
-			this._startPos = L.DomUtil.getPosition(el);
-			this._offset = newPos.subtract(this._startPos);
-			this._startTime = +new Date();
-
-			// @event start: Event
-			// Fired when the animation starts
-			this.fire('start');
-
-			this._animate();
-		},
-
-		// @method stop()
-		// Stops the animation (if currently running).
-		stop: function () {
-			if (!this._inProgress) { return; }
-
-			this._step(true);
-			this._complete();
-		},
-
-		_animate: function () {
-			// animation loop
-			this._animId = L.Util.requestAnimFrame(this._animate, this);
-			this._step();
-		},
-
-		_step: function (round) {
-			var elapsed = (+new Date()) - this._startTime,
-			    duration = this._duration * 1000;
-
-			if (elapsed < duration) {
-				this._runFrame(this._easeOut(elapsed / duration), round);
-			} else {
-				this._runFrame(1);
-				this._complete();
-			}
-		},
-
-		_runFrame: function (progress, round) {
-			var pos = this._startPos.add(this._offset.multiplyBy(progress));
-			if (round) {
-				pos._round();
-			}
-			L.DomUtil.setPosition(this._el, pos);
-
-			// @event step: Event
-			// Fired continuously during the animation.
-			this.fire('step');
-		},
-
-		_complete: function () {
-			L.Util.cancelAnimFrame(this._animId);
-
-			this._inProgress = false;
-			// @event end: Event
-			// Fired when the animation ends.
-			this.fire('end');
-		},
-
-		_easeOut: function (t) {
-			return 1 - Math.pow(1 - t, this._easeOutPower);
-		}
-	});
-
-
-
-	/*
-	 * Extends L.Map to handle panning animations.
-	 */
-
-	L.Map.include({
-
-		setView: function (center, zoom, options) {
-
-			zoom = zoom === undefined ? this._zoom : this._limitZoom(zoom);
-			center = this._limitCenter(L.latLng(center), zoom, this.options.maxBounds);
-			options = options || {};
-
-			this._stop();
-
-			if (this._loaded && !options.reset && options !== true) {
-
-				if (options.animate !== undefined) {
-					options.zoom = L.extend({animate: options.animate}, options.zoom);
-					options.pan = L.extend({animate: options.animate, duration: options.duration}, options.pan);
-				}
-
-				// try animating pan or zoom
-				var moved = (this._zoom !== zoom) ?
-					this._tryAnimatedZoom && this._tryAnimatedZoom(center, zoom, options.zoom) :
-					this._tryAnimatedPan(center, options.pan);
-
-				if (moved) {
-					// prevent resize handler call, the view will refresh after animation anyway
-					clearTimeout(this._sizeTimer);
-					return this;
-				}
-			}
-
-			// animation didn't start, just reset the map view
-			this._resetView(center, zoom);
-
-			return this;
-		},
-
-		panBy: function (offset, options) {
-			offset = L.point(offset).round();
-			options = options || {};
-
-			if (!offset.x && !offset.y) {
-				return this.fire('moveend');
-			}
-			// If we pan too far, Chrome gets issues with tiles
-			// and makes them disappear or appear in the wrong place (slightly offset) #2602
-			if (options.animate !== true && !this.getSize().contains(offset)) {
-				this._resetView(this.unproject(this.project(this.getCenter()).add(offset)), this.getZoom());
-				return this;
-			}
-
-			if (!this._panAnim) {
-				this._panAnim = new L.PosAnimation();
-
-				this._panAnim.on({
-					'step': this._onPanTransitionStep,
-					'end': this._onPanTransitionEnd
-				}, this);
-			}
-
-			// don't fire movestart if animating inertia
-			if (!options.noMoveStart) {
-				this.fire('movestart');
-			}
-
-			// animate pan unless animate: false specified
-			if (options.animate !== false) {
-				L.DomUtil.addClass(this._mapPane, 'leaflet-pan-anim');
-
-				var newPos = this._getMapPanePos().subtract(offset).round();
-				this._panAnim.run(this._mapPane, newPos, options.duration || 0.25, options.easeLinearity);
-			} else {
-				this._rawPanBy(offset);
-				this.fire('move').fire('moveend');
-			}
-
-			return this;
-		},
-
-		_onPanTransitionStep: function () {
-			this.fire('move');
-		},
-
-		_onPanTransitionEnd: function () {
-			L.DomUtil.removeClass(this._mapPane, 'leaflet-pan-anim');
-			this.fire('moveend');
-		},
-
-		_tryAnimatedPan: function (center, options) {
-			// difference between the new and current centers in pixels
-			var offset = this._getCenterOffset(center)._floor();
-
-			// don't animate too far unless animate: true specified in options
-			if ((options && options.animate) !== true && !this.getSize().contains(offset)) { return false; }
-
-			this.panBy(offset, options);
-
-			return true;
-		}
-	});
-
-
-
-	/*
-	 * Extends L.Map to handle zoom animations.
-	 */
-
-	// @namespace Map
-	// @section Animation Options
-	L.Map.mergeOptions({
-		// @option zoomAnimation: Boolean = true
-		// Whether the map zoom animation is enabled. By default it's enabled
-		// in all browsers that support CSS3 Transitions except Android.
-		zoomAnimation: true,
-
-		// @option zoomAnimationThreshold: Number = 4
-		// Won't animate zoom if the zoom difference exceeds this value.
-		zoomAnimationThreshold: 4
-	});
-
-	var zoomAnimated = L.DomUtil.TRANSITION && L.Browser.any3d && !L.Browser.mobileOpera;
-
-	if (zoomAnimated) {
-
-		L.Map.addInitHook(function () {
-			// don't animate on browsers without hardware-accelerated transitions or old Android/Opera
-			this._zoomAnimated = this.options.zoomAnimation;
-
-			// zoom transitions run with the same duration for all layers, so if one of transitionend events
-			// happens after starting zoom animation (propagating to the map pane), we know that it ended globally
-			if (this._zoomAnimated) {
-
-				this._createAnimProxy();
-
-				L.DomEvent.on(this._proxy, L.DomUtil.TRANSITION_END, this._catchTransitionEnd, this);
-			}
-		});
-	}
-
-	L.Map.include(!zoomAnimated ? {} : {
-
-		_createAnimProxy: function () {
-
-			var proxy = this._proxy = L.DomUtil.create('div', 'leaflet-proxy leaflet-zoom-animated');
-			this._panes.mapPane.appendChild(proxy);
-
-			this.on('zoomanim', function (e) {
-				var prop = L.DomUtil.TRANSFORM,
-				    transform = proxy.style[prop];
-
-				L.DomUtil.setTransform(proxy, this.project(e.center, e.zoom), this.getZoomScale(e.zoom, 1));
-
-				// workaround for case when transform is the same and so transitionend event is not fired
-				if (transform === proxy.style[prop] && this._animatingZoom) {
-					this._onZoomTransitionEnd();
-				}
-			}, this);
-
-			this.on('load moveend', function () {
-				var c = this.getCenter(),
-				    z = this.getZoom();
-				L.DomUtil.setTransform(proxy, this.project(c, z), this.getZoomScale(z, 1));
-			}, this);
-		},
-
-		_catchTransitionEnd: function (e) {
-			if (this._animatingZoom && e.propertyName.indexOf('transform') >= 0) {
-				this._onZoomTransitionEnd();
-			}
-		},
-
-		_nothingToAnimate: function () {
-			return !this._container.getElementsByClassName('leaflet-zoom-animated').length;
-		},
-
-		_tryAnimatedZoom: function (center, zoom, options) {
-
-			if (this._animatingZoom) { return true; }
-
-			options = options || {};
-
-			// don't animate if disabled, not supported or zoom difference is too large
-			if (!this._zoomAnimated || options.animate === false || this._nothingToAnimate() ||
-			        Math.abs(zoom - this._zoom) > this.options.zoomAnimationThreshold) { return false; }
-
-			// offset is the pixel coords of the zoom origin relative to the current center
-			var scale = this.getZoomScale(zoom),
-			    offset = this._getCenterOffset(center)._divideBy(1 - 1 / scale);
-
-			// don't animate if the zoom origin isn't within one screen from the current center, unless forced
-			if (options.animate !== true && !this.getSize().contains(offset)) { return false; }
-
-			L.Util.requestAnimFrame(function () {
-				this
-				    ._moveStart(true)
-				    ._animateZoom(center, zoom, true);
-			}, this);
-
-			return true;
-		},
-
-		_animateZoom: function (center, zoom, startAnim, noUpdate) {
-			if (startAnim) {
-				this._animatingZoom = true;
-
-				// remember what center/zoom to set after animation
-				this._animateToCenter = center;
-				this._animateToZoom = zoom;
-
-				L.DomUtil.addClass(this._mapPane, 'leaflet-zoom-anim');
-			}
-
-			// @event zoomanim: ZoomAnimEvent
-			// Fired on every frame of a zoom animation
-			this.fire('zoomanim', {
-				center: center,
-				zoom: zoom,
-				noUpdate: noUpdate
-			});
-
-			// Work around webkit not firing 'transitionend', see https://github.com/Leaflet/Leaflet/issues/3689, 2693
-			setTimeout(L.bind(this._onZoomTransitionEnd, this), 250);
-		},
-
-		_onZoomTransitionEnd: function () {
-			if (!this._animatingZoom) { return; }
-
-			L.DomUtil.removeClass(this._mapPane, 'leaflet-zoom-anim');
-
-			this._animatingZoom = false;
-
-			this._move(this._animateToCenter, this._animateToZoom);
-
-			// This anim frame should prevent an obscure iOS webkit tile loading race condition.
-			L.Util.requestAnimFrame(function () {
-				this._moveEnd(true);
-			}, this);
-		}
-	});
-
-
-
-	// @namespace Map
-	// @section Methods for modifying map state
-	L.Map.include({
-
-		// @method flyTo(latlng: LatLng, zoom?: Number, options?: Zoom/Pan options): this
-		// Sets the view of the map (geographical center and zoom) performing a smooth
-		// pan-zoom animation.
-		flyTo: function (targetCenter, targetZoom, options) {
-
-			options = options || {};
-			if (options.animate === false || !L.Browser.any3d) {
-				return this.setView(targetCenter, targetZoom, options);
-			}
-
-			this._stop();
-
-			var from = this.project(this.getCenter()),
-			    to = this.project(targetCenter),
-			    size = this.getSize(),
-			    startZoom = this._zoom;
-
-			targetCenter = L.latLng(targetCenter);
-			targetZoom = targetZoom === undefined ? startZoom : targetZoom;
-
-			var w0 = Math.max(size.x, size.y),
-			    w1 = w0 * this.getZoomScale(startZoom, targetZoom),
-			    u1 = (to.distanceTo(from)) || 1,
-			    rho = 1.42,
-			    rho2 = rho * rho;
-
-			function r(i) {
-				var s1 = i ? -1 : 1,
-				    s2 = i ? w1 : w0,
-				    t1 = w1 * w1 - w0 * w0 + s1 * rho2 * rho2 * u1 * u1,
-				    b1 = 2 * s2 * rho2 * u1,
-				    b = t1 / b1,
-				    sq = Math.sqrt(b * b + 1) - b;
-
-				    // workaround for floating point precision bug when sq = 0, log = -Infinite,
-				    // thus triggering an infinite loop in flyTo
-				    var log = sq < 0.000000001 ? -18 : Math.log(sq);
-
-				return log;
-			}
-
-			function sinh(n) { return (Math.exp(n) - Math.exp(-n)) / 2; }
-			function cosh(n) { return (Math.exp(n) + Math.exp(-n)) / 2; }
-			function tanh(n) { return sinh(n) / cosh(n); }
-
-			var r0 = r(0);
-
-			function w(s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); }
-			function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
-
-			function easeOut(t) { return 1 - Math.pow(1 - t, 1.5); }
-
-			var start = Date.now(),
-			    S = (r(1) - r0) / rho,
-			    duration = options.duration ? 1000 * options.duration : 1000 * S * 0.8;
-
-			function frame() {
-				var t = (Date.now() - start) / duration,
-				    s = easeOut(t) * S;
-
-				if (t <= 1) {
-					this._flyToFrame = L.Util.requestAnimFrame(frame, this);
-
-					this._move(
-						this.unproject(from.add(to.subtract(from).multiplyBy(u(s) / u1)), startZoom),
-						this.getScaleZoom(w0 / w(s), startZoom),
-						{flyTo: true});
-
-				} else {
-					this
-						._move(targetCenter, targetZoom)
-						._moveEnd(true);
-				}
-			}
-
-			this._moveStart(true);
-
-			frame.call(this);
-			return this;
-		},
-
-		// @method flyToBounds(bounds: LatLngBounds, options?: fitBounds options): this
-		// Sets the view of the map with a smooth animation like [`flyTo`](#map-flyto),
-		// but takes a bounds parameter like [`fitBounds`](#map-fitbounds).
-		flyToBounds: function (bounds, options) {
-			var target = this._getBoundsCenterZoom(bounds, options);
-			return this.flyTo(target.center, target.zoom, options);
-		}
-	});
-
-
-
-	/*
-	 * Provides L.Map with convenient shortcuts for using browser geolocation features.
-	 */
-
-	// @namespace Map
-
-	L.Map.include({
-		// @section Geolocation methods
-		_defaultLocateOptions: {
-			timeout: 10000,
-			watch: false
-			// setView: false
-			// maxZoom: <Number>
-			// maximumAge: 0
-			// enableHighAccuracy: false
-		},
-
-		// @method locate(options?: Locate options): this
-		// Tries to locate the user using the Geolocation API, firing a [`locationfound`](#map-locationfound)
-		// event with location data on success or a [`locationerror`](#map-locationerror) event on failure,
-		// and optionally sets the map view to the user's location with respect to
-		// detection accuracy (or to the world view if geolocation failed).
-		// Note that, if your page doesn't use HTTPS, this method will fail in
-		// modern browsers ([Chrome 50 and newer](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins))
-		// See `Locate options` for more details.
-		locate: function (options) {
-
-			options = this._locateOptions = L.extend({}, this._defaultLocateOptions, options);
-
-			if (!('geolocation' in navigator)) {
-				this._handleGeolocationError({
-					code: 0,
-					message: 'Geolocation not supported.'
-				});
-				return this;
-			}
-
-			var onResponse = L.bind(this._handleGeolocationResponse, this),
-			    onError = L.bind(this._handleGeolocationError, this);
-
-			if (options.watch) {
-				this._locationWatchId =
-				        navigator.geolocation.watchPosition(onResponse, onError, options);
-			} else {
-				navigator.geolocation.getCurrentPosition(onResponse, onError, options);
-			}
-			return this;
-		},
-
-		// @method stopLocate(): this
-		// Stops watching location previously initiated by `map.locate({watch: true})`
-		// and aborts resetting the map view if map.locate was called with
-		// `{setView: true}`.
-		stopLocate: function () {
-			if (navigator.geolocation && navigator.geolocation.clearWatch) {
-				navigator.geolocation.clearWatch(this._locationWatchId);
-			}
-			if (this._locateOptions) {
-				this._locateOptions.setView = false;
-			}
-			return this;
-		},
-
-		_handleGeolocationError: function (error) {
-			var c = error.code,
-			    message = error.message ||
-			            (c === 1 ? 'permission denied' :
-			            (c === 2 ? 'position unavailable' : 'timeout'));
-
-			if (this._locateOptions.setView && !this._loaded) {
-				this.fitWorld();
-			}
-
-			// @section Location events
-			// @event locationerror: ErrorEvent
-			// Fired when geolocation (using the [`locate`](#map-locate) method) failed.
-			this.fire('locationerror', {
-				code: c,
-				message: 'Geolocation error: ' + message + '.'
-			});
-		},
-
-		_handleGeolocationResponse: function (pos) {
-			var lat = pos.coords.latitude,
-			    lng = pos.coords.longitude,
-			    latlng = new L.LatLng(lat, lng),
-			    bounds = latlng.toBounds(pos.coords.accuracy),
-			    options = this._locateOptions;
-
-			if (options.setView) {
-				var zoom = this.getBoundsZoom(bounds);
-				this.setView(latlng, options.maxZoom ? Math.min(zoom, options.maxZoom) : zoom);
-			}
-
-			var data = {
-				latlng: latlng,
-				bounds: bounds,
-				timestamp: pos.timestamp
-			};
-
-			for (var i in pos.coords) {
-				if (typeof pos.coords[i] === 'number') {
-					data[i] = pos.coords[i];
-				}
-			}
-
-			// @event locationfound: LocationEvent
-			// Fired when geolocation (using the [`locate`](#map-locate) method)
-			// went successfully.
-			this.fire('locationfound', data);
-		}
-	});
 
 
 
@@ -24109,19 +24322,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    };
 	}
 	JSZip.prototype = __webpack_require__(8);
-	JSZip.prototype.loadAsync = __webpack_require__(97);
+	JSZip.prototype.loadAsync = __webpack_require__(103);
 	JSZip.support = __webpack_require__(11);
-	JSZip.defaults = __webpack_require__(68);
+	JSZip.defaults = __webpack_require__(74);
 
 	// TODO find a better way to handle this version,
 	// a require('package.json').version doesn't work with webpack, see #327
-	JSZip.version = "3.1.2";
+	JSZip.version = "3.1.3";
 
 	JSZip.loadAsync = function (content, options) {
 	    return new JSZip().loadAsync(content, options);
 	};
 
-	JSZip.external = __webpack_require__(58);
+	JSZip.external = __webpack_require__(64);
 	module.exports = JSZip;
 
 
@@ -24132,14 +24345,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	'use strict';
 	var utf8 = __webpack_require__(9);
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
-	var StreamHelper = __webpack_require__(62);
-	var defaults = __webpack_require__(68);
-	var CompressedObject = __webpack_require__(69);
-	var ZipObject = __webpack_require__(74);
-	var generate = __webpack_require__(75);
-	var nodejsUtils = __webpack_require__(36);
-	var NodejsStreamInputAdapter = __webpack_require__(96);
+	var GenericWorker = __webpack_require__(67);
+	var StreamHelper = __webpack_require__(68);
+	var defaults = __webpack_require__(74);
+	var CompressedObject = __webpack_require__(75);
+	var ZipObject = __webpack_require__(80);
+	var generate = __webpack_require__(81);
+	var nodejsUtils = __webpack_require__(42);
+	var NodejsStreamInputAdapter = __webpack_require__(102);
 
 
 	/**
@@ -24528,8 +24741,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var utils = __webpack_require__(10);
 	var support = __webpack_require__(11);
-	var nodejsUtils = __webpack_require__(36);
-	var GenericWorker = __webpack_require__(61);
+	var nodejsUtils = __webpack_require__(42);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * The following functions come from pako, from pako/lib/utils/strings
@@ -24808,10 +25021,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	'use strict';
 
 	var support = __webpack_require__(11);
-	var base64 = __webpack_require__(35);
-	var nodejsUtils = __webpack_require__(36);
-	var setImmediate = __webpack_require__(37);
-	var external = __webpack_require__(58);
+	var base64 = __webpack_require__(41);
+	var nodejsUtils = __webpack_require__(42);
+	var setImmediate = __webpack_require__(43);
+	var external = __webpack_require__(64);
 
 
 	/**
@@ -24833,18 +25046,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	/**
 	 * Create a new blob with the given content and the given type.
-	 * @param {String|ArrayBuffer} part the content to put in the blob. DO NOT use
+	 * @param {Array[String|ArrayBuffer]} parts the content to put in the blob. DO NOT use
 	 * an Uint8Array because the stock browser of android 4 won't accept it (it
 	 * will be silently converted to a string, "[object Uint8Array]").
 	 * @param {String} type the mime type of the blob.
 	 * @return {Blob} the created blob.
 	 */
-	exports.newBlob = function(part, type) {
+	exports.newBlob = function(parts, type) {
 	    exports.checkSupport("blob");
 
 	    try {
 	        // Blob constructor
-	        return new Blob([part], {
+	        return new Blob(parts, {
 	            type: type
 	        });
 	    }
@@ -24854,7 +25067,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            // deprecated, browser only, old way
 	            var Builder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
 	            var builder = new Builder();
-	            builder.append(part);
+	            for (var i = 0; i < parts.length; i++) {
+	                builder.append(parts[i]);
+	            }
 	            return builder.getBlob(type);
 	        }
 	        catch (e) {
@@ -25073,7 +25288,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        return arrayLikeToArrayLike(input, new Array(input.length));
 	    },
 	    "arraybuffer": function(input) {
-	        return input.buffer;
+	        // copy the uint8array: DO NOT propagate the original ArrayBuffer, it
+	        // can be way larger (the whole zip file for example).
+	        var copy = new Uint8Array(input.length);
+	        if (input.length) {
+	            copy.set(input, 0);
+	        }
+	        return copy.buffer;
 	    },
 	    "uint8array": identity,
 	    "nodebuffer": function(input) {
@@ -25227,7 +25448,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	    // if inputData is already a promise, this flatten it.
 	    var promise = external.Promise.resolve(inputData).then(function(data) {
-	        if (support.blob && data instanceof Blob && typeof FileReader !== "undefined") {
+	        
+	        
+	        var isBlob = support.blob && (data instanceof Blob || ['[object File]', '[object Blob]'].indexOf(Object.prototype.toString.call(data)) !== -1);
+
+	        if (isBlob && typeof FileReader !== "undefined") {
 	            return new external.Promise(function (resolve, reject) {
 	                var reader = new FileReader();
 
@@ -25322,7 +25547,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
+	/* WEBPACK VAR INJECTION */(function(global) {/*!
 	 * The buffer module from node.js, for the browser.
 	 *
 	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
@@ -27112,7 +27337,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  return val !== val // eslint-disable-line no-self-compare
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 13 */
@@ -27382,10 +27607,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	inherits(Stream, EE);
 	Stream.Readable = __webpack_require__(20);
-	Stream.Writable = __webpack_require__(31);
-	Stream.Duplex = __webpack_require__(32);
-	Stream.Transform = __webpack_require__(33);
-	Stream.PassThrough = __webpack_require__(34);
+	Stream.Writable = __webpack_require__(37);
+	Stream.Duplex = __webpack_require__(38);
+	Stream.Transform = __webpack_require__(39);
+	Stream.PassThrough = __webpack_require__(40);
 
 	// Backwards-compat with node 0.4.x
 	Stream.Stream = Stream;
@@ -27824,15 +28049,21 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {exports = module.exports = __webpack_require__(21);
-	exports.Stream = __webpack_require__(17);
+	/* WEBPACK VAR INJECTION */(function(process) {var Stream = (function (){
+	  try {
+	    return __webpack_require__(17); // hack to fix a circular dependency issue when used with browserify
+	  } catch(_){}
+	}());
+	exports = module.exports = __webpack_require__(21);
+	exports.Stream = Stream || exports;
 	exports.Readable = exports;
-	exports.Writable = __webpack_require__(27);
-	exports.Duplex = __webpack_require__(26);
-	exports.Transform = __webpack_require__(29);
-	exports.PassThrough = __webpack_require__(30);
-	if (!process.browser && process.env.READABLE_STREAM === 'disable') {
-	  module.exports = __webpack_require__(17);
+	exports.Writable = __webpack_require__(30);
+	exports.Duplex = __webpack_require__(29);
+	exports.Transform = __webpack_require__(35);
+	exports.PassThrough = __webpack_require__(36);
+
+	if (!process.browser && process.env.READABLE_STREAM === 'disable' && Stream) {
+	  module.exports = Stream;
 	}
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
@@ -27841,85 +28072,106 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
 	module.exports = Readable;
 
 	/*<replacement>*/
-	var isArray = __webpack_require__(22);
+	var processNextTick = __webpack_require__(22);
 	/*</replacement>*/
 
+	/*<replacement>*/
+	var isArray = __webpack_require__(23);
+	/*</replacement>*/
 
 	/*<replacement>*/
-	var Buffer = __webpack_require__(12).Buffer;
+	var Duplex;
 	/*</replacement>*/
 
 	Readable.ReadableState = ReadableState;
 
+	/*<replacement>*/
 	var EE = __webpack_require__(18).EventEmitter;
 
-	/*<replacement>*/
-	if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
+	var EElistenerCount = function (emitter, type) {
 	  return emitter.listeners(type).length;
 	};
 	/*</replacement>*/
 
-	var Stream = __webpack_require__(17);
-
 	/*<replacement>*/
-	var util = __webpack_require__(23);
-	util.inherits = __webpack_require__(24);
+	var Stream;
+	(function () {
+	  try {
+	    Stream = __webpack_require__(17);
+	  } catch (_) {} finally {
+	    if (!Stream) Stream = __webpack_require__(18).EventEmitter;
+	  }
+	})();
 	/*</replacement>*/
 
-	var StringDecoder;
-
+	var Buffer = __webpack_require__(12).Buffer;
+	/*<replacement>*/
+	var bufferShim = __webpack_require__(24);
+	/*</replacement>*/
 
 	/*<replacement>*/
-	var debug = __webpack_require__(25);
-	if (debug && debug.debuglog) {
-	  debug = debug.debuglog('stream');
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
+	/*</replacement>*/
+
+	/*<replacement>*/
+	var debugUtil = __webpack_require__(27);
+	var debug = void 0;
+	if (debugUtil && debugUtil.debuglog) {
+	  debug = debugUtil.debuglog('stream');
 	} else {
 	  debug = function () {};
 	}
 	/*</replacement>*/
 
+	var BufferList = __webpack_require__(28);
+	var StringDecoder;
 
 	util.inherits(Readable, Stream);
 
+	function prependListener(emitter, event, fn) {
+	  // Sadly this is not cacheable as some libraries bundle their own
+	  // event emitter implementation with them.
+	  if (typeof emitter.prependListener === 'function') {
+	    return emitter.prependListener(event, fn);
+	  } else {
+	    // This is a hack to make sure that our error handler is attached before any
+	    // userland ones.  NEVER DO THIS. This is here only because this code needs
+	    // to continue to work with older versions of Node.js that do not include
+	    // the prependListener() method. The goal is to eventually remove this hack.
+	    if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
+	  }
+	}
+
 	function ReadableState(options, stream) {
-	  var Duplex = __webpack_require__(26);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  options = options || {};
+
+	  // object stream flag. Used to make read(n) ignore n and to
+	  // make all the buffer merging and length checks go away
+	  this.objectMode = !!options.objectMode;
+
+	  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
 
 	  // the point at which it stops calling _read() to fill the buffer
 	  // Note: 0 is a valid value, means "don't call _read preemptively ever"
 	  var hwm = options.highWaterMark;
-	  var defaultHwm = options.objectMode ? 16 : 16 * 1024;
-	  this.highWaterMark = (hwm || hwm === 0) ? hwm : defaultHwm;
+	  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+	  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
 
 	  // cast to ints.
-	  this.highWaterMark = ~~this.highWaterMark;
+	  this.highWaterMark = ~ ~this.highWaterMark;
 
-	  this.buffer = [];
+	  // A linked list is used to store data chunks instead of an array because the
+	  // linked list can remove elements from the beginning faster than
+	  // array.shift()
+	  this.buffer = new BufferList();
 	  this.length = 0;
 	  this.pipes = null;
 	  this.pipesCount = 0;
@@ -27939,14 +28191,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  this.needReadable = false;
 	  this.emittedReadable = false;
 	  this.readableListening = false;
-
-
-	  // object stream flag. Used to make read(n) ignore n and to
-	  // make all the buffer merging and length checks go away
-	  this.objectMode = !!options.objectMode;
-
-	  if (stream instanceof Duplex)
-	    this.objectMode = this.objectMode || !!options.readableObjectMode;
+	  this.resumeScheduled = false;
 
 	  // Crypto is kind of old and crusty.  Historically, its default string
 	  // encoding is 'binary' so we have to make this configurable.
@@ -27966,23 +28211,23 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  this.decoder = null;
 	  this.encoding = null;
 	  if (options.encoding) {
-	    if (!StringDecoder)
-	      StringDecoder = __webpack_require__(28).StringDecoder;
+	    if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
 	    this.decoder = new StringDecoder(options.encoding);
 	    this.encoding = options.encoding;
 	  }
 	}
 
 	function Readable(options) {
-	  var Duplex = __webpack_require__(26);
+	  Duplex = Duplex || __webpack_require__(29);
 
-	  if (!(this instanceof Readable))
-	    return new Readable(options);
+	  if (!(this instanceof Readable)) return new Readable(options);
 
 	  this._readableState = new ReadableState(options, this);
 
 	  // legacy
 	  this.readable = true;
+
+	  if (options && typeof options.read === 'function') this._read = options.read;
 
 	  Stream.call(this);
 	}
@@ -27991,13 +28236,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// This returns true if the highWaterMark has not been hit yet,
 	// similar to how Writable.write() returns true if you should
 	// write() some more.
-	Readable.prototype.push = function(chunk, encoding) {
+	Readable.prototype.push = function (chunk, encoding) {
 	  var state = this._readableState;
 
-	  if (util.isString(chunk) && !state.objectMode) {
+	  if (!state.objectMode && typeof chunk === 'string') {
 	    encoding = encoding || state.defaultEncoding;
 	    if (encoding !== state.encoding) {
-	      chunk = new Buffer(chunk, encoding);
+	      chunk = bufferShim.from(chunk, encoding);
 	      encoding = '';
 	    }
 	  }
@@ -28006,47 +28251,52 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 	// Unshift should *always* be something directly out of read()
-	Readable.prototype.unshift = function(chunk) {
+	Readable.prototype.unshift = function (chunk) {
 	  var state = this._readableState;
 	  return readableAddChunk(this, state, chunk, '', true);
+	};
+
+	Readable.prototype.isPaused = function () {
+	  return this._readableState.flowing === false;
 	};
 
 	function readableAddChunk(stream, state, chunk, encoding, addToFront) {
 	  var er = chunkInvalid(state, chunk);
 	  if (er) {
 	    stream.emit('error', er);
-	  } else if (util.isNullOrUndefined(chunk)) {
+	  } else if (chunk === null) {
 	    state.reading = false;
-	    if (!state.ended)
-	      onEofChunk(stream, state);
+	    onEofChunk(stream, state);
 	  } else if (state.objectMode || chunk && chunk.length > 0) {
 	    if (state.ended && !addToFront) {
 	      var e = new Error('stream.push() after EOF');
 	      stream.emit('error', e);
 	    } else if (state.endEmitted && addToFront) {
-	      var e = new Error('stream.unshift() after end event');
-	      stream.emit('error', e);
+	      var _e = new Error('stream.unshift() after end event');
+	      stream.emit('error', _e);
 	    } else {
-	      if (state.decoder && !addToFront && !encoding)
+	      var skipAdd;
+	      if (state.decoder && !addToFront && !encoding) {
 	        chunk = state.decoder.write(chunk);
+	        skipAdd = !state.objectMode && chunk.length === 0;
+	      }
 
-	      if (!addToFront)
-	        state.reading = false;
+	      if (!addToFront) state.reading = false;
 
-	      // if we want the data now, just emit it.
-	      if (state.flowing && state.length === 0 && !state.sync) {
-	        stream.emit('data', chunk);
-	        stream.read(0);
-	      } else {
-	        // update the buffer info.
-	        state.length += state.objectMode ? 1 : chunk.length;
-	        if (addToFront)
-	          state.buffer.unshift(chunk);
-	        else
-	          state.buffer.push(chunk);
+	      // Don't add to the buffer if we've decoded to an empty string chunk and
+	      // we're not in object mode
+	      if (!skipAdd) {
+	        // if we want the data now, just emit it.
+	        if (state.flowing && state.length === 0 && !state.sync) {
+	          stream.emit('data', chunk);
+	          stream.read(0);
+	        } else {
+	          // update the buffer info.
+	          state.length += state.objectMode ? 1 : chunk.length;
+	          if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
 
-	        if (state.needReadable)
-	          emitReadable(stream);
+	          if (state.needReadable) emitReadable(stream);
+	        }
 	      }
 
 	      maybeReadMore(stream, state);
@@ -28058,8 +28308,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  return needMoreData(state);
 	}
 
-
-
 	// if it's past the high water mark, we can push in some more.
 	// Also, if we have no data yet, we can stand some
 	// more bytes.  This is to work around cases where hwm=0,
@@ -28068,92 +28316,71 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// needReadable was set, then we ought to push more, so that another
 	// 'readable' event will be triggered.
 	function needMoreData(state) {
-	  return !state.ended &&
-	         (state.needReadable ||
-	          state.length < state.highWaterMark ||
-	          state.length === 0);
+	  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
 	}
 
 	// backwards compatibility.
-	Readable.prototype.setEncoding = function(enc) {
-	  if (!StringDecoder)
-	    StringDecoder = __webpack_require__(28).StringDecoder;
+	Readable.prototype.setEncoding = function (enc) {
+	  if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
 	  this._readableState.decoder = new StringDecoder(enc);
 	  this._readableState.encoding = enc;
 	  return this;
 	};
 
-	// Don't raise the hwm > 128MB
+	// Don't raise the hwm > 8MB
 	var MAX_HWM = 0x800000;
-	function roundUpToNextPowerOf2(n) {
+	function computeNewHighWaterMark(n) {
 	  if (n >= MAX_HWM) {
 	    n = MAX_HWM;
 	  } else {
-	    // Get the next highest power of 2
+	    // Get the next highest power of 2 to prevent increasing hwm excessively in
+	    // tiny amounts
 	    n--;
-	    for (var p = 1; p < 32; p <<= 1) n |= n >> p;
+	    n |= n >>> 1;
+	    n |= n >>> 2;
+	    n |= n >>> 4;
+	    n |= n >>> 8;
+	    n |= n >>> 16;
 	    n++;
 	  }
 	  return n;
 	}
 
+	// This function is designed to be inlinable, so please take care when making
+	// changes to the function body.
 	function howMuchToRead(n, state) {
-	  if (state.length === 0 && state.ended)
-	    return 0;
-
-	  if (state.objectMode)
-	    return n === 0 ? 0 : 1;
-
-	  if (isNaN(n) || util.isNull(n)) {
-	    // only flow one buffer at a time
-	    if (state.flowing && state.buffer.length)
-	      return state.buffer[0].length;
-	    else
-	      return state.length;
+	  if (n <= 0 || state.length === 0 && state.ended) return 0;
+	  if (state.objectMode) return 1;
+	  if (n !== n) {
+	    // Only flow one buffer at a time
+	    if (state.flowing && state.length) return state.buffer.head.data.length;else return state.length;
 	  }
-
-	  if (n <= 0)
+	  // If we're asking for more than the current hwm, then raise the hwm.
+	  if (n > state.highWaterMark) state.highWaterMark = computeNewHighWaterMark(n);
+	  if (n <= state.length) return n;
+	  // Don't have enough
+	  if (!state.ended) {
+	    state.needReadable = true;
 	    return 0;
-
-	  // If we're asking for more than the target buffer level,
-	  // then raise the water mark.  Bump up to the next highest
-	  // power of 2, to prevent increasing it excessively in tiny
-	  // amounts.
-	  if (n > state.highWaterMark)
-	    state.highWaterMark = roundUpToNextPowerOf2(n);
-
-	  // don't have that much.  return null, unless we've ended.
-	  if (n > state.length) {
-	    if (!state.ended) {
-	      state.needReadable = true;
-	      return 0;
-	    } else
-	      return state.length;
 	  }
-
-	  return n;
+	  return state.length;
 	}
 
 	// you can override either this method, or the async _read(n) below.
-	Readable.prototype.read = function(n) {
+	Readable.prototype.read = function (n) {
 	  debug('read', n);
+	  n = parseInt(n, 10);
 	  var state = this._readableState;
 	  var nOrig = n;
 
-	  if (!util.isNumber(n) || n > 0)
-	    state.emittedReadable = false;
+	  if (n !== 0) state.emittedReadable = false;
 
 	  // if we're doing read(0) to trigger a readable event, but we
 	  // already have a bunch of data in the buffer, then just trigger
 	  // the 'readable' event and move on.
-	  if (n === 0 &&
-	      state.needReadable &&
-	      (state.length >= state.highWaterMark || state.ended)) {
+	  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
 	    debug('read: emitReadable', state.length, state.ended);
-	    if (state.length === 0 && state.ended)
-	      endReadable(this);
-	    else
-	      emitReadable(this);
+	    if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
 	    return null;
 	  }
 
@@ -28161,8 +28388,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	  // if we've ended, and we're now clear, then finish it up.
 	  if (n === 0 && state.ended) {
-	    if (state.length === 0)
-	      endReadable(this);
+	    if (state.length === 0) endReadable(this);
 	    return null;
 	  }
 
@@ -28203,67 +28429,55 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  if (state.ended || state.reading) {
 	    doRead = false;
 	    debug('reading or ended', doRead);
-	  }
-
-	  if (doRead) {
+	  } else if (doRead) {
 	    debug('do read');
 	    state.reading = true;
 	    state.sync = true;
 	    // if the length is currently zero, then we *need* a readable event.
-	    if (state.length === 0)
-	      state.needReadable = true;
+	    if (state.length === 0) state.needReadable = true;
 	    // call internal read method
 	    this._read(state.highWaterMark);
 	    state.sync = false;
+	    // If _read pushed data synchronously, then `reading` will be false,
+	    // and we need to re-evaluate how much data we can return to the user.
+	    if (!state.reading) n = howMuchToRead(nOrig, state);
 	  }
-
-	  // If _read pushed data synchronously, then `reading` will be false,
-	  // and we need to re-evaluate how much data we can return to the user.
-	  if (doRead && !state.reading)
-	    n = howMuchToRead(nOrig, state);
 
 	  var ret;
-	  if (n > 0)
-	    ret = fromList(n, state);
-	  else
-	    ret = null;
+	  if (n > 0) ret = fromList(n, state);else ret = null;
 
-	  if (util.isNull(ret)) {
+	  if (ret === null) {
 	    state.needReadable = true;
 	    n = 0;
+	  } else {
+	    state.length -= n;
 	  }
 
-	  state.length -= n;
+	  if (state.length === 0) {
+	    // If we have nothing in the buffer, then we want to know
+	    // as soon as we *do* get something into the buffer.
+	    if (!state.ended) state.needReadable = true;
 
-	  // If we have nothing in the buffer, then we want to know
-	  // as soon as we *do* get something into the buffer.
-	  if (state.length === 0 && !state.ended)
-	    state.needReadable = true;
+	    // If we tried to read() past the EOF, then emit end on the next tick.
+	    if (nOrig !== n && state.ended) endReadable(this);
+	  }
 
-	  // If we tried to read() past the EOF, then emit end on the next tick.
-	  if (nOrig !== n && state.ended && state.length === 0)
-	    endReadable(this);
-
-	  if (!util.isNull(ret))
-	    this.emit('data', ret);
+	  if (ret !== null) this.emit('data', ret);
 
 	  return ret;
 	};
 
 	function chunkInvalid(state, chunk) {
 	  var er = null;
-	  if (!util.isBuffer(chunk) &&
-	      !util.isString(chunk) &&
-	      !util.isNullOrUndefined(chunk) &&
-	      !state.objectMode) {
+	  if (!Buffer.isBuffer(chunk) && typeof chunk !== 'string' && chunk !== null && chunk !== undefined && !state.objectMode) {
 	    er = new TypeError('Invalid non-string/buffer chunk');
 	  }
 	  return er;
 	}
 
-
 	function onEofChunk(stream, state) {
-	  if (state.decoder && !state.ended) {
+	  if (state.ended) return;
+	  if (state.decoder) {
 	    var chunk = state.decoder.end();
 	    if (chunk && chunk.length) {
 	      state.buffer.push(chunk);
@@ -28285,12 +28499,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  if (!state.emittedReadable) {
 	    debug('emitReadable', state.flowing);
 	    state.emittedReadable = true;
-	    if (state.sync)
-	      process.nextTick(function() {
-	        emitReadable_(stream);
-	      });
-	    else
-	      emitReadable_(stream);
+	    if (state.sync) processNextTick(emitReadable_, stream);else emitReadable_(stream);
 	  }
 	}
 
@@ -28299,7 +28508,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  stream.emit('readable');
 	  flow(stream);
 	}
-
 
 	// at this point, the user has presumably seen the 'readable' event,
 	// and called read() to consume some data.  that may have triggered
@@ -28310,23 +28518,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	function maybeReadMore(stream, state) {
 	  if (!state.readingMore) {
 	    state.readingMore = true;
-	    process.nextTick(function() {
-	      maybeReadMore_(stream, state);
-	    });
+	    processNextTick(maybeReadMore_, stream, state);
 	  }
 	}
 
 	function maybeReadMore_(stream, state) {
 	  var len = state.length;
-	  while (!state.reading && !state.flowing && !state.ended &&
-	         state.length < state.highWaterMark) {
+	  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
 	    debug('maybeReadMore read 0');
 	    stream.read(0);
 	    if (len === state.length)
 	      // didn't get any data, stop spinning.
-	      break;
-	    else
-	      len = state.length;
+	      break;else len = state.length;
 	  }
 	  state.readingMore = false;
 	}
@@ -28335,11 +28538,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// call cb(er, data) where data is <= n in length.
 	// for virtual (non-string, non-buffer) streams, "length" is somewhat
 	// arbitrary, and perhaps not very meaningful.
-	Readable.prototype._read = function(n) {
-	  this.emit('error', new Error('not implemented'));
+	Readable.prototype._read = function (n) {
+	  this.emit('error', new Error('_read() is not implemented'));
 	};
 
-	Readable.prototype.pipe = function(dest, pipeOpts) {
+	Readable.prototype.pipe = function (dest, pipeOpts) {
 	  var src = this;
 	  var state = this._readableState;
 
@@ -28357,15 +28560,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  state.pipesCount += 1;
 	  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
 
-	  var doEnd = (!pipeOpts || pipeOpts.end !== false) &&
-	              dest !== process.stdout &&
-	              dest !== process.stderr;
+	  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
 
 	  var endFn = doEnd ? onend : cleanup;
-	  if (state.endEmitted)
-	    process.nextTick(endFn);
-	  else
-	    src.once('end', endFn);
+	  if (state.endEmitted) processNextTick(endFn);else src.once('end', endFn);
 
 	  dest.on('unpipe', onunpipe);
 	  function onunpipe(readable) {
@@ -28387,6 +28585,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  var ondrain = pipeOnDrain(src);
 	  dest.on('drain', ondrain);
 
+	  var cleanedUp = false;
 	  function cleanup() {
 	    debug('cleanup');
 	    // cleanup event handlers once the pipe is broken
@@ -28399,24 +28598,36 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    src.removeListener('end', cleanup);
 	    src.removeListener('data', ondata);
 
+	    cleanedUp = true;
+
 	    // if the reader is waiting for a drain event from this
 	    // specific writer, then it would cause it to never start
 	    // flowing again.
 	    // So, if this is awaiting a drain, then we just call it now.
 	    // If we don't know, then assume that we are waiting for one.
-	    if (state.awaitDrain &&
-	        (!dest._writableState || dest._writableState.needDrain))
-	      ondrain();
+	    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) ondrain();
 	  }
 
+	  // If the user pushes more data while we're writing to dest then we'll end up
+	  // in ondata again. However, we only want to increase awaitDrain once because
+	  // dest will only emit one 'drain' event for the multiple writes.
+	  // => Introduce a guard on increasing awaitDrain.
+	  var increasedAwaitDrain = false;
 	  src.on('data', ondata);
 	  function ondata(chunk) {
 	    debug('ondata');
+	    increasedAwaitDrain = false;
 	    var ret = dest.write(chunk);
-	    if (false === ret) {
-	      debug('false write response, pause',
-	            src._readableState.awaitDrain);
-	      src._readableState.awaitDrain++;
+	    if (false === ret && !increasedAwaitDrain) {
+	      // If the user unpiped during `dest.write()`, it is possible
+	      // to get stuck in a permanently paused state if that write
+	      // also returned false.
+	      // => Check whether `dest` is still a piping destination.
+	      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
+	        debug('false write response, pause', src._readableState.awaitDrain);
+	        src._readableState.awaitDrain++;
+	        increasedAwaitDrain = true;
+	      }
 	      src.pause();
 	    }
 	  }
@@ -28427,19 +28638,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    debug('onerror', er);
 	    unpipe();
 	    dest.removeListener('error', onerror);
-	    if (EE.listenerCount(dest, 'error') === 0)
-	      dest.emit('error', er);
+	    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
 	  }
-	  // This is a brutally ugly hack to make sure that our error handler
-	  // is attached before any userland ones.  NEVER DO THIS.
-	  if (!dest._events || !dest._events.error)
-	    dest.on('error', onerror);
-	  else if (isArray(dest._events.error))
-	    dest._events.error.unshift(onerror);
-	  else
-	    dest._events.error = [onerror, dest._events.error];
 
-
+	  // Make sure our error handler is attached before userland ones.
+	  prependListener(dest, 'error', onerror);
 
 	  // Both close and finish should trigger unpipe, but only once.
 	  function onclose() {
@@ -28472,41 +28675,35 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 	function pipeOnDrain(src) {
-	  return function() {
+	  return function () {
 	    var state = src._readableState;
 	    debug('pipeOnDrain', state.awaitDrain);
-	    if (state.awaitDrain)
-	      state.awaitDrain--;
-	    if (state.awaitDrain === 0 && EE.listenerCount(src, 'data')) {
+	    if (state.awaitDrain) state.awaitDrain--;
+	    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
 	      state.flowing = true;
 	      flow(src);
 	    }
 	  };
 	}
 
-
-	Readable.prototype.unpipe = function(dest) {
+	Readable.prototype.unpipe = function (dest) {
 	  var state = this._readableState;
 
 	  // if we're not piping anywhere, then do nothing.
-	  if (state.pipesCount === 0)
-	    return this;
+	  if (state.pipesCount === 0) return this;
 
 	  // just one destination.  most common case.
 	  if (state.pipesCount === 1) {
 	    // passed in one, but it's not the right one.
-	    if (dest && dest !== state.pipes)
-	      return this;
+	    if (dest && dest !== state.pipes) return this;
 
-	    if (!dest)
-	      dest = state.pipes;
+	    if (!dest) dest = state.pipes;
 
 	    // got a match.
 	    state.pipes = null;
 	    state.pipesCount = 0;
 	    state.flowing = false;
-	    if (dest)
-	      dest.emit('unpipe', this);
+	    if (dest) dest.emit('unpipe', this);
 	    return this;
 	  }
 
@@ -28520,20 +28717,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    state.pipesCount = 0;
 	    state.flowing = false;
 
-	    for (var i = 0; i < len; i++)
+	    for (var i = 0; i < len; i++) {
 	      dests[i].emit('unpipe', this);
-	    return this;
+	    }return this;
 	  }
 
 	  // try to find the right one.
-	  var i = indexOf(state.pipes, dest);
-	  if (i === -1)
-	    return this;
+	  var index = indexOf(state.pipes, dest);
+	  if (index === -1) return this;
 
-	  state.pipes.splice(i, 1);
+	  state.pipes.splice(index, 1);
 	  state.pipesCount -= 1;
-	  if (state.pipesCount === 1)
-	    state.pipes = state.pipes[0];
+	  if (state.pipesCount === 1) state.pipes = state.pipes[0];
 
 	  dest.emit('unpipe', this);
 
@@ -28542,27 +28737,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	// set up data events if they are asked for
 	// Ensure readable listeners eventually get something
-	Readable.prototype.on = function(ev, fn) {
+	Readable.prototype.on = function (ev, fn) {
 	  var res = Stream.prototype.on.call(this, ev, fn);
 
-	  // If listening to data, and it has not explicitly been paused,
-	  // then call resume to start the flow of data on the next tick.
-	  if (ev === 'data' && false !== this._readableState.flowing) {
-	    this.resume();
-	  }
-
-	  if (ev === 'readable' && this.readable) {
+	  if (ev === 'data') {
+	    // Start flowing on next tick if stream isn't explicitly paused
+	    if (this._readableState.flowing !== false) this.resume();
+	  } else if (ev === 'readable') {
 	    var state = this._readableState;
-	    if (!state.readableListening) {
-	      state.readableListening = true;
+	    if (!state.endEmitted && !state.readableListening) {
+	      state.readableListening = state.needReadable = true;
 	      state.emittedReadable = false;
-	      state.needReadable = true;
 	      if (!state.reading) {
-	        var self = this;
-	        process.nextTick(function() {
-	          debug('readable nexttick read 0');
-	          self.read(0);
-	        });
+	        processNextTick(nReadingNextTick, this);
 	      } else if (state.length) {
 	        emitReadable(this, state);
 	      }
@@ -28573,17 +28760,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 	Readable.prototype.addListener = Readable.prototype.on;
 
+	function nReadingNextTick(self) {
+	  debug('readable nexttick read 0');
+	  self.read(0);
+	}
+
 	// pause() and resume() are remnants of the legacy readable stream API
 	// If the user uses them, then switch into old mode.
-	Readable.prototype.resume = function() {
+	Readable.prototype.resume = function () {
 	  var state = this._readableState;
 	  if (!state.flowing) {
 	    debug('resume');
 	    state.flowing = true;
-	    if (!state.reading) {
-	      debug('resume read 0');
-	      this.read(0);
-	    }
 	    resume(this, state);
 	  }
 	  return this;
@@ -28592,21 +28780,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	function resume(stream, state) {
 	  if (!state.resumeScheduled) {
 	    state.resumeScheduled = true;
-	    process.nextTick(function() {
-	      resume_(stream, state);
-	    });
+	    processNextTick(resume_, stream, state);
 	  }
 	}
 
 	function resume_(stream, state) {
+	  if (!state.reading) {
+	    debug('resume read 0');
+	    stream.read(0);
+	  }
+
 	  state.resumeScheduled = false;
+	  state.awaitDrain = 0;
 	  stream.emit('resume');
 	  flow(stream);
-	  if (state.flowing && !state.reading)
-	    stream.read(0);
+	  if (state.flowing && !state.reading) stream.read(0);
 	}
 
-	Readable.prototype.pause = function() {
+	Readable.prototype.pause = function () {
 	  debug('call pause flowing=%j', this._readableState.flowing);
 	  if (false !== this._readableState.flowing) {
 	    debug('pause');
@@ -28619,38 +28810,33 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	function flow(stream) {
 	  var state = stream._readableState;
 	  debug('flow', state.flowing);
-	  if (state.flowing) {
-	    do {
-	      var chunk = stream.read();
-	    } while (null !== chunk && state.flowing);
-	  }
+	  while (state.flowing && stream.read() !== null) {}
 	}
 
 	// wrap an old-style stream as the async data source.
 	// This is *not* part of the readable stream interface.
 	// It is an ugly unfortunate mess of history.
-	Readable.prototype.wrap = function(stream) {
+	Readable.prototype.wrap = function (stream) {
 	  var state = this._readableState;
 	  var paused = false;
 
 	  var self = this;
-	  stream.on('end', function() {
+	  stream.on('end', function () {
 	    debug('wrapped end');
 	    if (state.decoder && !state.ended) {
 	      var chunk = state.decoder.end();
-	      if (chunk && chunk.length)
-	        self.push(chunk);
+	      if (chunk && chunk.length) self.push(chunk);
 	    }
 
 	    self.push(null);
 	  });
 
-	  stream.on('data', function(chunk) {
+	  stream.on('data', function (chunk) {
 	    debug('wrapped data');
-	    if (state.decoder)
-	      chunk = state.decoder.write(chunk);
-	    if (!chunk || !state.objectMode && !chunk.length)
-	      return;
+	    if (state.decoder) chunk = state.decoder.write(chunk);
+
+	    // don't skip over falsy values in objectMode
+	    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
 
 	    var ret = self.push(chunk);
 	    if (!ret) {
@@ -28662,22 +28848,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  // proxy all the other methods.
 	  // important when wrapping filters and duplexes.
 	  for (var i in stream) {
-	    if (util.isFunction(stream[i]) && util.isUndefined(this[i])) {
-	      this[i] = function(method) { return function() {
-	        return stream[method].apply(stream, arguments);
-	      }}(i);
+	    if (this[i] === undefined && typeof stream[i] === 'function') {
+	      this[i] = function (method) {
+	        return function () {
+	          return stream[method].apply(stream, arguments);
+	        };
+	      }(i);
 	    }
 	  }
 
 	  // proxy certain important events.
 	  var events = ['error', 'close', 'destroy', 'pause', 'resume'];
-	  forEach(events, function(ev) {
+	  forEach(events, function (ev) {
 	    stream.on(ev, self.emit.bind(self, ev));
 	  });
 
 	  // when we try to consume some more bytes, simply unpause the
 	  // underlying stream.
-	  self._read = function(n) {
+	  self._read = function (n) {
 	    debug('wrapped _read', n);
 	    if (paused) {
 	      paused = false;
@@ -28688,74 +28876,106 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  return self;
 	};
 
-
-
 	// exposed for testing purposes only.
 	Readable._fromList = fromList;
 
 	// Pluck off n bytes from an array of buffers.
 	// Length is the combined lengths of all the buffers in the list.
+	// This function is designed to be inlinable, so please take care when making
+	// changes to the function body.
 	function fromList(n, state) {
-	  var list = state.buffer;
-	  var length = state.length;
-	  var stringMode = !!state.decoder;
-	  var objectMode = !!state.objectMode;
+	  // nothing buffered
+	  if (state.length === 0) return null;
+
 	  var ret;
-
-	  // nothing in the list, definitely empty.
-	  if (list.length === 0)
-	    return null;
-
-	  if (length === 0)
-	    ret = null;
-	  else if (objectMode)
-	    ret = list.shift();
-	  else if (!n || n >= length) {
-	    // read it all, truncate the array.
-	    if (stringMode)
-	      ret = list.join('');
-	    else
-	      ret = Buffer.concat(list, length);
-	    list.length = 0;
+	  if (state.objectMode) ret = state.buffer.shift();else if (!n || n >= state.length) {
+	    // read it all, truncate the list
+	    if (state.decoder) ret = state.buffer.join('');else if (state.buffer.length === 1) ret = state.buffer.head.data;else ret = state.buffer.concat(state.length);
+	    state.buffer.clear();
 	  } else {
-	    // read just some of it.
-	    if (n < list[0].length) {
-	      // just take a part of the first list item.
-	      // slice is the same for buffers and strings.
-	      var buf = list[0];
-	      ret = buf.slice(0, n);
-	      list[0] = buf.slice(n);
-	    } else if (n === list[0].length) {
-	      // first list is a perfect match
-	      ret = list.shift();
-	    } else {
-	      // complex case.
-	      // we have enough to cover it, but it spans past the first buffer.
-	      if (stringMode)
-	        ret = '';
-	      else
-	        ret = new Buffer(n);
-
-	      var c = 0;
-	      for (var i = 0, l = list.length; i < l && c < n; i++) {
-	        var buf = list[0];
-	        var cpy = Math.min(n - c, buf.length);
-
-	        if (stringMode)
-	          ret += buf.slice(0, cpy);
-	        else
-	          buf.copy(ret, c, 0, cpy);
-
-	        if (cpy < buf.length)
-	          list[0] = buf.slice(cpy);
-	        else
-	          list.shift();
-
-	        c += cpy;
-	      }
-	    }
+	    // read part of list
+	    ret = fromListPartial(n, state.buffer, state.decoder);
 	  }
 
+	  return ret;
+	}
+
+	// Extracts only enough buffered data to satisfy the amount requested.
+	// This function is designed to be inlinable, so please take care when making
+	// changes to the function body.
+	function fromListPartial(n, list, hasStrings) {
+	  var ret;
+	  if (n < list.head.data.length) {
+	    // slice is the same for buffers and strings
+	    ret = list.head.data.slice(0, n);
+	    list.head.data = list.head.data.slice(n);
+	  } else if (n === list.head.data.length) {
+	    // first chunk is a perfect match
+	    ret = list.shift();
+	  } else {
+	    // result spans more than one buffer
+	    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
+	  }
+	  return ret;
+	}
+
+	// Copies a specified amount of characters from the list of buffered data
+	// chunks.
+	// This function is designed to be inlinable, so please take care when making
+	// changes to the function body.
+	function copyFromBufferString(n, list) {
+	  var p = list.head;
+	  var c = 1;
+	  var ret = p.data;
+	  n -= ret.length;
+	  while (p = p.next) {
+	    var str = p.data;
+	    var nb = n > str.length ? str.length : n;
+	    if (nb === str.length) ret += str;else ret += str.slice(0, n);
+	    n -= nb;
+	    if (n === 0) {
+	      if (nb === str.length) {
+	        ++c;
+	        if (p.next) list.head = p.next;else list.head = list.tail = null;
+	      } else {
+	        list.head = p;
+	        p.data = str.slice(nb);
+	      }
+	      break;
+	    }
+	    ++c;
+	  }
+	  list.length -= c;
+	  return ret;
+	}
+
+	// Copies a specified amount of bytes from the list of buffered data chunks.
+	// This function is designed to be inlinable, so please take care when making
+	// changes to the function body.
+	function copyFromBuffer(n, list) {
+	  var ret = bufferShim.allocUnsafe(n);
+	  var p = list.head;
+	  var c = 1;
+	  p.data.copy(ret);
+	  n -= p.data.length;
+	  while (p = p.next) {
+	    var buf = p.data;
+	    var nb = n > buf.length ? buf.length : n;
+	    buf.copy(ret, ret.length - n, 0, nb);
+	    n -= nb;
+	    if (n === 0) {
+	      if (nb === buf.length) {
+	        ++c;
+	        if (p.next) list.head = p.next;else list.head = list.tail = null;
+	      } else {
+	        list.head = p;
+	        p.data = buf.slice(nb);
+	      }
+	      break;
+	    }
+	    ++c;
+	  }
+	  list.length -= c;
 	  return ret;
 	}
 
@@ -28764,48 +28984,215 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	  // If we get here before consuming all the bytes, then that is a
 	  // bug in node.  Should never happen.
-	  if (state.length > 0)
-	    throw new Error('endReadable called on non-empty stream');
+	  if (state.length > 0) throw new Error('"endReadable()" called on non-empty stream');
 
 	  if (!state.endEmitted) {
 	    state.ended = true;
-	    process.nextTick(function() {
-	      // Check that we didn't get one last unshift.
-	      if (!state.endEmitted && state.length === 0) {
-	        state.endEmitted = true;
-	        stream.readable = false;
-	        stream.emit('end');
-	      }
-	    });
+	    processNextTick(endReadableNT, state, stream);
 	  }
 	}
 
-	function forEach (xs, f) {
+	function endReadableNT(state, stream) {
+	  // Check that we didn't get one last unshift.
+	  if (!state.endEmitted && state.length === 0) {
+	    state.endEmitted = true;
+	    stream.readable = false;
+	    stream.emit('end');
+	  }
+	}
+
+	function forEach(xs, f) {
 	  for (var i = 0, l = xs.length; i < l; i++) {
 	    f(xs[i], i);
 	  }
 	}
 
-	function indexOf (xs, x) {
+	function indexOf(xs, x) {
 	  for (var i = 0, l = xs.length; i < l; i++) {
 	    if (xs[i] === x) return i;
 	  }
 	  return -1;
 	}
-
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	if (!process.version ||
+	    process.version.indexOf('v0.') === 0 ||
+	    process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
+	  module.exports = nextTick;
+	} else {
+	  module.exports = process.nextTick;
+	}
+
+	function nextTick(fn, arg1, arg2, arg3) {
+	  if (typeof fn !== 'function') {
+	    throw new TypeError('"callback" argument must be a function');
+	  }
+	  var len = arguments.length;
+	  var args, i;
+	  switch (len) {
+	  case 0:
+	  case 1:
+	    return process.nextTick(fn);
+	  case 2:
+	    return process.nextTick(function afterTickOne() {
+	      fn.call(null, arg1);
+	    });
+	  case 3:
+	    return process.nextTick(function afterTickTwo() {
+	      fn.call(null, arg1, arg2);
+	    });
+	  case 4:
+	    return process.nextTick(function afterTickThree() {
+	      fn.call(null, arg1, arg2, arg3);
+	    });
+	  default:
+	    args = new Array(len - 1);
+	    i = 0;
+	    while (i < args.length) {
+	      args[i++] = arguments[i];
+	    }
+	    return process.nextTick(function afterTick() {
+	      fn.apply(null, args);
+	    });
+	  }
+	}
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 23 */
 /***/ function(module, exports) {
 
+	var toString = {}.toString;
+
 	module.exports = Array.isArray || function (arr) {
-	  return Object.prototype.toString.call(arr) == '[object Array]';
+	  return toString.call(arr) == '[object Array]';
 	};
 
 
 /***/ },
-/* 23 */
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
+
+	var buffer = __webpack_require__(12);
+	var Buffer = buffer.Buffer;
+	var SlowBuffer = buffer.SlowBuffer;
+	var MAX_LEN = buffer.kMaxLength || 2147483647;
+	exports.alloc = function alloc(size, fill, encoding) {
+	  if (typeof Buffer.alloc === 'function') {
+	    return Buffer.alloc(size, fill, encoding);
+	  }
+	  if (typeof encoding === 'number') {
+	    throw new TypeError('encoding must not be number');
+	  }
+	  if (typeof size !== 'number') {
+	    throw new TypeError('size must be a number');
+	  }
+	  if (size > MAX_LEN) {
+	    throw new RangeError('size is too large');
+	  }
+	  var enc = encoding;
+	  var _fill = fill;
+	  if (_fill === undefined) {
+	    enc = undefined;
+	    _fill = 0;
+	  }
+	  var buf = new Buffer(size);
+	  if (typeof _fill === 'string') {
+	    var fillBuf = new Buffer(_fill, enc);
+	    var flen = fillBuf.length;
+	    var i = -1;
+	    while (++i < size) {
+	      buf[i] = fillBuf[i % flen];
+	    }
+	  } else {
+	    buf.fill(_fill);
+	  }
+	  return buf;
+	}
+	exports.allocUnsafe = function allocUnsafe(size) {
+	  if (typeof Buffer.allocUnsafe === 'function') {
+	    return Buffer.allocUnsafe(size);
+	  }
+	  if (typeof size !== 'number') {
+	    throw new TypeError('size must be a number');
+	  }
+	  if (size > MAX_LEN) {
+	    throw new RangeError('size is too large');
+	  }
+	  return new Buffer(size);
+	}
+	exports.from = function from(value, encodingOrOffset, length) {
+	  if (typeof Buffer.from === 'function' && (!global.Uint8Array || Uint8Array.from !== Buffer.from)) {
+	    return Buffer.from(value, encodingOrOffset, length);
+	  }
+	  if (typeof value === 'number') {
+	    throw new TypeError('"value" argument must not be a number');
+	  }
+	  if (typeof value === 'string') {
+	    return new Buffer(value, encodingOrOffset);
+	  }
+	  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
+	    var offset = encodingOrOffset;
+	    if (arguments.length === 1) {
+	      return new Buffer(value);
+	    }
+	    if (typeof offset === 'undefined') {
+	      offset = 0;
+	    }
+	    var len = length;
+	    if (typeof len === 'undefined') {
+	      len = value.byteLength - offset;
+	    }
+	    if (offset >= value.byteLength) {
+	      throw new RangeError('\'offset\' is out of bounds');
+	    }
+	    if (len > value.byteLength - offset) {
+	      throw new RangeError('\'length\' is out of bounds');
+	    }
+	    return new Buffer(value.slice(offset, offset + len));
+	  }
+	  if (Buffer.isBuffer(value)) {
+	    var out = new Buffer(value.length);
+	    value.copy(out, 0, 0, value.length);
+	    return out;
+	  }
+	  if (value) {
+	    if (Array.isArray(value) || (typeof ArrayBuffer !== 'undefined' && value.buffer instanceof ArrayBuffer) || 'length' in value) {
+	      return new Buffer(value);
+	    }
+	    if (value.type === 'Buffer' && Array.isArray(value.data)) {
+	      return new Buffer(value.data);
+	    }
+	  }
+
+	  throw new TypeError('First argument must be a string, Buffer, ' + 'ArrayBuffer, Array, or array-like object.');
+	}
+	exports.allocUnsafeSlow = function allocUnsafeSlow(size) {
+	  if (typeof Buffer.allocUnsafeSlow === 'function') {
+	    return Buffer.allocUnsafeSlow(size);
+	  }
+	  if (typeof size !== 'number') {
+	    throw new TypeError('size must be a number');
+	  }
+	  if (size >= MAX_LEN) {
+	    throw new RangeError('size is too large');
+	  }
+	  return new SlowBuffer(size);
+	}
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -28919,7 +29306,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -28948,83 +29335,135 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 26 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+	'use strict';
+
+	var Buffer = __webpack_require__(12).Buffer;
+	/*<replacement>*/
+	var bufferShim = __webpack_require__(24);
+	/*</replacement>*/
+
+	module.exports = BufferList;
+
+	function BufferList() {
+	  this.head = null;
+	  this.tail = null;
+	  this.length = 0;
+	}
+
+	BufferList.prototype.push = function (v) {
+	  var entry = { data: v, next: null };
+	  if (this.length > 0) this.tail.next = entry;else this.head = entry;
+	  this.tail = entry;
+	  ++this.length;
+	};
+
+	BufferList.prototype.unshift = function (v) {
+	  var entry = { data: v, next: this.head };
+	  if (this.length === 0) this.tail = entry;
+	  this.head = entry;
+	  ++this.length;
+	};
+
+	BufferList.prototype.shift = function () {
+	  if (this.length === 0) return;
+	  var ret = this.head.data;
+	  if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
+	  --this.length;
+	  return ret;
+	};
+
+	BufferList.prototype.clear = function () {
+	  this.head = this.tail = null;
+	  this.length = 0;
+	};
+
+	BufferList.prototype.join = function (s) {
+	  if (this.length === 0) return '';
+	  var p = this.head;
+	  var ret = '' + p.data;
+	  while (p = p.next) {
+	    ret += s + p.data;
+	  }return ret;
+	};
+
+	BufferList.prototype.concat = function (n) {
+	  if (this.length === 0) return bufferShim.alloc(0);
+	  if (this.length === 1) return this.head.data;
+	  var ret = bufferShim.allocUnsafe(n >>> 0);
+	  var p = this.head;
+	  var i = 0;
+	  while (p) {
+	    p.data.copy(ret, i);
+	    i += p.data.length;
+	    p = p.next;
+	  }
+	  return ret;
+	};
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
 
 	// a duplex stream is just a stream that is both readable and writable.
 	// Since JS doesn't have multiple prototypal inheritance, this class
 	// prototypally inherits from Readable, and then parasitically from
 	// Writable.
 
+	'use strict';
+
+	/*<replacement>*/
+
+	var objectKeys = Object.keys || function (obj) {
+	  var keys = [];
+	  for (var key in obj) {
+	    keys.push(key);
+	  }return keys;
+	};
+	/*</replacement>*/
+
 	module.exports = Duplex;
 
 	/*<replacement>*/
-	var objectKeys = Object.keys || function (obj) {
-	  var keys = [];
-	  for (var key in obj) keys.push(key);
-	  return keys;
-	}
+	var processNextTick = __webpack_require__(22);
 	/*</replacement>*/
 
-
 	/*<replacement>*/
-	var util = __webpack_require__(23);
-	util.inherits = __webpack_require__(24);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	var Readable = __webpack_require__(21);
-	var Writable = __webpack_require__(27);
+	var Writable = __webpack_require__(30);
 
 	util.inherits(Duplex, Readable);
 
-	forEach(objectKeys(Writable.prototype), function(method) {
-	  if (!Duplex.prototype[method])
-	    Duplex.prototype[method] = Writable.prototype[method];
-	});
+	var keys = objectKeys(Writable.prototype);
+	for (var v = 0; v < keys.length; v++) {
+	  var method = keys[v];
+	  if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+	}
 
 	function Duplex(options) {
-	  if (!(this instanceof Duplex))
-	    return new Duplex(options);
+	  if (!(this instanceof Duplex)) return new Duplex(options);
 
 	  Readable.call(this, options);
 	  Writable.call(this, options);
 
-	  if (options && options.readable === false)
-	    this.readable = false;
+	  if (options && options.readable === false) this.readable = false;
 
-	  if (options && options.writable === false)
-	    this.writable = false;
+	  if (options && options.writable === false) this.writable = false;
 
 	  this.allowHalfOpen = true;
-	  if (options && options.allowHalfOpen === false)
-	    this.allowHalfOpen = false;
+	  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
 
 	  this.once('end', onend);
 	}
@@ -29033,97 +29472,109 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	function onend() {
 	  // if we allow half-open state, or if the writable side ended,
 	  // then we're ok.
-	  if (this.allowHalfOpen || this._writableState.ended)
-	    return;
+	  if (this.allowHalfOpen || this._writableState.ended) return;
 
 	  // no more data can be written.
 	  // But allow more writes to happen in this tick.
-	  process.nextTick(this.end.bind(this));
+	  processNextTick(onEndNT, this);
 	}
 
-	function forEach (xs, f) {
+	function onEndNT(self) {
+	  self.end();
+	}
+
+	function forEach(xs, f) {
 	  for (var i = 0, l = xs.length; i < l; i++) {
 	    f(xs[i], i);
 	  }
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
 /***/ },
-/* 27 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// A bit simpler than readable streams.
-	// Implement an async ._write(chunk, cb), and it'll handle all
+	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// A bit simpler than readable streams.
+	// Implement an async ._write(chunk, encoding, cb), and it'll handle all
 	// the drain event emission and buffering.
+
+	'use strict';
 
 	module.exports = Writable;
 
 	/*<replacement>*/
-	var Buffer = __webpack_require__(12).Buffer;
+	var processNextTick = __webpack_require__(22);
+	/*</replacement>*/
+
+	/*<replacement>*/
+	var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
+	/*</replacement>*/
+
+	/*<replacement>*/
+	var Duplex;
 	/*</replacement>*/
 
 	Writable.WritableState = WritableState;
 
-
 	/*<replacement>*/
-	var util = __webpack_require__(23);
-	util.inherits = __webpack_require__(24);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
-	var Stream = __webpack_require__(17);
+	/*<replacement>*/
+	var internalUtil = {
+	  deprecate: __webpack_require__(33)
+	};
+	/*</replacement>*/
+
+	/*<replacement>*/
+	var Stream;
+	(function () {
+	  try {
+	    Stream = __webpack_require__(17);
+	  } catch (_) {} finally {
+	    if (!Stream) Stream = __webpack_require__(18).EventEmitter;
+	  }
+	})();
+	/*</replacement>*/
+
+	var Buffer = __webpack_require__(12).Buffer;
+	/*<replacement>*/
+	var bufferShim = __webpack_require__(24);
+	/*</replacement>*/
 
 	util.inherits(Writable, Stream);
+
+	function nop() {}
 
 	function WriteReq(chunk, encoding, cb) {
 	  this.chunk = chunk;
 	  this.encoding = encoding;
 	  this.callback = cb;
+	  this.next = null;
 	}
 
 	function WritableState(options, stream) {
-	  var Duplex = __webpack_require__(26);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  options = options || {};
-
-	  // the point at which write() starts returning false
-	  // Note: 0 is a valid value, means that we always return false if
-	  // the entire buffer is not flushed immediately on write()
-	  var hwm = options.highWaterMark;
-	  var defaultHwm = options.objectMode ? 16 : 16 * 1024;
-	  this.highWaterMark = (hwm || hwm === 0) ? hwm : defaultHwm;
 
 	  // object stream flag to indicate whether or not this stream
 	  // contains buffers or objects.
 	  this.objectMode = !!options.objectMode;
 
-	  if (stream instanceof Duplex)
-	    this.objectMode = this.objectMode || !!options.writableObjectMode;
+	  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
+
+	  // the point at which write() starts returning false
+	  // Note: 0 is a valid value, means that we always return false if
+	  // the entire buffer is not flushed immediately on write()
+	  var hwm = options.highWaterMark;
+	  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+	  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
 
 	  // cast to ints.
-	  this.highWaterMark = ~~this.highWaterMark;
+	  this.highWaterMark = ~ ~this.highWaterMark;
 
+	  // drain event flag.
 	  this.needDrain = false;
 	  // at the start of calling end()
 	  this.ending = false;
@@ -29166,7 +29617,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  this.bufferProcessing = false;
 
 	  // the callback that's passed to _write(chunk,cb)
-	  this.onwrite = function(er) {
+	  this.onwrite = function (er) {
 	    onwrite(stream, er);
 	  };
 
@@ -29176,7 +29627,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  // the amount that is being written when _write is called.
 	  this.writelen = 0;
 
-	  this.buffer = [];
+	  this.bufferedRequest = null;
+	  this.lastBufferedRequest = null;
 
 	  // number of pending user-supplied write callbacks
 	  // this must be 0 before 'finish' can be emitted
@@ -29188,37 +29640,91 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	  // True if the error was already emitted and should not be thrown again
 	  this.errorEmitted = false;
+
+	  // count buffered requests
+	  this.bufferedRequestCount = 0;
+
+	  // allocate the first CorkedRequest, there is always
+	  // one allocated and free to use, and we maintain at most two
+	  this.corkedRequestsFree = new CorkedRequest(this);
+	}
+
+	WritableState.prototype.getBuffer = function getBuffer() {
+	  var current = this.bufferedRequest;
+	  var out = [];
+	  while (current) {
+	    out.push(current);
+	    current = current.next;
+	  }
+	  return out;
+	};
+
+	(function () {
+	  try {
+	    Object.defineProperty(WritableState.prototype, 'buffer', {
+	      get: internalUtil.deprecate(function () {
+	        return this.getBuffer();
+	      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.')
+	    });
+	  } catch (_) {}
+	})();
+
+	// Test _writableState for inheritance to account for Duplex streams,
+	// whose prototype chain only points to Readable.
+	var realHasInstance;
+	if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
+	  realHasInstance = Function.prototype[Symbol.hasInstance];
+	  Object.defineProperty(Writable, Symbol.hasInstance, {
+	    value: function (object) {
+	      if (realHasInstance.call(this, object)) return true;
+
+	      return object && object._writableState instanceof WritableState;
+	    }
+	  });
+	} else {
+	  realHasInstance = function (object) {
+	    return object instanceof this;
+	  };
 	}
 
 	function Writable(options) {
-	  var Duplex = __webpack_require__(26);
+	  Duplex = Duplex || __webpack_require__(29);
 
-	  // Writable ctor is applied to Duplexes, though they're not
-	  // instanceof Writable, they're instanceof Readable.
-	  if (!(this instanceof Writable) && !(this instanceof Duplex))
+	  // Writable ctor is applied to Duplexes, too.
+	  // `realHasInstance` is necessary because using plain `instanceof`
+	  // would return false, as no `_writableState` property is attached.
+
+	  // Trying to use the custom `instanceof` for Writable here will also break the
+	  // Node.js LazyTransform implementation, which has a non-trivial getter for
+	  // `_writableState` that would lead to infinite recursion.
+	  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
 	    return new Writable(options);
+	  }
 
 	  this._writableState = new WritableState(options, this);
 
 	  // legacy.
 	  this.writable = true;
 
+	  if (options) {
+	    if (typeof options.write === 'function') this._write = options.write;
+
+	    if (typeof options.writev === 'function') this._writev = options.writev;
+	  }
+
 	  Stream.call(this);
 	}
 
 	// Otherwise people can pipe Writable streams, which is just wrong.
-	Writable.prototype.pipe = function() {
-	  this.emit('error', new Error('Cannot pipe. Not readable.'));
+	Writable.prototype.pipe = function () {
+	  this.emit('error', new Error('Cannot pipe, not readable'));
 	};
 
-
-	function writeAfterEnd(stream, state, cb) {
+	function writeAfterEnd(stream, cb) {
 	  var er = new Error('write after end');
 	  // TODO: defer error events consistently everywhere, not just the cb
 	  stream.emit('error', er);
-	  process.nextTick(function() {
-	    cb(er);
-	  });
+	  processNextTick(cb, er);
 	}
 
 	// If we get something that is not a buffer, string, null, or undefined,
@@ -29228,40 +29734,37 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// how many bytes or characters.
 	function validChunk(stream, state, chunk, cb) {
 	  var valid = true;
-	  if (!util.isBuffer(chunk) &&
-	      !util.isString(chunk) &&
-	      !util.isNullOrUndefined(chunk) &&
-	      !state.objectMode) {
-	    var er = new TypeError('Invalid non-string/buffer chunk');
+	  var er = false;
+	  // Always throw error if a null is written
+	  // if we are not in object mode then throw
+	  // if it is not a buffer, string, or undefined.
+	  if (chunk === null) {
+	    er = new TypeError('May not write null values to stream');
+	  } else if (!Buffer.isBuffer(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+	    er = new TypeError('Invalid non-string/buffer chunk');
+	  }
+	  if (er) {
 	    stream.emit('error', er);
-	    process.nextTick(function() {
-	      cb(er);
-	    });
+	    processNextTick(cb, er);
 	    valid = false;
 	  }
 	  return valid;
 	}
 
-	Writable.prototype.write = function(chunk, encoding, cb) {
+	Writable.prototype.write = function (chunk, encoding, cb) {
 	  var state = this._writableState;
 	  var ret = false;
 
-	  if (util.isFunction(encoding)) {
+	  if (typeof encoding === 'function') {
 	    cb = encoding;
 	    encoding = null;
 	  }
 
-	  if (util.isBuffer(chunk))
-	    encoding = 'buffer';
-	  else if (!encoding)
-	    encoding = state.defaultEncoding;
+	  if (Buffer.isBuffer(chunk)) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
 
-	  if (!util.isFunction(cb))
-	    cb = function() {};
+	  if (typeof cb !== 'function') cb = nop;
 
-	  if (state.ended)
-	    writeAfterEnd(this, state, cb);
-	  else if (validChunk(this, state, chunk, cb)) {
+	  if (state.ended) writeAfterEnd(this, cb);else if (validChunk(this, state, chunk, cb)) {
 	    state.pendingcb++;
 	    ret = writeOrBuffer(this, state, chunk, encoding, cb);
 	  }
@@ -29269,32 +29772,33 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  return ret;
 	};
 
-	Writable.prototype.cork = function() {
+	Writable.prototype.cork = function () {
 	  var state = this._writableState;
 
 	  state.corked++;
 	};
 
-	Writable.prototype.uncork = function() {
+	Writable.prototype.uncork = function () {
 	  var state = this._writableState;
 
 	  if (state.corked) {
 	    state.corked--;
 
-	    if (!state.writing &&
-	        !state.corked &&
-	        !state.finished &&
-	        !state.bufferProcessing &&
-	        state.buffer.length)
-	      clearBuffer(this, state);
+	    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
 	  }
 	};
 
+	Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+	  // node::ParseEncoding() requires lower case.
+	  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
+	  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
+	  this._writableState.defaultEncoding = encoding;
+	  return this;
+	};
+
 	function decodeChunk(state, chunk, encoding) {
-	  if (!state.objectMode &&
-	      state.decodeStrings !== false &&
-	      util.isString(chunk)) {
-	    chunk = new Buffer(chunk, encoding);
+	  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
+	    chunk = bufferShim.from(chunk, encoding);
 	  }
 	  return chunk;
 	}
@@ -29304,21 +29808,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// If we return false, then we need a drain event, so set that flag.
 	function writeOrBuffer(stream, state, chunk, encoding, cb) {
 	  chunk = decodeChunk(state, chunk, encoding);
-	  if (util.isBuffer(chunk))
-	    encoding = 'buffer';
+
+	  if (Buffer.isBuffer(chunk)) encoding = 'buffer';
 	  var len = state.objectMode ? 1 : chunk.length;
 
 	  state.length += len;
 
 	  var ret = state.length < state.highWaterMark;
 	  // we must ensure that previous needDrain will not be reset to false.
-	  if (!ret)
-	    state.needDrain = true;
+	  if (!ret) state.needDrain = true;
 
-	  if (state.writing || state.corked)
-	    state.buffer.push(new WriteReq(chunk, encoding, cb));
-	  else
+	  if (state.writing || state.corked) {
+	    var last = state.lastBufferedRequest;
+	    state.lastBufferedRequest = new WriteReq(chunk, encoding, cb);
+	    if (last) {
+	      last.next = state.lastBufferedRequest;
+	    } else {
+	      state.bufferedRequest = state.lastBufferedRequest;
+	    }
+	    state.bufferedRequestCount += 1;
+	  } else {
 	    doWrite(stream, state, false, len, chunk, encoding, cb);
+	  }
 
 	  return ret;
 	}
@@ -29328,23 +29839,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  state.writecb = cb;
 	  state.writing = true;
 	  state.sync = true;
-	  if (writev)
-	    stream._writev(chunk, state.onwrite);
-	  else
-	    stream._write(chunk, encoding, state.onwrite);
+	  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
 	  state.sync = false;
 	}
 
 	function onwriteError(stream, state, sync, er, cb) {
-	  if (sync)
-	    process.nextTick(function() {
-	      state.pendingcb--;
-	      cb(er);
-	    });
-	  else {
-	    state.pendingcb--;
-	    cb(er);
-	  }
+	  --state.pendingcb;
+	  if (sync) processNextTick(cb, er);else cb(er);
 
 	  stream._writableState.errorEmitted = true;
 	  stream.emit('error', er);
@@ -29364,32 +29865,26 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	  onwriteStateUpdate(state);
 
-	  if (er)
-	    onwriteError(stream, state, sync, er, cb);
-	  else {
+	  if (er) onwriteError(stream, state, sync, er, cb);else {
 	    // Check if we're actually ready to finish, but don't emit yet
-	    var finished = needFinish(stream, state);
+	    var finished = needFinish(state);
 
-	    if (!finished &&
-	        !state.corked &&
-	        !state.bufferProcessing &&
-	        state.buffer.length) {
+	    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
 	      clearBuffer(stream, state);
 	    }
 
 	    if (sync) {
-	      process.nextTick(function() {
-	        afterWrite(stream, state, finished, cb);
-	      });
+	      /*<replacement>*/
+	      asyncWrite(afterWrite, stream, state, finished, cb);
+	      /*</replacement>*/
 	    } else {
-	      afterWrite(stream, state, finished, cb);
-	    }
+	        afterWrite(stream, state, finished, cb);
+	      }
 	  }
 	}
 
 	function afterWrite(stream, state, finished, cb) {
-	  if (!finished)
-	    onwriteDrain(stream, state);
+	  if (!finished) onwriteDrain(stream, state);
 	  state.pendingcb--;
 	  cb();
 	  finishMaybe(stream, state);
@@ -29405,80 +29900,83 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  }
 	}
 
-
 	// if there's something in the buffer waiting, then process it
 	function clearBuffer(stream, state) {
 	  state.bufferProcessing = true;
+	  var entry = state.bufferedRequest;
 
-	  if (stream._writev && state.buffer.length > 1) {
+	  if (stream._writev && entry && entry.next) {
 	    // Fast case, write everything using _writev()
-	    var cbs = [];
-	    for (var c = 0; c < state.buffer.length; c++)
-	      cbs.push(state.buffer[c].callback);
+	    var l = state.bufferedRequestCount;
+	    var buffer = new Array(l);
+	    var holder = state.corkedRequestsFree;
+	    holder.entry = entry;
 
-	    // count the one we are adding, as well.
-	    // TODO(isaacs) clean this up
+	    var count = 0;
+	    while (entry) {
+	      buffer[count] = entry;
+	      entry = entry.next;
+	      count += 1;
+	    }
+
+	    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
+
+	    // doWrite is almost always async, defer these to save a bit of time
+	    // as the hot path ends with doWrite
 	    state.pendingcb++;
-	    doWrite(stream, state, true, state.length, state.buffer, '', function(err) {
-	      for (var i = 0; i < cbs.length; i++) {
-	        state.pendingcb--;
-	        cbs[i](err);
-	      }
-	    });
-
-	    // Clear buffer
-	    state.buffer = [];
+	    state.lastBufferedRequest = null;
+	    if (holder.next) {
+	      state.corkedRequestsFree = holder.next;
+	      holder.next = null;
+	    } else {
+	      state.corkedRequestsFree = new CorkedRequest(state);
+	    }
 	  } else {
 	    // Slow case, write chunks one-by-one
-	    for (var c = 0; c < state.buffer.length; c++) {
-	      var entry = state.buffer[c];
+	    while (entry) {
 	      var chunk = entry.chunk;
 	      var encoding = entry.encoding;
 	      var cb = entry.callback;
 	      var len = state.objectMode ? 1 : chunk.length;
 
 	      doWrite(stream, state, false, len, chunk, encoding, cb);
-
+	      entry = entry.next;
 	      // if we didn't call the onwrite immediately, then
 	      // it means that we need to wait until it does.
 	      // also, that means that the chunk and cb are currently
 	      // being processed, so move the buffer counter past them.
 	      if (state.writing) {
-	        c++;
 	        break;
 	      }
 	    }
 
-	    if (c < state.buffer.length)
-	      state.buffer = state.buffer.slice(c);
-	    else
-	      state.buffer.length = 0;
+	    if (entry === null) state.lastBufferedRequest = null;
 	  }
 
+	  state.bufferedRequestCount = 0;
+	  state.bufferedRequest = entry;
 	  state.bufferProcessing = false;
 	}
 
-	Writable.prototype._write = function(chunk, encoding, cb) {
-	  cb(new Error('not implemented'));
-
+	Writable.prototype._write = function (chunk, encoding, cb) {
+	  cb(new Error('_write() is not implemented'));
 	};
 
 	Writable.prototype._writev = null;
 
-	Writable.prototype.end = function(chunk, encoding, cb) {
+	Writable.prototype.end = function (chunk, encoding, cb) {
 	  var state = this._writableState;
 
-	  if (util.isFunction(chunk)) {
+	  if (typeof chunk === 'function') {
 	    cb = chunk;
 	    chunk = null;
 	    encoding = null;
-	  } else if (util.isFunction(encoding)) {
+	  } else if (typeof encoding === 'function') {
 	    cb = encoding;
 	    encoding = null;
 	  }
 
-	  if (!util.isNullOrUndefined(chunk))
-	    this.write(chunk, encoding);
+	  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
 
 	  // .end() fully uncorks
 	  if (state.corked) {
@@ -29487,16 +29985,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  }
 
 	  // ignore unnecessary end() calls.
-	  if (!state.ending && !state.finished)
-	    endWritable(this, state, cb);
+	  if (!state.ending && !state.finished) endWritable(this, state, cb);
 	};
 
-
-	function needFinish(stream, state) {
-	  return (state.ending &&
-	          state.length === 0 &&
-	          !state.finished &&
-	          !state.writing);
+	function needFinish(state) {
+	  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
 	}
 
 	function prefinish(stream, state) {
@@ -29507,14 +30000,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 	function finishMaybe(stream, state) {
-	  var need = needFinish(stream, state);
+	  var need = needFinish(state);
 	  if (need) {
 	    if (state.pendingcb === 0) {
 	      prefinish(stream, state);
 	      state.finished = true;
 	      stream.emit('finish');
-	    } else
+	    } else {
 	      prefinish(stream, state);
+	    }
 	  }
 	  return need;
 	}
@@ -29523,18 +30017,366 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  state.ending = true;
 	  finishMaybe(stream, state);
 	  if (cb) {
-	    if (state.finished)
-	      process.nextTick(cb);
-	    else
-	      stream.once('finish', cb);
+	    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
 	  }
 	  state.ended = true;
+	  stream.writable = false;
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	// It seems a linked list but it is not
+	// there will be only 2 of these for each stream
+	function CorkedRequest(state) {
+	  var _this = this;
+
+	  this.next = null;
+	  this.entry = null;
+
+	  this.finish = function (err) {
+	    var entry = _this.entry;
+	    _this.entry = null;
+	    while (entry) {
+	      var cb = entry.callback;
+	      state.pendingcb--;
+	      cb(err);
+	      entry = entry.next;
+	    }
+	    if (state.corkedRequestsFree) {
+	      state.corkedRequestsFree.next = _this;
+	    } else {
+	      state.corkedRequestsFree = _this;
+	    }
+	  };
+	}
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(31).setImmediate))
 
 /***/ },
-/* 28 */
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var apply = Function.prototype.apply;
+
+	// DOM APIs, for completeness
+
+	exports.setTimeout = function() {
+	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+	};
+	exports.setInterval = function() {
+	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+	};
+	exports.clearTimeout =
+	exports.clearInterval = function(timeout) {
+	  if (timeout) {
+	    timeout.close();
+	  }
+	};
+
+	function Timeout(id, clearFn) {
+	  this._id = id;
+	  this._clearFn = clearFn;
+	}
+	Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+	Timeout.prototype.close = function() {
+	  this._clearFn.call(window, this._id);
+	};
+
+	// Does not start the time, just sets up the members needed.
+	exports.enroll = function(item, msecs) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = msecs;
+	};
+
+	exports.unenroll = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = -1;
+	};
+
+	exports._unrefActive = exports.active = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+
+	  var msecs = item._idleTimeout;
+	  if (msecs >= 0) {
+	    item._idleTimeoutId = setTimeout(function onTimeout() {
+	      if (item._onTimeout)
+	        item._onTimeout();
+	    }, msecs);
+	  }
+	};
+
+	// setimmediate attaches itself to the global object
+	__webpack_require__(32);
+	exports.setImmediate = setImmediate;
+	exports.clearImmediate = clearImmediate;
+
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+	    "use strict";
+
+	    if (global.setImmediate) {
+	        return;
+	    }
+
+	    var nextHandle = 1; // Spec says greater than zero
+	    var tasksByHandle = {};
+	    var currentlyRunningATask = false;
+	    var doc = global.document;
+	    var registerImmediate;
+
+	    function setImmediate(callback) {
+	      // Callback can either be a function or a string
+	      if (typeof callback !== "function") {
+	        callback = new Function("" + callback);
+	      }
+	      // Copy function arguments
+	      var args = new Array(arguments.length - 1);
+	      for (var i = 0; i < args.length; i++) {
+	          args[i] = arguments[i + 1];
+	      }
+	      // Store and register the task
+	      var task = { callback: callback, args: args };
+	      tasksByHandle[nextHandle] = task;
+	      registerImmediate(nextHandle);
+	      return nextHandle++;
+	    }
+
+	    function clearImmediate(handle) {
+	        delete tasksByHandle[handle];
+	    }
+
+	    function run(task) {
+	        var callback = task.callback;
+	        var args = task.args;
+	        switch (args.length) {
+	        case 0:
+	            callback();
+	            break;
+	        case 1:
+	            callback(args[0]);
+	            break;
+	        case 2:
+	            callback(args[0], args[1]);
+	            break;
+	        case 3:
+	            callback(args[0], args[1], args[2]);
+	            break;
+	        default:
+	            callback.apply(undefined, args);
+	            break;
+	        }
+	    }
+
+	    function runIfPresent(handle) {
+	        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+	        // So if we're currently running a task, we'll need to delay this invocation.
+	        if (currentlyRunningATask) {
+	            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+	            // "too much recursion" error.
+	            setTimeout(runIfPresent, 0, handle);
+	        } else {
+	            var task = tasksByHandle[handle];
+	            if (task) {
+	                currentlyRunningATask = true;
+	                try {
+	                    run(task);
+	                } finally {
+	                    clearImmediate(handle);
+	                    currentlyRunningATask = false;
+	                }
+	            }
+	        }
+	    }
+
+	    function installNextTickImplementation() {
+	        registerImmediate = function(handle) {
+	            process.nextTick(function () { runIfPresent(handle); });
+	        };
+	    }
+
+	    function canUsePostMessage() {
+	        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+	        // where `global.postMessage` means something completely different and can't be used for this purpose.
+	        if (global.postMessage && !global.importScripts) {
+	            var postMessageIsAsynchronous = true;
+	            var oldOnMessage = global.onmessage;
+	            global.onmessage = function() {
+	                postMessageIsAsynchronous = false;
+	            };
+	            global.postMessage("", "*");
+	            global.onmessage = oldOnMessage;
+	            return postMessageIsAsynchronous;
+	        }
+	    }
+
+	    function installPostMessageImplementation() {
+	        // Installs an event handler on `global` for the `message` event: see
+	        // * https://developer.mozilla.org/en/DOM/window.postMessage
+	        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+	        var messagePrefix = "setImmediate$" + Math.random() + "$";
+	        var onGlobalMessage = function(event) {
+	            if (event.source === global &&
+	                typeof event.data === "string" &&
+	                event.data.indexOf(messagePrefix) === 0) {
+	                runIfPresent(+event.data.slice(messagePrefix.length));
+	            }
+	        };
+
+	        if (global.addEventListener) {
+	            global.addEventListener("message", onGlobalMessage, false);
+	        } else {
+	            global.attachEvent("onmessage", onGlobalMessage);
+	        }
+
+	        registerImmediate = function(handle) {
+	            global.postMessage(messagePrefix + handle, "*");
+	        };
+	    }
+
+	    function installMessageChannelImplementation() {
+	        var channel = new MessageChannel();
+	        channel.port1.onmessage = function(event) {
+	            var handle = event.data;
+	            runIfPresent(handle);
+	        };
+
+	        registerImmediate = function(handle) {
+	            channel.port2.postMessage(handle);
+	        };
+	    }
+
+	    function installReadyStateChangeImplementation() {
+	        var html = doc.documentElement;
+	        registerImmediate = function(handle) {
+	            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+	            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+	            var script = doc.createElement("script");
+	            script.onreadystatechange = function () {
+	                runIfPresent(handle);
+	                script.onreadystatechange = null;
+	                html.removeChild(script);
+	                script = null;
+	            };
+	            html.appendChild(script);
+	        };
+	    }
+
+	    function installSetTimeoutImplementation() {
+	        registerImmediate = function(handle) {
+	            setTimeout(runIfPresent, 0, handle);
+	        };
+	    }
+
+	    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+	    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+	    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+	    // Don't get fooled by e.g. browserify environments.
+	    if ({}.toString.call(global.process) === "[object process]") {
+	        // For Node.js before 0.9
+	        installNextTickImplementation();
+
+	    } else if (canUsePostMessage()) {
+	        // For non-IE10 modern browsers
+	        installPostMessageImplementation();
+
+	    } else if (global.MessageChannel) {
+	        // For web workers, where supported
+	        installMessageChannelImplementation();
+
+	    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+	        // For IE 6–8
+	        installReadyStateChangeImplementation();
+
+	    } else {
+	        // For older browsers
+	        installSetTimeoutImplementation();
+	    }
+
+	    attachTo.setImmediate = setImmediate;
+	    attachTo.clearImmediate = clearImmediate;
+	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(5)))
+
+/***/ },
+/* 33 */
+/***/ function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {
+	/**
+	 * Module exports.
+	 */
+
+	module.exports = deprecate;
+
+	/**
+	 * Mark that a method should not be used.
+	 * Returns a modified function which warns once by default.
+	 *
+	 * If `localStorage.noDeprecation = true` is set, then it is a no-op.
+	 *
+	 * If `localStorage.throwDeprecation = true` is set, then deprecated functions
+	 * will throw an Error when invoked.
+	 *
+	 * If `localStorage.traceDeprecation = true` is set, then deprecated functions
+	 * will invoke `console.trace()` instead of `console.error()`.
+	 *
+	 * @param {Function} fn - the function to deprecate
+	 * @param {String} msg - the string to print to the console when `fn` is invoked
+	 * @returns {Function} a new "deprecated" version of `fn`
+	 * @api public
+	 */
+
+	function deprecate (fn, msg) {
+	  if (config('noDeprecation')) {
+	    return fn;
+	  }
+
+	  var warned = false;
+	  function deprecated() {
+	    if (!warned) {
+	      if (config('throwDeprecation')) {
+	        throw new Error(msg);
+	      } else if (config('traceDeprecation')) {
+	        console.trace(msg);
+	      } else {
+	        console.warn(msg);
+	      }
+	      warned = true;
+	    }
+	    return fn.apply(this, arguments);
+	  }
+
+	  return deprecated;
+	}
+
+	/**
+	 * Checks `localStorage` for boolean values for the given `name`.
+	 *
+	 * @param {String} name
+	 * @returns {Boolean}
+	 * @api private
+	 */
+
+	function config (name) {
+	  // accessing global.localStorage can trigger a DOMException in sandboxed iframes
+	  try {
+	    if (!global.localStorage) return false;
+	  } catch (_) {
+	    return false;
+	  }
+	  var val = global.localStorage[name];
+	  if (null == val) return false;
+	  return String(val).toLowerCase() === 'true';
+	}
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -29761,30 +30603,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 29 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
-
-	// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 
 	// a transform stream is a readable/writable stream where you do
 	// something with the data.  Sometimes it's called a "filter",
@@ -29828,20 +30648,21 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// would be consumed, and then the rest would wait (un-transformed) until
 	// the results of the previous transformed chunk were consumed.
 
+	'use strict';
+
 	module.exports = Transform;
 
-	var Duplex = __webpack_require__(26);
+	var Duplex = __webpack_require__(29);
 
 	/*<replacement>*/
-	var util = __webpack_require__(23);
-	util.inherits = __webpack_require__(24);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	util.inherits(Transform, Duplex);
 
-
-	function TransformState(options, stream) {
-	  this.afterTransform = function(er, data) {
+	function TransformState(stream) {
+	  this.afterTransform = function (er, data) {
 	    return afterTransform(stream, er, data);
 	  };
 
@@ -29849,6 +30670,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  this.transforming = false;
 	  this.writecb = null;
 	  this.writechunk = null;
+	  this.writeencoding = null;
 	}
 
 	function afterTransform(stream, er, data) {
@@ -29857,17 +30679,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	  var cb = ts.writecb;
 
-	  if (!cb)
-	    return stream.emit('error', new Error('no writecb in Transform class'));
+	  if (!cb) return stream.emit('error', new Error('no writecb in Transform class'));
 
 	  ts.writechunk = null;
 	  ts.writecb = null;
 
-	  if (!util.isNullOrUndefined(data))
-	    stream.push(data);
+	  if (data !== null && data !== undefined) stream.push(data);
 
-	  if (cb)
-	    cb(er);
+	  cb(er);
 
 	  var rs = stream._readableState;
 	  rs.reading = false;
@@ -29876,16 +30695,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  }
 	}
 
-
 	function Transform(options) {
-	  if (!(this instanceof Transform))
-	    return new Transform(options);
+	  if (!(this instanceof Transform)) return new Transform(options);
 
 	  Duplex.call(this, options);
 
-	  this._transformState = new TransformState(options, this);
+	  this._transformState = new TransformState(this);
 
-	  // when the writable side finishes, then flush out anything remaining.
 	  var stream = this;
 
 	  // start out asking for a readable event once data is transformed.
@@ -29896,17 +30712,21 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  // sync guard flag.
 	  this._readableState.sync = false;
 
-	  this.once('prefinish', function() {
-	    if (util.isFunction(this._flush))
-	      this._flush(function(er) {
-	        done(stream, er);
-	      });
-	    else
-	      done(stream);
+	  if (options) {
+	    if (typeof options.transform === 'function') this._transform = options.transform;
+
+	    if (typeof options.flush === 'function') this._flush = options.flush;
+	  }
+
+	  // When the writable side finishes, then flush out anything remaining.
+	  this.once('prefinish', function () {
+	    if (typeof this._flush === 'function') this._flush(function (er, data) {
+	      done(stream, er, data);
+	    });else done(stream);
 	  });
 	}
 
-	Transform.prototype.push = function(chunk, encoding) {
+	Transform.prototype.push = function (chunk, encoding) {
 	  this._transformState.needTransform = false;
 	  return Duplex.prototype.push.call(this, chunk, encoding);
 	};
@@ -29921,31 +30741,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	// Call `cb(err)` when you are done with this chunk.  If you pass
 	// an error, then that'll put the hurt on the whole operation.  If you
 	// never call cb(), then you'll never get another chunk.
-	Transform.prototype._transform = function(chunk, encoding, cb) {
-	  throw new Error('not implemented');
+	Transform.prototype._transform = function (chunk, encoding, cb) {
+	  throw new Error('_transform() is not implemented');
 	};
 
-	Transform.prototype._write = function(chunk, encoding, cb) {
+	Transform.prototype._write = function (chunk, encoding, cb) {
 	  var ts = this._transformState;
 	  ts.writecb = cb;
 	  ts.writechunk = chunk;
 	  ts.writeencoding = encoding;
 	  if (!ts.transforming) {
 	    var rs = this._readableState;
-	    if (ts.needTransform ||
-	        rs.needReadable ||
-	        rs.length < rs.highWaterMark)
-	      this._read(rs.highWaterMark);
+	    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) this._read(rs.highWaterMark);
 	  }
 	};
 
 	// Doesn't matter what the args are here.
 	// _transform does all the work.
 	// That we got here means that the readable side wants more data.
-	Transform.prototype._read = function(n) {
+	Transform.prototype._read = function (n) {
 	  var ts = this._transformState;
 
-	  if (!util.isNull(ts.writechunk) && ts.writecb && !ts.transforming) {
+	  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
 	    ts.transforming = true;
 	    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
 	  } else {
@@ -29955,108 +30772,84 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  }
 	};
 
+	function done(stream, er, data) {
+	  if (er) return stream.emit('error', er);
 
-	function done(stream, er) {
-	  if (er)
-	    return stream.emit('error', er);
+	  if (data !== null && data !== undefined) stream.push(data);
 
 	  // if there's nothing in the write buffer, then that means
 	  // that nothing more will ever be provided
 	  var ws = stream._writableState;
 	  var ts = stream._transformState;
 
-	  if (ws.length)
-	    throw new Error('calling transform done when ws.length != 0');
+	  if (ws.length) throw new Error('Calling transform done when ws.length != 0');
 
-	  if (ts.transforming)
-	    throw new Error('calling transform done when still transforming');
+	  if (ts.transforming) throw new Error('Calling transform done when still transforming');
 
 	  return stream.push(null);
 	}
 
-
 /***/ },
-/* 30 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
-
-	// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	// a passthrough stream.
 	// basically just the most minimal sort of Transform stream.
 	// Every written chunk gets output as-is.
 
+	'use strict';
+
 	module.exports = PassThrough;
 
-	var Transform = __webpack_require__(29);
+	var Transform = __webpack_require__(35);
 
 	/*<replacement>*/
-	var util = __webpack_require__(23);
-	util.inherits = __webpack_require__(24);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	util.inherits(PassThrough, Transform);
 
 	function PassThrough(options) {
-	  if (!(this instanceof PassThrough))
-	    return new PassThrough(options);
+	  if (!(this instanceof PassThrough)) return new PassThrough(options);
 
 	  Transform.call(this, options);
 	}
 
-	PassThrough.prototype._transform = function(chunk, encoding, cb) {
+	PassThrough.prototype._transform = function (chunk, encoding, cb) {
 	  cb(null, chunk);
 	};
 
-
 /***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(27)
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(26)
-
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(29)
-
-
-/***/ },
-/* 34 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(30)
 
 
 /***/ },
-/* 35 */
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(29)
+
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(35)
+
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(36)
+
+
+/***/ },
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30106,7 +30899,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	    var dataUrlPrefix = "data:";
 
-	    if (input.substr(dataUrlPrefix.length) === dataUrlPrefix) {
+	    if (input.substr(0, dataUrlPrefix.length) === dataUrlPrefix) {
 	        // This is a common error: people give a data url
 	        // (data:image/png;base64,iVBOR...) with a {base64: true} and
 	        // wonders why things don't work.
@@ -30168,7 +30961,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 36 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
@@ -30209,31 +31002,31 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 37 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(38);
-	module.exports = __webpack_require__(41).setImmediate;
+	__webpack_require__(44);
+	module.exports = __webpack_require__(47).setImmediate;
 
 /***/ },
-/* 38 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var $export = __webpack_require__(39)
-	  , $task   = __webpack_require__(54);
+	var $export = __webpack_require__(45)
+	  , $task   = __webpack_require__(60);
 	$export($export.G + $export.B, {
 	  setImmediate:   $task.set,
 	  clearImmediate: $task.clear
 	});
 
 /***/ },
-/* 39 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(40)
-	  , core      = __webpack_require__(41)
-	  , ctx       = __webpack_require__(42)
-	  , hide      = __webpack_require__(44)
+	var global    = __webpack_require__(46)
+	  , core      = __webpack_require__(47)
+	  , ctx       = __webpack_require__(48)
+	  , hide      = __webpack_require__(50)
 	  , PROTOTYPE = 'prototype';
 
 	var $export = function(type, name, source){
@@ -30293,7 +31086,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	module.exports = $export;
 
 /***/ },
-/* 40 */
+/* 46 */
 /***/ function(module, exports) {
 
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -30302,18 +31095,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 
 /***/ },
-/* 41 */
+/* 47 */
 /***/ function(module, exports) {
 
 	var core = module.exports = {version: '2.3.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
-/* 42 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// optional / simple context binding
-	var aFunction = __webpack_require__(43);
+	var aFunction = __webpack_require__(49);
 	module.exports = function(fn, that, length){
 	  aFunction(fn);
 	  if(that === undefined)return fn;
@@ -30334,7 +31127,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 43 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -30343,12 +31136,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 44 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var dP         = __webpack_require__(45)
-	  , createDesc = __webpack_require__(53);
-	module.exports = __webpack_require__(49) ? function(object, key, value){
+	var dP         = __webpack_require__(51)
+	  , createDesc = __webpack_require__(59);
+	module.exports = __webpack_require__(55) ? function(object, key, value){
 	  return dP.f(object, key, createDesc(1, value));
 	} : function(object, key, value){
 	  object[key] = value;
@@ -30356,15 +31149,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 45 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var anObject       = __webpack_require__(46)
-	  , IE8_DOM_DEFINE = __webpack_require__(48)
-	  , toPrimitive    = __webpack_require__(52)
+	var anObject       = __webpack_require__(52)
+	  , IE8_DOM_DEFINE = __webpack_require__(54)
+	  , toPrimitive    = __webpack_require__(58)
 	  , dP             = Object.defineProperty;
 
-	exports.f = __webpack_require__(49) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+	exports.f = __webpack_require__(55) ? Object.defineProperty : function defineProperty(O, P, Attributes){
 	  anObject(O);
 	  P = toPrimitive(P, true);
 	  anObject(Attributes);
@@ -30377,17 +31170,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 46 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(47);
+	var isObject = __webpack_require__(53);
 	module.exports = function(it){
 	  if(!isObject(it))throw TypeError(it + ' is not an object!');
 	  return it;
 	};
 
 /***/ },
-/* 47 */
+/* 53 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -30395,24 +31188,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 48 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = !__webpack_require__(49) && !__webpack_require__(50)(function(){
-	  return Object.defineProperty(__webpack_require__(51)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+	module.exports = !__webpack_require__(55) && !__webpack_require__(56)(function(){
+	  return Object.defineProperty(__webpack_require__(57)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
-/* 49 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Thank's IE8 for his funny defineProperty
-	module.exports = !__webpack_require__(50)(function(){
+	module.exports = !__webpack_require__(56)(function(){
 	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
-/* 50 */
+/* 56 */
 /***/ function(module, exports) {
 
 	module.exports = function(exec){
@@ -30424,11 +31217,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 51 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(47)
-	  , document = __webpack_require__(40).document
+	var isObject = __webpack_require__(53)
+	  , document = __webpack_require__(46).document
 	  // in old IE typeof document.createElement is 'object'
 	  , is = isObject(document) && isObject(document.createElement);
 	module.exports = function(it){
@@ -30436,11 +31229,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 52 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.1 ToPrimitive(input [, PreferredType])
-	var isObject = __webpack_require__(47);
+	var isObject = __webpack_require__(53);
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
 	module.exports = function(it, S){
@@ -30453,7 +31246,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 53 */
+/* 59 */
 /***/ function(module, exports) {
 
 	module.exports = function(bitmap, value){
@@ -30466,14 +31259,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 54 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ctx                = __webpack_require__(42)
-	  , invoke             = __webpack_require__(55)
-	  , html               = __webpack_require__(56)
-	  , cel                = __webpack_require__(51)
-	  , global             = __webpack_require__(40)
+	var ctx                = __webpack_require__(48)
+	  , invoke             = __webpack_require__(61)
+	  , html               = __webpack_require__(62)
+	  , cel                = __webpack_require__(57)
+	  , global             = __webpack_require__(46)
 	  , process            = global.process
 	  , setTask            = global.setImmediate
 	  , clearTask          = global.clearImmediate
@@ -30508,7 +31301,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    delete queue[id];
 	  };
 	  // Node.js 0.8-
-	  if(__webpack_require__(57)(process) == 'process'){
+	  if(__webpack_require__(63)(process) == 'process'){
 	    defer = function(id){
 	      process.nextTick(ctx(run, id, 1));
 	    };
@@ -30546,7 +31339,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 55 */
+/* 61 */
 /***/ function(module, exports) {
 
 	// fast apply, http://jsperf.lnkit.com/fast-apply/5
@@ -30567,13 +31360,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 56 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(40).document && document.documentElement;
+	module.exports = __webpack_require__(46).document && document.documentElement;
 
 /***/ },
-/* 57 */
+/* 63 */
 /***/ function(module, exports) {
 
 	var toString = {}.toString;
@@ -30583,7 +31376,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 58 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* global Promise */
@@ -30596,7 +31389,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	if (typeof Promise !== "undefined") {
 	    ES6Promise = Promise;
 	} else {
-	    ES6Promise = __webpack_require__(59);
+	    ES6Promise = __webpack_require__(65);
 	}
 
 	/**
@@ -30608,11 +31401,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 59 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var immediate = __webpack_require__(60);
+	var immediate = __webpack_require__(66);
 
 	/* istanbul ignore next */
 	function INTERNAL() {}
@@ -30867,7 +31660,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 60 */
+/* 66 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -30943,7 +31736,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 61 */
+/* 67 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -31212,22 +32005,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 62 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
 
 	var utils = __webpack_require__(10);
-	var ConvertWorker = __webpack_require__(63);
-	var GenericWorker = __webpack_require__(61);
-	var base64 = __webpack_require__(35);
+	var ConvertWorker = __webpack_require__(69);
+	var GenericWorker = __webpack_require__(67);
+	var base64 = __webpack_require__(41);
 	var support = __webpack_require__(11);
-	var external = __webpack_require__(58);
+	var external = __webpack_require__(64);
 
 	var NodejsStreamOutputAdapter = null;
 	if (support.nodestream) {
 	    try {
-	        NodejsStreamOutputAdapter = __webpack_require__(64);
+	        NodejsStreamOutputAdapter = __webpack_require__(70);
 	    } catch(e) {}
 	}
 
@@ -31235,19 +32028,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 * Apply the final transformation of the data. If the user wants a Blob for
 	 * example, it's easier to work with an U8intArray and finally do the
 	 * ArrayBuffer/Blob conversion.
-	 * @param {String} type the name of the final type
+	 * @param {String} resultType the name of the final type
+	 * @param {String} chunkType the type of the data in the given array.
+	 * @param {Array} dataArray the array containing the data chunks to concatenate
 	 * @param {String|Uint8Array|Buffer} content the content to transform
 	 * @param {String} mimeType the mime type of the content, if applicable.
 	 * @return {String|Uint8Array|ArrayBuffer|Buffer|Blob} the content in the right format.
 	 */
-	function transformZipOutput(type, content, mimeType) {
-	    switch(type) {
+	function transformZipOutput(resultType, chunkType, dataArray, mimeType) {
+	    var content = null;
+	    switch(resultType) {
 	        case "blob" :
-	            return utils.newBlob(utils.transformTo("arraybuffer", content), mimeType);
+	            return utils.newBlob(dataArray, mimeType);
 	        case "base64" :
+	            content = concat(chunkType, dataArray);
 	            return base64.encode(content);
 	        default :
-	            return utils.transformTo(type, content);
+	            content = concat(chunkType, dataArray);
+	            return utils.transformTo(resultType, content);
 	    }
 	}
 
@@ -31310,7 +32108,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        })
 	        .on('end', function (){
 	            try {
-	                var result = transformZipOutput(resultType, concat(chunkType, dataArray), mimeType);
+	                var result = transformZipOutput(resultType, chunkType, dataArray, mimeType);
 	                resolve(result);
 	            } catch (e) {
 	                reject(e);
@@ -31332,6 +32130,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    var internalType = outputType;
 	    switch(outputType) {
 	        case "blob":
+	            internalType = "arraybuffer";
+	        break;
 	        case "arraybuffer":
 	            internalType = "uint8array";
 	        break;
@@ -31431,12 +32231,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 63 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 	var utils = __webpack_require__(10);
 
 	/**
@@ -31463,14 +32263,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 64 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var Readable = __webpack_require__(16).Readable;
 
-	var util = __webpack_require__(65);
+	var util = __webpack_require__(71);
 	util.inherits(NodejsStreamOutputAdapter, Readable);
 
 	/**
@@ -31511,7 +32311,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 65 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -32039,7 +32839,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(66);
+	exports.isBuffer = __webpack_require__(72);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -32083,7 +32883,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(67);
+	exports.inherits = __webpack_require__(73);
 
 	exports._extend = function(origin, add) {
 	  // Don't do anything if add isn't an object
@@ -32104,7 +32904,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(5)))
 
 /***/ },
-/* 66 */
+/* 72 */
 /***/ function(module, exports) {
 
 	module.exports = function isBuffer(arg) {
@@ -32115,7 +32915,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 /***/ },
-/* 67 */
+/* 73 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -32144,7 +32944,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 68 */
+/* 74 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -32161,16 +32961,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 69 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var external = __webpack_require__(58);
-	var DataWorker = __webpack_require__(70);
-	var DataLengthProbe = __webpack_require__(71);
-	var Crc32Probe = __webpack_require__(72);
-	var DataLengthProbe = __webpack_require__(71);
+	var external = __webpack_require__(64);
+	var DataWorker = __webpack_require__(76);
+	var DataLengthProbe = __webpack_require__(77);
+	var Crc32Probe = __webpack_require__(78);
+	var DataLengthProbe = __webpack_require__(77);
 
 	/**
 	 * Represent a compressed object, with everything needed to decompress it.
@@ -32242,13 +33042,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 70 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 
 	// the size of the generated chunks
 	// TODO expose this as a public variable
@@ -32364,13 +33164,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 71 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A worker which calculate the total length of the data flowing through.
@@ -32399,13 +33199,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 72 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(61);
-	var crc32 = __webpack_require__(73);
+	var GenericWorker = __webpack_require__(67);
+	var crc32 = __webpack_require__(79);
 	var utils = __webpack_require__(10);
 
 	/**
@@ -32414,6 +33214,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 */
 	function Crc32Probe() {
 	    GenericWorker.call(this, "Crc32Probe");
+	    this.withStreamInfo("crc32", 0);
 	}
 	utils.inherits(Crc32Probe, GenericWorker);
 
@@ -32428,7 +33229,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 73 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32512,16 +33313,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 74 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var StreamHelper = __webpack_require__(62);
-	var DataWorker = __webpack_require__(70);
+	var StreamHelper = __webpack_require__(68);
+	var DataWorker = __webpack_require__(76);
 	var utf8 = __webpack_require__(9);
-	var CompressedObject = __webpack_require__(69);
-	var GenericWorker = __webpack_require__(61);
+	var CompressedObject = __webpack_require__(75);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A simple object representing a file in the zip file.
@@ -32642,13 +33443,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 75 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var compressions = __webpack_require__(76);
-	var ZipFileWorker = __webpack_require__(94);
+	var compressions = __webpack_require__(82);
+	var ZipFileWorker = __webpack_require__(100);
 
 	/**
 	 * Find the compression to use.
@@ -32705,12 +33506,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 76 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 
 	exports.STORE = {
 	    magic: "\x00\x00",
@@ -32721,19 +33522,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        return new GenericWorker("STORE decompression");
 	    }
 	};
-	exports.DEFLATE = __webpack_require__(77);
+	exports.DEFLATE = __webpack_require__(83);
 
 
 /***/ },
-/* 77 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var USE_TYPEDARRAY = (typeof Uint8Array !== 'undefined') && (typeof Uint16Array !== 'undefined') && (typeof Uint32Array !== 'undefined');
 
-	var pako = __webpack_require__(78);
+	var pako = __webpack_require__(84);
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 
 	var ARRAY_TYPE = USE_TYPEDARRAY ? "uint8array" : "array";
 
@@ -32799,17 +33600,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 78 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Top level file is just a mixin of submodules & constants
 	'use strict';
 
-	var assign    = __webpack_require__(79).assign;
+	var assign    = __webpack_require__(85).assign;
 
-	var deflate   = __webpack_require__(80);
-	var inflate   = __webpack_require__(88);
-	var constants = __webpack_require__(92);
+	var deflate   = __webpack_require__(86);
+	var inflate   = __webpack_require__(94);
+	var constants = __webpack_require__(98);
 
 	var pako = {};
 
@@ -32819,7 +33620,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 79 */
+/* 85 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -32927,17 +33728,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 80 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_deflate = __webpack_require__(81);
-	var utils        = __webpack_require__(79);
-	var strings      = __webpack_require__(86);
-	var msg          = __webpack_require__(85);
-	var ZStream      = __webpack_require__(87);
+	var zlib_deflate = __webpack_require__(87);
+	var utils        = __webpack_require__(85);
+	var strings      = __webpack_require__(92);
+	var msg          = __webpack_require__(91);
+	var ZStream      = __webpack_require__(93);
 
 	var toString = Object.prototype.toString;
 
@@ -33290,7 +34091,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  deflator.push(input, true);
 
 	  // That will never happens, if you don't cheat with options :)
-	  if (deflator.err) { throw deflator.msg; }
+	  if (deflator.err) { throw deflator.msg || msg[deflator.err]; }
 
 	  return deflator.result;
 	}
@@ -33333,16 +34134,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 81 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils   = __webpack_require__(79);
-	var trees   = __webpack_require__(82);
-	var adler32 = __webpack_require__(83);
-	var crc32   = __webpack_require__(84);
-	var msg     = __webpack_require__(85);
+	var utils   = __webpack_require__(85);
+	var trees   = __webpack_require__(88);
+	var adler32 = __webpack_require__(89);
+	var crc32   = __webpack_require__(90);
+	var msg     = __webpack_require__(91);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -35194,13 +35995,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 82 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils = __webpack_require__(79);
+	var utils = __webpack_require__(85);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -36402,7 +37203,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 83 */
+/* 89 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -36440,7 +37241,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 84 */
+/* 90 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -36487,7 +37288,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 85 */
+/* 91 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -36506,14 +37307,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 86 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// String encode/decode helpers
 	'use strict';
 
 
-	var utils = __webpack_require__(79);
+	var utils = __webpack_require__(85);
 
 
 	// Quick check if we can use fast array to bin string conversion
@@ -36697,7 +37498,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 87 */
+/* 93 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -36732,19 +37533,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 88 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_inflate = __webpack_require__(89);
-	var utils        = __webpack_require__(79);
-	var strings      = __webpack_require__(86);
-	var c            = __webpack_require__(92);
-	var msg          = __webpack_require__(85);
-	var ZStream      = __webpack_require__(87);
-	var GZheader     = __webpack_require__(93);
+	var zlib_inflate = __webpack_require__(95);
+	var utils        = __webpack_require__(85);
+	var strings      = __webpack_require__(92);
+	var c            = __webpack_require__(98);
+	var msg          = __webpack_require__(91);
+	var ZStream      = __webpack_require__(93);
+	var GZheader     = __webpack_require__(99);
 
 	var toString = Object.prototype.toString;
 
@@ -37118,7 +37919,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  inflator.push(input, true);
 
 	  // That will never happens, if you don't cheat with options :)
-	  if (inflator.err) { throw inflator.msg; }
+	  if (inflator.err) { throw inflator.msg || msg[inflator.err]; }
 
 	  return inflator.result;
 	}
@@ -37156,17 +37957,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 89 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils         = __webpack_require__(79);
-	var adler32       = __webpack_require__(83);
-	var crc32         = __webpack_require__(84);
-	var inflate_fast  = __webpack_require__(90);
-	var inflate_table = __webpack_require__(91);
+	var utils         = __webpack_require__(85);
+	var adler32       = __webpack_require__(89);
+	var crc32         = __webpack_require__(90);
+	var inflate_fast  = __webpack_require__(96);
+	var inflate_table = __webpack_require__(97);
 
 	var CODES = 0;
 	var LENS = 1;
@@ -38700,7 +39501,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 90 */
+/* 96 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39032,13 +39833,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 91 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils = __webpack_require__(79);
+	var utils = __webpack_require__(85);
 
 	var MAXBITS = 15;
 	var ENOUGH_LENS = 852;
@@ -39264,10 +40065,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    return 1;
 	  }
 
-	  var i = 0;
 	  /* process all codes and make table entries */
 	  for (;;) {
-	    i++;
 	    /* create table entry */
 	    here_bits = len - drop;
 	    if (work[sym] < end) {
@@ -39365,7 +40164,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 92 */
+/* 98 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39421,7 +40220,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 93 */
+/* 99 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39467,16 +40266,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 94 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 	var utf8 = __webpack_require__(9);
-	var crc32 = __webpack_require__(73);
-	var signature = __webpack_require__(95);
+	var crc32 = __webpack_require__(79);
+	var signature = __webpack_require__(101);
 
 	/**
 	 * Transform an integer into a string in hexadecimal.
@@ -40013,7 +40812,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 95 */
+/* 101 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -40026,13 +40825,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 96 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(61);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A worker that use a nodejs stream as source.
@@ -40106,17 +40905,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 97 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var utils = __webpack_require__(10);
-	var external = __webpack_require__(58);
+	var external = __webpack_require__(64);
 	var utf8 = __webpack_require__(9);
 	var utils = __webpack_require__(10);
-	var ZipEntries = __webpack_require__(98);
-	var Crc32Probe = __webpack_require__(72);
-	var nodejsUtils = __webpack_require__(36);
+	var ZipEntries = __webpack_require__(104);
+	var Crc32Probe = __webpack_require__(78);
+	var nodejsUtils = __webpack_require__(42);
 
 	/**
 	 * Check the CRC32 of an entry.
@@ -40194,14 +40993,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 98 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(99);
+	var readerFor = __webpack_require__(105);
 	var utils = __webpack_require__(10);
-	var sig = __webpack_require__(95);
-	var ZipEntry = __webpack_require__(105);
+	var sig = __webpack_require__(101);
+	var ZipEntry = __webpack_require__(111);
 	var utf8 = __webpack_require__(9);
 	var support = __webpack_require__(11);
 	//  class ZipEntries {{{
@@ -40462,17 +41261,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 99 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
 	var support = __webpack_require__(11);
-	var ArrayReader = __webpack_require__(100);
-	var StringReader = __webpack_require__(102);
-	var NodeBufferReader = __webpack_require__(103);
-	var Uint8ArrayReader = __webpack_require__(104);
+	var ArrayReader = __webpack_require__(106);
+	var StringReader = __webpack_require__(108);
+	var NodeBufferReader = __webpack_require__(109);
+	var Uint8ArrayReader = __webpack_require__(110);
 
 	/**
 	 * Create a reader adapted to the data.
@@ -40498,11 +41297,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 100 */
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(101);
+	var DataReader = __webpack_require__(107);
 	var utils = __webpack_require__(10);
 
 	function ArrayReader(data) {
@@ -40561,7 +41360,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 101 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40683,11 +41482,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 102 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(101);
+	var DataReader = __webpack_require__(107);
 	var utils = __webpack_require__(10);
 
 	function StringReader(data) {
@@ -40727,11 +41526,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 103 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Uint8ArrayReader = __webpack_require__(104);
+	var Uint8ArrayReader = __webpack_require__(110);
 	var utils = __webpack_require__(10);
 
 	function NodeBufferReader(data) {
@@ -40752,11 +41551,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 104 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ArrayReader = __webpack_require__(100);
+	var ArrayReader = __webpack_require__(106);
 	var utils = __webpack_require__(10);
 
 	function Uint8ArrayReader(data) {
@@ -40780,16 +41579,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 105 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(99);
+	var readerFor = __webpack_require__(105);
 	var utils = __webpack_require__(10);
-	var CompressedObject = __webpack_require__(69);
-	var crc32fn = __webpack_require__(73);
+	var CompressedObject = __webpack_require__(75);
+	var crc32fn = __webpack_require__(79);
 	var utf8 = __webpack_require__(9);
-	var compressions = __webpack_require__(76);
+	var compressions = __webpack_require__(82);
 	var support = __webpack_require__(11);
 
 	var MADE_BY_DOS = 0x00;
@@ -41078,7 +41877,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 106 */
+/* 112 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -41187,7 +41986,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 107 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -42741,13 +43540,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 108 */
+/* 114 */
 /***/ function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_108__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_114__;
 
 /***/ },
-/* 109 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -42883,7 +43682,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 110 */
+/* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -45530,7 +46329,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 111 */
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -45755,7 +46554,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 112 */
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var require;var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*** IMPORTS FROM imports-loader ***/
