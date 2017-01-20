@@ -201,9 +201,8 @@ define([
                 });
             // it's a kml file
             } else {
-                $.ajax({url: url, context: this}).done(function(text) {
-                    var kmlText = $.parseXML(text);
-                    var geojson = toGeoJSON.kml(kmlText);
+                $.ajax({url: url, dataType: 'xml', context: this}).done(function(kml) {
+                    var geojson = toGeoJSON.kml(kml);
 
                     L.geoJson(geojson.features, {
                         style: function (feature) {
