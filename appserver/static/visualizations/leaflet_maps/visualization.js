@@ -349,7 +349,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            // Initialize the DOM
 	            if (!this.isInitializedDom) {
 	                // Set defaul icon image path
-	                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
+	                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images/';
 
 	                // Create layer filter object
 	                var layerFilter = this.layerFilter = {};
