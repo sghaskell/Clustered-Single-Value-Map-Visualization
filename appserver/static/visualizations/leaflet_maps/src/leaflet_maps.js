@@ -201,9 +201,8 @@ define([
                 });
             // it's a kml file
             } else {
-                $.ajax({url: url, context: this}).done(function(text) {
-                    var kmlText = $.parseXML(text);
-                    var geojson = toGeoJSON.kml(kmlText);
+                $.ajax({url: url, dataType: 'xml', context: this}).done(function(kml) {
+                    var geojson = toGeoJSON.kml(kml);
 
                     L.geoJson(geojson.features, {
                         style: function (feature) {
@@ -305,7 +304,7 @@ define([
             // Initialize the DOM
             if (!this.isInitializedDom) {
                 // Set defaul icon image path
-                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images';
+                L.Icon.Default.imagePath = location.origin + this.contribUri + 'images/';
 
                 // Create layer filter object
                 var layerFilter = this.layerFilter = {};
@@ -500,6 +499,12 @@ define([
                     var iconColor = "white";
                 }
 
+                if("title" in userData) {
+                    var title = userData["title"];
+                } else {
+                    var title = null;
+                }
+
                 if("prefix" in userData && userData["prefix"] === "ion") {
                     var prefix = "ion";
                 } else {
@@ -518,7 +523,7 @@ define([
                 if("extraClasses" in userData) {
                     var extraClasses = userData["extraClasses"];
                 } else if (prefix === "fa") {
-                    var extraClasses = "fa-4x";
+                    var extraClasses = "fa-lg";
                 } else {
                     var extraClasses = "";
                 }
@@ -538,6 +543,7 @@ define([
                         icon: icon,
                         markerColor: markerColor,
                         iconColor: iconColor,
+                        title: title,
                         prefix: prefix,
                         className: className,
                         extraClasses: extraClasses,
@@ -551,6 +557,7 @@ define([
                         icon: icon,
                         markerColor: markerColor,
                         iconColor: iconColor,
+                        title: title,
                         prefix: prefix,
                         className: className,
                         extraClasses: extraClasses,
@@ -566,12 +573,21 @@ define([
                 }
 
 
-                // Create marker
-                if (this.isArgTrue(drilldown)) {
-                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription}).on('dblclick', this._drilldown.bind(this));
-                } else {
-                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
-                }
+				// Create marker
+				if (this.isArgTrue(drilldown)) {
+					var marker = L.marker([userData['latitude'],
+										  userData['longitude']],
+										  {icon: markerIcon,
+										   title: title,
+										   layerDescription: layerDescription}
+										 ).on('dblclick', this._drilldown.bind(this));
+				} else {
+					var marker = L.marker([userData['latitude'],
+										   userData['longitude']],
+										  {icon: markerIcon,
+										   title: title,
+										   layerDescription: layerDescription});
+				}
 
                 // Bind description popup if description exists
                 if(userData["description"]) {
