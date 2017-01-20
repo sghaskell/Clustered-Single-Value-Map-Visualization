@@ -562,7 +562,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                if("extraClasses" in userData) {
 	                    var extraClasses = userData["extraClasses"];
 	                } else if (prefix === "fa") {
-	                    var extraClasses = "fa-4x";
+	                    var extraClasses = "fa-lg";
 	                } else {
 	                    var extraClasses = "";
 	                }
