@@ -544,6 +544,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    var iconColor = "white";
 	                }
 
+	                if("title" in userData) {
+	                    var title = userData["title"];
+	                } else {
+	                    var title = null;
+	                }
+
 	                if("prefix" in userData && userData["prefix"] === "ion") {
 	                    var prefix = "ion";
 	                } else {
@@ -582,6 +588,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        icon: icon,
 	                        markerColor: markerColor,
 	                        iconColor: iconColor,
+	                        title: title,
 	                        prefix: prefix,
 	                        className: className,
 	                        extraClasses: extraClasses,
@@ -595,6 +602,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        icon: icon,
 	                        markerColor: markerColor,
 	                        iconColor: iconColor,
+	                        title: title,
 	                        prefix: prefix,
 	                        className: className,
 	                        extraClasses: extraClasses,

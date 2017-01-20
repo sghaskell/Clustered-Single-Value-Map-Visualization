@@ -499,6 +499,12 @@ define([
                     var iconColor = "white";
                 }
 
+                if("title" in userData) {
+                    var title = userData["title"];
+                } else {
+                    var title = null;
+                }
+
                 if("prefix" in userData && userData["prefix"] === "ion") {
                     var prefix = "ion";
                 } else {
@@ -537,6 +543,7 @@ define([
                         icon: icon,
                         markerColor: markerColor,
                         iconColor: iconColor,
+                        title: title,
                         prefix: prefix,
                         className: className,
                         extraClasses: extraClasses,
@@ -550,6 +557,7 @@ define([
                         icon: icon,
                         markerColor: markerColor,
                         iconColor: iconColor,
+                        title: title,
                         prefix: prefix,
                         className: className,
                         extraClasses: extraClasses,
