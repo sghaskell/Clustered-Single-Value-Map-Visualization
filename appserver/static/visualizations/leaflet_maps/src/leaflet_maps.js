@@ -573,12 +573,21 @@ define([
                 }
 
 
-                // Create marker
-                if (this.isArgTrue(drilldown)) {
-                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription}).on('dblclick', this._drilldown.bind(this));
-                } else {
-                    var marker = L.marker([userData['latitude'], userData['longitude']], {icon: markerIcon, layerDescription: layerDescription});
-                }
+				// Create marker
+				if (this.isArgTrue(drilldown)) {
+					var marker = L.marker([userData['latitude'],
+										  userData['longitude']],
+										  {icon: markerIcon,
+										   title: title,
+										   layerDescription: layerDescription}
+										 ).on('dblclick', this._drilldown.bind(this));
+				} else {
+					var marker = L.marker([userData['latitude'],
+										   userData['longitude']],
+										  {icon: markerIcon,
+										   title: title,
+										   layerDescription: layerDescription});
+				}
 
                 // Bind description popup if description exists
                 if(userData["description"]) {
