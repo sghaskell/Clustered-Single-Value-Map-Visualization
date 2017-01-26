@@ -15,6 +15,7 @@ display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverri
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown = <string>
+display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat = <float>
