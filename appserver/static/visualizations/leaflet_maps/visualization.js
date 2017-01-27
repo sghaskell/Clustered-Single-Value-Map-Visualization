@@ -228,7 +228,7 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                  coordinates[0] +
 	                  "\nPointer Longitude: " +
 	                  coordinates[1] +
-	                  "\n\nCopy and paste the following values into Format menu to change center latitude and longitude (visualization API does not currently support programatically setting format menu options):" +
+	                  "\n\nCopy and paste the following values into Format menu to change center latitude and longitude (visualization API does not currently support programmatically setting format menu options):" +
 	                  "\n    Center Latitude: " +
 	                  centerCoordinates[0] +
 	                  "\n    Center Longitude: " +
