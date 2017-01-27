@@ -8,6 +8,7 @@ define([
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
+			'leaflet-contextmenu',
             '../contrib/leaflet.markercluster-src',
             '../contrib/leaflet.featuregroup.subgroup-src',
             '../contrib/leaflet-measure'
@@ -45,6 +46,7 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown': 0,
+			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom': 6,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat': 39.50,
@@ -174,6 +176,32 @@ define([
 
         },
 
+        showCoordinates: function (e) {
+            var coordinates = e.latlng.toString().match(/([-\d\.]+)/g);
+            var centerCoordinates = this.map.getCenter().toString().match(/([-\d\.]+)/g);
+            alert("Pointer Latitude: " +
+                  coordinates[0] +
+                  "\nPointer Longitude: " +
+                  coordinates[1] +
+                  "\n\nCopy and paste the following values into Format menu to change center latitude and longitude (visualization API does not currently support programatically setting format menu options):" +
+                  "\n    Center Latitude: " +
+                  centerCoordinates[0] +
+                  "\n    Center Longitude: " +
+                  centerCoordinates[1]);
+        },
+
+        centerMap: function (e) {
+            this.map.panTo(e.latlng);
+        },
+
+        zoomIn: function (e) {
+            this.map.zoomIn();
+        },
+
+        zoomOut: function (e) {
+            this.map.zoomOut();
+        },
+
         // Fetch KMZ or KML files and add to map
         fetchKmlAndMap: function(url, file, map) {
             // Test if it's a kmz file
@@ -273,6 +301,7 @@ define([
                 scrollWheelZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom']),
                 fullScreen = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen']),
                 drilldown = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown']),
+				contextMenu = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu']),
                 defaultHeight = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight']),
                 mapCenterZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom']),
                 mapCenterLat = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat']),
@@ -314,6 +343,31 @@ define([
                 this.createMarkerStyle(rangeTwoBgColor, rangeTwoFgColor, "two");
                 this.createMarkerStyle(rangeThreeBgColor, rangeThreeFgColor, "three");
 
+                // Configure context menu
+                if(this.isArgTrue(contextMenu)) {
+                    var mapOptions =  {contextmenu: true,
+                                       contextmenuWidth: 140,
+                                       contextmenuItems: [{
+                                           text: 'Show details',
+                                           context: this,
+                                           callback: this.showCoordinates
+                                       }, {
+                                           text: 'Center map here',
+                                           context: this,
+                                           callback: this.centerMap
+                                       }, '-', {
+                                           text: 'Zoom in',
+                                           iconCls: 'fa fa-search-plus',
+                                           context: this,
+                                           callback: this.zoomIn
+                                       }, {
+                                           text: 'Zoom out',
+                                           iconCls: 'fa fa-search-minus',
+                                           context: this,
+                                           callback: this.zoomOut
+                                       }]}
+                }
+
                 // Enable all or multiple popups
                 if(this.isArgTrue(allPopups) || this.isArgTrue(multiplePopups)) {
                     L.Map = L.Map.extend({
@@ -333,12 +387,14 @@ define([
                             this._popup = popup;
                             return this.addLayer(popup);
                         }
-                    });                    
+                    });
 
-            	    var map = this.map = new L.Map(this.el, {closePopupOnClick: false}).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
-                } else {
-            	    var map = this.map = new L.Map(this.el).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
+                    // Disable close popup on click to allow multiple popups
+                    mapOptions.closePopupOnClick = false;
                 }
+
+                // Create map 
+                var map = this.map = new L.Map(this.el, mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
                
                 // Setup the tile layer with map tile, zoom and attribution
 				this.tileLayer = L.tileLayer(this.activeTile, {
