@@ -9,6 +9,7 @@ define([
             'vizapi/SplunkVisualizationUtils',
             'drmonty-leaflet-awesome-markers',
 			'leaflet-contextmenu',
+			'leaflet-dialog',
             '../contrib/leaflet.markercluster-src',
             '../contrib/leaflet.featuregroup.subgroup-src',
             '../contrib/leaflet-measure'
@@ -176,18 +177,20 @@ define([
 
         },
 
+		// Show dialog box with pointer lat/lon and center lat/lon
+		// coordinates. Allow user to copy and paste center coordinates into 
+		// Center Lat and Center Lon format menu options.
         showCoordinates: function (e) {
             var coordinates = e.latlng.toString().match(/([-\d\.]+)/g);
             var centerCoordinates = this.map.getCenter().toString().match(/([-\d\.]+)/g);
-            alert("Pointer Latitude: " +
-                  coordinates[0] +
-                  "\nPointer Longitude: " +
-                  coordinates[1] +
-                  "\n\nCopy and paste the following values into Format menu to change center latitude and longitude (visualization API does not currently support programmatically setting format menu options):" +
-                  "\n    Center Latitude: " +
-                  centerCoordinates[0] +
-                  "\n    Center Longitude: " +
-                  centerCoordinates[1]);
+            var content = "Pointer Latitude: <input type=\"text\" name=\"pointer_lat\" value=\"" + coordinates[0] + "\">" +
+                  "<br>Pointer Longitude: <input type=\"text\" name=\"pointer_long\" value=\"" + coordinates[1] + "\">" +
+                  "<br></br>Copy and paste the following values into Format menu to change <b>Center Lat</b> and <b>Center Lon</b> (visualization API does not currently support programmatically setting format menu options):<br>" +
+                  "<br>Center Latitude: <input type=\"text\" name=\"center_lat\" value=\"" + centerCoordinates[0] + "\">" +
+                  "<br>Center Longitude: <input type=\"text\" name=\"center_lon\" value=\"" + centerCoordinates[1] + "\">";
+            var dialog = L.control.dialog({size: [300,375], anchor: [100, 500]})
+              .setContent(content)
+              .addTo(this.map);
         },
 
         centerMap: function (e) {
