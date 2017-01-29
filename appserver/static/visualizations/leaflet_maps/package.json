@@ -1,6 +1,6 @@
 {
   "name": "leaflet_maps_app",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Leaflet maps app with Markercluster plugin functionality.",
   "main": "visualization.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "leaflet-measure": "^2.0.2",
     "transform-loader": "^0.2.3",
     "brfs": "^1.4.3",
-    "leaflet-contextmenu": "^1.2.1"
+    "leaflet-contextmenu": "^1.2.1",
+    "leaflet-dialog": "^1.0.1"
   }
 }
