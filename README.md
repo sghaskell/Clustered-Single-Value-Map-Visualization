@@ -9,12 +9,12 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Leaflet Markercluster Plugin](https://github.com/Leaflet/Leaflet.markercluster)
 ##### [Leaflet Awesome Markers Plugin](https://www.npmjs.com/package/drmonty-leaflet-awesome-markers)
 ##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
+##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Leaflet.contextmenu](https://github.com/aratcliffe/Leaflet.contextmenu)
 ##### [Leaflet.Dialog](https://github.com/NBTSolutions/Leaflet.Dialog)
 ##### [togeojson](https://github.com/mapbox/togeojson)
 ##### [JSZip](https://stuk.github.io/jszip/)
 ##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
-##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Jquery](https://jquery.com/)
 ##### [Underscore.js](http://underscorejs.org/)
 ##### [Webpack](https://webpack.github.io/)
@@ -28,25 +28,38 @@ This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom 
 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
-`base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses | layerDescription]`
+```
+base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses | layerDescription]
+```
 
 # Required Fields
-**latitude** - Latitude Coordinates
-**longitude** - Longitude Coordinates
+##### latitude
+Latitude Coordinates
+##### longitude
+Longitude Coordinates
+
 # Optional Fields
-**descirption** - Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
-**layerDescription** - Description that is added next to the icon in the layer control legend. **this field supports HTML**
+##### descirption
+Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
+##### layerDescription
+Description that is added next to the icon in the layer control legend. **this field supports HTML**
 
 # Style Markers And Icons Dynamically Through SPL
 ### Feature Description
 Version 1.1 introduces new features to dynamically style map markers and add icons via SPL. Create fields using [eval](http://docs.splunk.com/Documentation/Splunk/6.4.0/SearchReference/CommonEvalFunctions) to define colors for the marker or use an icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). If you find the color set of icons too limiting, feel free to override the map marker icon with a map icon from Font Awesome and style it with any hex color or RGB value.
 ### Available Fields and Values
-**title** - Icon mouse hover over description.
-**icon** - Icon displayed in map marker - Any icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). **Default** circle
-**markerColor** - Color of map marker - red, darkred, lightred, orange, beige, green, darkgreen, lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black. **Default** blue
-**iconColor** - Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
-**prefix** - 'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
-**extraClasses** - Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+##### title
+Icon mouse hover over description.
+##### icon
+Icon displayed in map marker - Any icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). **Default** circle
+##### markerColor
+Color of map marker - red, darkred, lightred, orange, beige, green, darkgreen, lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black. **Default** blue
+##### iconColor
+Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
+##### prefix
+'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
+##### extraClasses
+Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
 
 # Drilldown
 Version 1.3.12 introduces drilldown capability! The visualization will identify any non-standard fields and make them available as drilldown fields. Simply add any fields you wish to the final table command and you'll have access to them via drilldown in Simple XML. See the [documentation on dynamic drilldown](http://docs.splunk.com/Documentation/Splunk/6.5.1/Viz/Dynamicdrilldownindashboardsandforms). Refer to this section of the docs on [accessing tokens for dynamic drilldown](http://docs.splunk.com/Documentation/Splunk/latest/Viz/tokens#Define_tokens_for_dynamic_drilldown).
@@ -172,13 +185,17 @@ Version 1.3.7 introduces a new feature that allows you to add custom overlays to
 ##### KML/KMZ Overlay
 Copy any KML or KMZ files into the following directory
 
-```$SPLUNK_HOME/etc/apps/leaflet_maps_app/appserver/static/visualizations/leaflet_maps/contrib/kml```
+```
+$SPLUNK_HOME/etc/apps/leaflet_maps_app/appserver/static/visualizations/leaflet_maps/contrib/kml
+```
 
 If you use a deployer (search head clustering) or a deployment server to manage your search heads, uncompress the app and place your KML files into the above directory and then recompress the app for distribution. 
 
 Click 'Format' and selct the 'Overlays' tab. Enter a comma separated list of filenames that you uploaded to the above directory.
 
-```file1.kml,file2.kmz```
+```
+file1.kml,file2.kmz
+```
 
 The files will be asynchronously loaded when the map is rendered.
 
@@ -187,16 +204,37 @@ Version 1.3.8 indroduces a new feature that allows you to interactively measure 
 
 # Search Examples
 ### Basic plot of latitude and longitude
-`index=chicago_crime | fillnull | table latitude, longitude`
+```
+index=chicago_crime 
+| fillnull 
+| table latitude, longitude
+```
 
 ### Plot with latitude, longitude and description
-`index=chicago_crime | fillnull | eval description = "<b>".description."</b>" | table latitude, longitude, description`
+```
+index=chicago_crime 
+| fillnull 
+| eval description = "<b>".description."</b>" 
+| table latitude, longitude, description
+```
 
 ### Plot with custom marker color and icons
-`index=chicago_crime | fillnull | eval description = "<b>".description."</b>" | eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle") | table latitude, longitude, description, markerColor, icon`
+```
+index=chicago_crime 
+| fillnull 
+| eval description = "<b>".description."</b>" 
+| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle") 
+| table latitude, longitude, description, markerColor, icon
+```
 
 ### Plot overriding custom marker with map icons from Font Awesome
-`index=chicago_crime | fillnull | eval description = "<b>".description."</b>" | eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "map-marker", like(description, "%RECKLESS CONDUCT%"), "map-pin", 1=1, "circle"), iconColor=case(like(description, "%HARASSMENT BY TELEPHONE%"), "#374D13", like(description, "%RECKLESS CONDUCT%"), "rgb(0,255,255)", 1=1, "white") | table latitude, longitude, description, markerColor, icon, iconColor` 
+```
+index=chicago_crime 
+| fillnull 
+| eval description = "<b>".description."</b>"
+| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "map-marker", like(description, "%RECKLESS CONDUCT%"), "map-pin", 1=1, "circle"), iconColor=case(like(description, "%HARASSMENT BY TELEPHONE%"), "#374D13", like(description, "%RECKLESS CONDUCT%"), "rgb(0,255,255)", 1=1, "white") 
+| table latitude, longitude, description, markerColor, icon, iconColor
+``` 
 
 # Formatting Options
 ### Map
@@ -212,6 +250,8 @@ Enable or disable scroll wheel zoom.
 Enable or disable full screen mode. Map takes up all available space in browser and adjust to resize. - **Requires browser Refresh**
 ###### Drilldown
 Enable or disable drilldown. Double click a marker to activate drilldown. - **Requires browser Refresh**
+###### Context Menu
+Enable or disable context menu when right clicking the map.
 ###### Default Height
 Initial Height Of Map (Default: 600)
 ###### Map Zoom
@@ -296,4 +336,5 @@ Color of measurement when actively drawing (Default: #00ff00)
 Color of measurement when drawing is complete (Default: #0066ff)
 
 # Support
-This app is supported by Scott Haskell ([shaskell@splunk.com](mailto:shaskell@splunk.com))
+###### This app is supported by Scott Haskell ([shaskell@splunk.com](mailto:shaskell@splunk.com))
+###### [Code hosted at Github](https://github.com/sghaskell/Clustered-Single-Value-Map-Visualization)
