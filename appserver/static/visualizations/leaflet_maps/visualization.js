@@ -265,14 +265,17 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                        var kmlText = $.parseXML(text);
 	                        var geojson = toGeoJSON.kml(kmlText);
 
-	                        L.geoJson(geojson.features, {
-	                            style: function (feature) {
-	                                 return feature.properties.style;
-	                             },
-	                             onEachFeature: function (feature, layer) {
-	                                 layer.bindPopup(feature.properties.name);
-	                            }
-	                        }).addTo(map);
+							L.geoJson(geojson.features, {
+								style: function (feature) {
+									return {color: feature.properties.fill,
+											opacity: feature.properties["fill-opacity"],
+											weight: feature.properties["stroke-width"]};
+								},
+								onEachFeature: function (feature, layer) {
+									layer.bindPopup(feature.properties.name);
+									layer.bindTooltip(feature.properties.name);
+								}
+							}).addTo(map);
 	                    });
 	                });
 	            // it's a kml file
@@ -280,14 +283,17 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                $.ajax({url: url, dataType: 'xml', context: this}).done(function(kml) {
 	                    var geojson = toGeoJSON.kml(kml);
 
-	                    L.geoJson(geojson.features, {
-	                        style: function (feature) {
-	                             return feature.properties.style;
-	                         },
-	                         onEachFeature: function (feature, layer) {
-	                             layer.bindPopup(feature.properties.name);
-	                        }
-	                    }).addTo(map);
+						L.geoJson(geojson.features, {
+							style: function (feature) {
+								return {color: feature.properties.fill,
+										opacity: feature.properties["fill-opacity"],
+										weight: feature.properties["stroke-width"]};
+							 },
+							 onEachFeature: function (feature, layer) {
+								 layer.bindPopup(feature.properties.name);
+								 layer.bindTooltip(feature.properties.name);
+							}
+						}).addTo(map);
 	                });
 	            }
 	        },
