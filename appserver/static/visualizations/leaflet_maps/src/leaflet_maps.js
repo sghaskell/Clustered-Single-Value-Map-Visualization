@@ -513,18 +513,14 @@ define([
             if (this.map.getZoom() != mapCenterZoom) {
                 this.map.setZoom(mapCenterZoom);
             }
-            
+           
+			/********* BEGIN PROCESSING DATA **********/
+ 
             // Iterate through each row creating layer groups per icon type
             // and create markers appending to a markerList in each layerfilter object
             _.each(dataRows, function(userData, i) {
                 // Set icon options
-                if("icon" in userData) {
-                    var icon = userData["icon"];
-
-                } else {
-                    var icon = "circle";
-
-                }
+                var icon = _.has(userData, "icon") ? userData["icon"]:"circle";
 
                 // Create Clustered featuregroup subgroup layer
                 if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
@@ -542,39 +538,18 @@ define([
                                              };
                 }
 
-                if("layerDescription" in userData) {
-                    var layerDescription = userData["layerDescription"];
-                } else {
-                    var layerDescription = "";
-                }
+                var layerDescription  = _.has(userData, "layerDescription") ? userData["layerDescription"]:"";
 
                 if (typeof this.layerFilter[icon] !== 'undefined') {
                     this.layerFilter[icon].layerDescription = layerDescription;
                 }
 
-                if("markerColor" in userData) {
-                    var markerColor = userData["markerColor"];
-                } else {
-                    var markerColor = "blue";
-                }
 
-                if("iconColor" in userData) {
-                    var iconColor = userData["iconColor"];
-                } else {
-                    var iconColor = "white";
-                }
+                var markerColor = _.has(userData, "markerColor") ? userData["markerColor"]:"blue";
+                var iconColor = _.has(userData, "iconColor") ? userData["iconColor"]:"white";
+                var title = _.has(userData, "title") ? userData["title"]:null;
+                var prefix = _.has(userData, "prefix") ? userData["prefix"]:"fa";
 
-                if("title" in userData) {
-                    var title = userData["title"];
-                } else {
-                    var title = null;
-                }
-
-                if("prefix" in userData && userData["prefix"] === "ion") {
-                    var prefix = "ion";
-                } else {
-                    var prefix = "fa";
-                }
 
                 if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
                     var className = "";
@@ -592,67 +567,44 @@ define([
                 } else {
                     var extraClasses = "";
                 }
-            
-                if("description" in userData) {
-                    var description = userData["description"]
-                }
-                else {
-                    var description = "";
-                }    
 
+                var description = _.has(userData, "description") ? userData["description"]:"";
+
+                // Determine drilldown fields
                 if (this.isArgTrue(drilldown)) {
                     var drilldownFields = this.validateFields(userData);
-
-                    // Create marker icon
-                    var markerIcon = L.AwesomeMarkers.icon({
-                        icon: icon,
-                        markerColor: markerColor,
-                        iconColor: iconColor,
-                        title: title,
-                        prefix: prefix,
-                        className: className,
-                        extraClasses: extraClasses,
-                        popupAnchor: popupAnchor,
-                        description: description,
-                        drilldownFields: drilldownFields
-                    });
                 } else {
-                    // Create marker icon
-                    var markerIcon = L.AwesomeMarkers.icon({
-                        icon: icon,
-                        markerColor: markerColor,
-                        iconColor: iconColor,
-                        title: title,
-                        prefix: prefix,
-                        className: className,
-                        extraClasses: extraClasses,
-                        popupAnchor: popupAnchor,
-                        description: description
-                    });
+                    var drilldownFields = null;
                 }
 
+                // Create markerIcon
+                var markerIcon = L.AwesomeMarkers.icon({
+                    icon: icon,
+                    markerColor: markerColor,
+                    iconColor: iconColor,
+                    title: title,
+                    prefix: prefix,
+                    className: className,
+                    extraClasses: extraClasses,
+                    popupAnchor: popupAnchor,
+                    description: description,
+                    drilldownFields: drilldownFields
+                });
 
                 // Add the icon so we can access properties for overlay
                 if (typeof this.layerFilter[icon] !== 'undefined') {
                     this.layerFilter[icon].icon = markerIcon;
                 }
 
+                var marker = L.marker([userData['latitude'],
+                                       userData['longitude']],
+                                      {icon: markerIcon,
+                                       title: title,
+                                       layerDescription: layerDescription});
 
-				// Create marker
-				if (this.isArgTrue(drilldown)) {
-					var marker = L.marker([userData['latitude'],
-										  userData['longitude']],
-										  {icon: markerIcon,
-										   title: title,
-										   layerDescription: layerDescription}
-										 ).on('dblclick', this._drilldown.bind(this));
-				} else {
-					var marker = L.marker([userData['latitude'],
-										   userData['longitude']],
-										  {icon: markerIcon,
-										   title: title,
-										   layerDescription: layerDescription});
-				}
+                if(this.isArgTrue(drilldown)) {
+                    marker.on('dblclick', this._drilldown.bind(this));
+                }
 
                 // Bind description popup if description exists
                 if(userData["description"]) {
@@ -661,7 +613,6 @@ define([
 
                 // Save each icon in the layer
                 this.layerFilter[icon].markerList.push(marker);
-
             }, this);            
 
             // Enable/disable layer controls and toggle collapse 
