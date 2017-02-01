@@ -161,10 +161,10 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	        },
 
 			// Custom drilldown behavior for markers
-	        _drilldown: function(resource) {
+	        _drilldown: function(drilldownFields, resource) {
 	            payload = {
 	                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-	                data: resource.target.options.icon.options.drilldownFields
+	                data: drilldownFields
 	            };
 
 	            this.drilldown(payload);
@@ -615,13 +615,6 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 
 	                var description = _.has(userData, "description") ? userData["description"]:"";
 
-	                // Determine drilldown fields
-	                if (this.isArgTrue(drilldown)) {
-	                    var drilldownFields = this.validateFields(userData);
-	                } else {
-	                    var drilldownFields = null;
-	                }
-
 	                // Create markerIcon
 	                var markerIcon = L.AwesomeMarkers.icon({
 	                    icon: icon,
@@ -632,8 +625,7 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                    className: className,
 	                    extraClasses: extraClasses,
 	                    popupAnchor: popupAnchor,
-	                    description: description,
-	                    drilldownFields: drilldownFields
+	                    description: description
 	                });
 
 	                // Add the icon so we can access properties for overlay
@@ -648,7 +640,8 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                                       layerDescription: layerDescription});
 
 	                if(this.isArgTrue(drilldown)) {
-	                    marker.on('dblclick', this._drilldown.bind(this));
+						var drilldownFields = this.validateFields(userData);
+	                    marker.on('dblclick', this._drilldown.bind(this, drilldownFields));
 	                }
 
 	                // Bind description popup if description exists
