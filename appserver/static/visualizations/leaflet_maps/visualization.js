@@ -628,7 +628,9 @@ define(["vizapi/SplunkVisualizationUtils","vizapi/SplunkVisualizationBase"], fun
 	                    description: description
 	                });
 
-	                // Add the icon so we can access properties for overlay
+	                /* Add the icon to layerFilter so we can access properties
+					 * for overlay in addLayerToControl
+					 */
 	                if (typeof this.layerFilter[icon] !== 'undefined') {
 	                    this.layerFilter[icon].icon = markerIcon;
 	                }
