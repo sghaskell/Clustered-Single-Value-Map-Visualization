@@ -586,20 +586,21 @@ define([
                 });
 				*/
 
-                var markerIcon = L.VectorMarkers.icon({
-                    icon: 'circle',
-                    iconColor: '#1fa6ad',
-                    //markerColor: '#1fa6ad',
-                    iconSize: [5,45],
-                    //iconSize: [0,0],
-                    //iconAnchor: [15, 35],
-                    //popupAnchor: [-5, -25],
-                    //shadowSize: [0,0],
-                    //extraIconClasses: 'fa-4x'
-                    //shadowAnchor: null,
-                    //shadowSize: null
-                    //iconColor: 'green'
-                });
+				var markerIcon = L.VectorMarkers.icon({
+					icon: icon,
+					iconColor: iconColor,
+					//markerColor: '#1fa6ad',
+					//iconSize: [20,45],
+					markerColor: markerColor,
+					//iconSize: [0,0],
+					//iconAnchor: [15, 35],
+					//popupAnchor: [-5, -25],
+					shadowSize: [30,46],
+					extraIconClasses: 'fa-lg',
+					shadowAnchor: [30,30]
+					//shadowSize: null
+					//iconColor: 'green'
+				});
 
                 /* Add the icon to layerFilter so we can access properties
 				 * for overlay in addLayerToControl
