@@ -571,6 +571,7 @@ define([
 
                 var description = _.has(userData, "description") ? userData["description"]:"";
 
+				/*
                 // Create markerIcon
                 var markerIcon = L.AwesomeMarkers.icon({
                     icon: icon,
@@ -582,6 +583,22 @@ define([
                     extraClasses: extraClasses,
                     popupAnchor: popupAnchor,
                     description: description
+                });
+				*/
+
+                var markerIcon = L.VectorMarkers.icon({
+                    icon: 'circle',
+                    iconColor: '#1fa6ad',
+                    //markerColor: '#1fa6ad',
+                    iconSize: [5,45],
+                    //iconSize: [0,0],
+                    //iconAnchor: [15, 35],
+                    //popupAnchor: [-5, -25],
+                    //shadowSize: [0,0],
+                    //extraIconClasses: 'fa-4x'
+                    //shadowAnchor: null,
+                    //shadowSize: null
+                    //iconColor: 'green'
                 });
 
                 /* Add the icon to layerFilter so we can access properties
