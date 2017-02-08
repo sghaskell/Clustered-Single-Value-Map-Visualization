@@ -7,12 +7,13 @@ define([
             'jszip-utils',
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
-            'drmonty-leaflet-awesome-markers',
 			'leaflet-contextmenu',
 			'leaflet-dialog',
             '../contrib/leaflet.markercluster-src',
             '../contrib/leaflet.featuregroup.subgroup-src',
-            '../contrib/leaflet-measure'
+            '../contrib/leaflet-measure',
+			'../contrib/leaflet.awesome-markers',
+            '../contrib/leaflet-vector-markers'
         ],
         function(
             $,
