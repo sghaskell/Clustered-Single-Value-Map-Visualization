@@ -615,6 +615,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                var markerPriority = _.has(userData, "markerPriority") ? userData["markerPriority"]:0;
 	                var title = _.has(userData, "title") ? userData["title"]:null;
 	                var prefix = _.has(userData, "prefix") ? userData["prefix"]:"fa";
+	                var extraClasses = _.has(userData, "extraClasses") ? userData["extraClasses"]:"fa-lg";
 
 	                if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
 	                    var className = "";
@@ -623,14 +624,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    var className = "awesome-marker";
 	                    extraClasses = "";
 	                    var popupAnchor = [1, -35];
-	                }
-
-	                if("extraClasses" in userData) {
-	                    var extraClasses = userData["extraClasses"];
-	                } else if (prefix === "fa") {
-	                    var extraClasses = "fa-lg";
-	                } else {
-	                    var extraClasses = "";
 	                }
 
 	                var description = _.has(userData, "description") ? userData["description"]:"";
