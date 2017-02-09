@@ -590,12 +590,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    this.layerFilter[icon].layerDescription = layerDescription;
 	                }
 
-
 	                var markerColor = _.has(userData, "markerColor") ? userData["markerColor"]:"blue";
+	                var markerType = _.has(userData, "markerType") ? userData["markerType"]:"png";
 	                var iconColor = _.has(userData, "iconColor") ? userData["iconColor"]:"white";
+	                var iconSize = _.has(userData, "iconSize") ? userData["iconSize"].split(/,/):[35,45];
+	                var shadowSize = _.has(userData, "shadowSize") ? userData["shadowSize"].split(/,/):[30,46];
+	                var shadowAnchor = _.has(userData, "shadowAnchor") ? userData["shadowAnchor"].split(/,/):[30,30];
+	                var markerPriority = _.has(userData, "markerPriority") ? userData["markerPriority"]:0;
 	                var title = _.has(userData, "title") ? userData["title"]:null;
 	                var prefix = _.has(userData, "prefix") ? userData["prefix"]:"fa";
-
 
 	                if(/^(fa-)?map-marker/.test(icon) || /^(fa-)?map-pin/.test(icon)) {
 	                    var className = "";
@@ -616,36 +619,42 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	                var description = _.has(userData, "description") ? userData["description"]:"";
 
-					/*
-	                // Create markerIcon
-	                var markerIcon = L.AwesomeMarkers.icon({
-	                    icon: icon,
-	                    markerColor: markerColor,
-	                    iconColor: iconColor,
-	                    title: title,
-	                    prefix: prefix,
-	                    className: className,
-	                    extraClasses: extraClasses,
-	                    popupAnchor: popupAnchor,
-	                    description: description
-	                });
-					*/
+	                if (markerType == "svg") {
+	                    var markerIcon = L.VectorMarkers.icon({
+	                        icon: icon,
+	                        iconColor: iconColor,
+	                        markerColor: markerColor,
+	                        shadowSize: shadowSize,
+	                        shadowAnchor: shadowAnchor,
+	                        extraIconClasses: extraClasses,
+	                        prefix: prefix,
+	                        iconSize: iconSize,
+	                        //markerColor: '#1fa6ad',
+	                        //iconSize: [5,45],
+	                        //iconSize: [0,0],
+	                        //iconAnchor: [15, 35],
+	                        //popupAnchor: [-5, -25],
+	                        //shadowSize: [0,0],
+	                        //extraIconClasses: 'fa-4x'
+	                        //shadowAnchor: null,
+	                        //shadowSize: null
+	                        //iconColor: 'green'
+	                    });
+	                } else {
+	                    // Create markerIcon
+	                    var markerIcon = L.AwesomeMarkers.icon({
+	                        icon: icon,
+	                        markerColor: markerColor,
+	                        iconColor: iconColor,
+	                        title: title,
+	                        prefix: prefix,
+	                        className: className,
+	                        extraClasses: extraClasses,
+	                        popupAnchor: popupAnchor,
+	                        description: description
+	                    });
 
-					var markerIcon = L.VectorMarkers.icon({
-						icon: icon,
-						iconColor: iconColor,
-						//markerColor: '#1fa6ad',
-						//iconSize: [20,45],
-						markerColor: markerColor,
-						//iconSize: [0,0],
-						//iconAnchor: [15, 35],
-						//popupAnchor: [-5, -25],
-						shadowSize: [30,46],
-						extraIconClasses: 'fa-lg',
-						shadowAnchor: [30,30]
-						//shadowSize: null
-						//iconColor: 'green'
-					});
+	                }
 
 	                /* Add the icon to layerFilter so we can access properties
 					 * for overlay in addLayerToControl
@@ -658,7 +667,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                                       userData['longitude']],
 	                                      {icon: markerIcon,
 	                                       title: title,
-	                                       layerDescription: layerDescription});
+	                                       layerDescription: layerDescription,
+										   zIndexOffset: markerPriority});
 
 	                if(this.isArgTrue(drilldown)) {
 						var drilldownFields = this.validateFields(userData);
