@@ -66,7 +66,7 @@ Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssr
 ``fa`` (Font Awesome) or ``ion`` (ionicons). **Default** ``fa``
 
 ##### extraClasses
-Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome or Ionicons to change the styling. **Default** ``fa-lg``
 
 ### SVG Markers
 Version 1.4.4 introduces the ability to use SVG based markers. You can dynamically size markers and assign any color (name or hex value). The following settings control SVG based markers.
