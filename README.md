@@ -8,6 +8,7 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Leaflet Maps](http://leafletjs.com/)
 ##### [Leaflet Markercluster Plugin](https://github.com/Leaflet/Leaflet.markercluster)
 ##### [Leaflet Awesome Markers Plugin](https://www.npmjs.com/package/drmonty-leaflet-awesome-markers)
+##### [Leaflet.vector-markers Plugin](https://github.com/hiasinho/Leaflet.vector-markers)
 ##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
 ##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Leaflet.contextmenu](https://github.com/aratcliffe/Leaflet.contextmenu)
@@ -23,13 +24,14 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 
 Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 
+Special thanks to Paul Thompson
 # Compatibility
 This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 ```
-base_search | table latitude, longitude [ description | title | icon | markerColor | iconColor | prefix | extraClasses | layerDescription]
+base_search | table latitude, longitude [ description | title | icon | markerColor | markerType | markerPriority | markerSize | markerAnchor | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription]
 ```
 
 # Required Fields
@@ -47,19 +49,60 @@ Description that is added next to the icon in the layer control legend. **this f
 # Style Markers And Icons Dynamically Through SPL
 ### Feature Description
 Version 1.1 introduces new features to dynamically style map markers and add icons via SPL. Create fields using [eval](http://docs.splunk.com/Documentation/Splunk/6.4.0/SearchReference/CommonEvalFunctions) to define colors for the marker or use an icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). If you find the color set of icons too limiting, feel free to override the map marker icon with a map icon from Font Awesome and style it with any hex color or RGB value.
+
+By default, markers are rendered as PNG's. The set of markers comes in a limited array of color values and cannot be re-sized. If you want access to an unlimited color palette and the ability to size markers, use [SVG based markers](#SVG-Markers).
+
 ### Available Fields and Values
 ##### title
 Icon mouse hover over description.
 ##### icon
-Icon displayed in map marker - Any icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). **Default** circle
+Icon displayed in map marker - Any icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). **Default** ``circle``
 ##### markerColor
-Color of map marker - red, darkred, lightred, orange, beige, green, darkgreen, lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black. **Default** blue
+Color of map marker - ``red``, ``darkred``, ``lightred``, ``orange``, ``beige``, ``green``, ``darkgreen``, ``lightgreen``, ``blue``, ``darkblue``, ``lightblue``, ``purple``, ``darkpurple``, ``pink``, ``cadetblue``, ``white``, ``gray``, ``lightgray``, ``black``. **Default** ``blue``
 ##### iconColor
 Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
 ##### prefix
-'fa' for Font Awesome or 'ion' for ionicons. **Default** 'fa'
+``fa`` (Font Awesome) or ``ion`` (ionicons). **Default** ``fa``
+
 ##### extraClasses
 Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+
+### SVG Markers
+Version 1.4.4 introduces the ability to use SVG based markers. You can dynamically size markers and assign any color (name or hex value). The following settings control SVG based markers.
+
+##### markerType
+``svg`` or ``png`` **Default** ``png``
+
+##### markerSize
+Comma separated string representing the pixel width and height of marker, respectively. **Default** ``35,45``
+
+##### markerColor
+Color of map marker. Use any common [HTML color code name](http://www.w3schools.com/colors/colors_names.asp) or [hex value](http://www.google.com/search?q=html+color+picker). **Default** ``#38AADD``
+
+##### markerAnchor
+Comma separated string representing the coordinates of the "tip" of the icon (relative to its top left corner). **Default** ``15,50``
+
+##### shadowSize
+Comma separated string representing the pixel width and height of the marker shadow. You typically don't need to change this value unless you increase or decrese the **markerSize**. Set to ``0,0`` to disable shadows. **Default** ``30,46``
+
+##### shadowAnchor
+Comma separated string representing the coordinates of the "tip" of the shadow (relative to its top left corner). You typically don't need to change this value unless you increase or decrese the **markerSize**. **Default** ``30,30``
+
+##### iconColor
+Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssref/css_colornames.asp.html), [Hex or RGB value](http://www.w3schools.com/colors/colors_picker.asp). **Default** white.
+##### prefix
+``fa`` (Font Awesome) or ``ion`` (ionicons). **Default** ``fa``
+
+##### extraClasses
+Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+
+# Marker Priority
+Version 1.4.4 introduces the ability to prioritize how markers are rendered on the map. Higher priority markers will render on top of lower priority markers. This is especially useful for dense maps where you need certain markers to stand out over others.
+
+Use the following setting to set the marker priority.
+
+##### markerPriority
+Value between ``0`` and ``1000`` with ``1000`` being the highest priority rendering on top of any other marker. **Default** ``0``
 
 # Drilldown
 Version 1.3.12 introduces drilldown capability! The visualization will identify any non-standard fields and make them available as drilldown fields. Simply add any fields you wish to the final table command and you'll have access to them via drilldown in Simple XML. See the [documentation on dynamic drilldown](http://docs.splunk.com/Documentation/Splunk/6.5.1/Viz/Dynamicdrilldownindashboardsandforms). Refer to this section of the docs on [accessing tokens for dynamic drilldown](http://docs.splunk.com/Documentation/Splunk/latest/Viz/tokens#Define_tokens_for_dynamic_drilldown).
@@ -223,7 +266,8 @@ index=chicago_crime
 index=chicago_crime 
 | fillnull 
 | eval description = "<b>".description."</b>" 
-| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle") 
+| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), 
+icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle") 
 | table latitude, longitude, description, markerColor, icon
 ```
 
@@ -232,9 +276,28 @@ index=chicago_crime
 index=chicago_crime 
 | fillnull 
 | eval description = "<b>".description."</b>"
-| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "map-marker", like(description, "%RECKLESS CONDUCT%"), "map-pin", 1=1, "circle"), iconColor=case(like(description, "%HARASSMENT BY TELEPHONE%"), "#374D13", like(description, "%RECKLESS CONDUCT%"), "rgb(0,255,255)", 1=1, "white") 
+| eval markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"), 
+icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "map-marker", like(description, "%RECKLESS CONDUCT%"), "map-pin", 1=1, "circle"), 
+iconColor=case(like(description, "%HARASSMENT BY TELEPHONE%"), "#374D13", like(description, "%RECKLESS CONDUCT%"), "rgb(0,255,255)", 1=1, "white") 
 | table latitude, longitude, description, markerColor, icon, iconColor
 ``` 
+
+### Plot SVG markers with custom marker size, shadow size and marker priority
+Red exclamation markers render on top of green check markers on top of smaller blue markers.
+```
+index=chicago_crime
+| fillnull
+| eval description = "<b>".description."</b>",
+shadowSize = case(like(description, "%HARASSMENT BY TELEPHONE%"), "30,46", like(description, "%RECKLESS CONDUCT%"), "30,46", 1=1, "20,36"),
+shadowAnchor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "30,30", like(description, "%RECKLESS CONDUCT%"), "30,30", 1=1, "32,40"),
+extraClasses = case(like(description, "%HARASSMENT BY TELEPHONE%"), "fa-lg", like(description, "%RECKLESS CONDUCT%"), "fa-lg", 1=1, ""),
+markerSize = case(like(description, "%HARASSMENT BY TELEPHONE%"), "35,45", like(description, "%RECKLESS CONDUCT%"), "35,45", 1=1, "15,35"),
+markerType = case(like(description, "%HARASSMENT BY TELEPHONE%"), "svg", like(description, "%RECKLESS CONDUCT%"), "svg", 1=1, "svg"),
+markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"),
+icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle"),
+markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000, like(description, "%RECKLESS CONDUCT%"), 900, 1=1, 0)
+| table latitude, longitude, description, markerColor, icon, markerType, markerSize, extraClasses, shadowSize, shadowAnchor, markerPriority
+```
 
 # Formatting Options
 ### Map
