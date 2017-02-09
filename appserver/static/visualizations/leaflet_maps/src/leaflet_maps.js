@@ -577,7 +577,6 @@ define([
                     var popupAnchor = [-3, -35];
                 } else {
                     var className = "awesome-marker";
-                    extraClasses = "";
                     var popupAnchor = [1, -35];
                 }
 
