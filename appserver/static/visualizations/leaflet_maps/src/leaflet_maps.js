@@ -548,7 +548,7 @@ define([
                 var markerColor = _.has(userData, "markerColor") ? userData["markerColor"]:"blue";
                 var markerType = _.has(userData, "markerType") ? userData["markerType"]:"png";
                 var iconColor = _.has(userData, "iconColor") ? userData["iconColor"]:"white";
-                var iconSize = _.has(userData, "iconSize") ? userData["iconSize"].split(/,/):[35,45];
+                var markerSize = _.has(userData, "markerSize") ? userData["markerSize"].split(/,/):[35,45];
                 var shadowSize = _.has(userData, "shadowSize") ? userData["shadowSize"].split(/,/):[30,46];
                 var shadowAnchor = _.has(userData, "shadowAnchor") ? userData["shadowAnchor"].split(/,/):[30,30];
                 var markerPriority = _.has(userData, "markerPriority") ? userData["markerPriority"]:0;
@@ -575,6 +575,8 @@ define([
                 var description = _.has(userData, "description") ? userData["description"]:"";
 
                 if (markerType == "svg") {
+					// Update marker to shade of Awesome Marker blue
+					if(markerColor == "blue") { markerColor = "#38AADD"; }
                     var markerIcon = L.VectorMarkers.icon({
                         icon: icon,
                         iconColor: iconColor,
@@ -583,7 +585,7 @@ define([
                         shadowAnchor: shadowAnchor,
                         extraIconClasses: extraClasses,
                         prefix: prefix,
-                        iconSize: iconSize,
+                        iconSize: markerSize,
                         //markerColor: '#1fa6ad',
                         //iconSize: [5,45],
                         //iconSize: [0,0],
