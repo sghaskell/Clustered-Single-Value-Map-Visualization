@@ -23,6 +23,10 @@ module.exports = {
                 loader: 'imports-loader?L=leaflet'
             },
             {
+                test: /leaflet-vector-markers\.js$/,
+                loader: 'imports-loader?L=leaflet'
+            },
+            {
                 test: /leaflet\.featuregroup\.subgroup-src\.js$/,
                 loader: 'imports-loader?define=>false'
             },
