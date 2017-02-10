@@ -296,7 +296,7 @@ markerSize = case(like(description, "%HARASSMENT BY TELEPHONE%"), "35,45", like(
 markerType = case(like(description, "%HARASSMENT BY TELEPHONE%"), "svg", like(description, "%RECKLESS CONDUCT%"), "svg", 1=1, "svg"),
 markerColor = case(like(description, "%HARASSMENT BY TELEPHONE%"), "red", like(description, "%RECKLESS CONDUCT%"), "green", 1=1, "blue"),
 icon=case(like(description, "%HARASSMENT BY TELEPHONE%"), "exclamation", like(description, "%RECKLESS CONDUCT%"), "check-circle", 1=1, "circle"),
-markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000, like(description, "%RECKLESS CONDUCT%"), 900, 1=1, 0)
+markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000000, like(description, "%RECKLESS CONDUCT%"), 500000, 1=1, -1000000)
 | table latitude, longitude, description, markerColor, icon, markerType, markerSize, extraClasses, shadowSize, shadowAnchor, markerPriority
 ```
 
