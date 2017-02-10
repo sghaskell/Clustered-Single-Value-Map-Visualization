@@ -567,7 +567,7 @@ define([
                 var markerAnchor = _.has(userData, "markerAnchor") ? userData["markerAnchor"].split(/,/):[15,50];
                 var shadowSize = _.has(userData, "shadowSize") ? userData["shadowSize"].split(/,/):[30,46];
                 var shadowAnchor = _.has(userData, "shadowAnchor") ? userData["shadowAnchor"].split(/,/):[30,30];
-                var markerPriority = _.has(userData, "markerPriority") ? userData["markerPriority"]:0;
+                var markerPriority = _.has(userData, "markerPriority") ? parseInt(userData["markerPriority"]):0;
                 var title = _.has(userData, "title") ? userData["title"]:null;
                 var prefix = _.has(userData, "prefix") ? userData["prefix"]:"fa";
                 var extraClasses = _.has(userData, "extraClasses") ? userData["extraClasses"]:"fa-lg";
