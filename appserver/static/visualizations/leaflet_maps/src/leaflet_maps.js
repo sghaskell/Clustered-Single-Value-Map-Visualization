@@ -585,6 +585,11 @@ define([
                 if (markerType == "svg") {
 					// Update marker to shade of Awesome Marker blue
 					if(markerColor == "blue") { markerColor = "#38AADD"; }
+                    // Pass markerColor prefixed with # regardless of given prefix ("#" or "0x")
+                    var hexRegex = /^(?:#|0x)([a-f\d]{6})$/i;
+                    if (hexRegex.test(markerColor)) {
+                        markerColor = "#" + hexRegex.exec(markerColor)[1];
+                    }
                     var markerIcon = L.VectorMarkers.icon({
                         icon: icon,
                         iconColor: iconColor,
