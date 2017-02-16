@@ -596,11 +596,13 @@ define([
 
                 var description = _.has(userData, "description") ? userData["description"]:"";
 
+				// SVG and PNG based markers both support hex iconColor do conversion outside
+				iconColor = this.convertHex(iconColor);	
+
                 if (markerType == "svg") {
 					// Update marker to shade of Awesome Marker blue
 					if(markerColor == "blue") { markerColor = "#38AADD"; }
 					markerColor = this.convertHex(markerColor);
-					iconColor = this.convertHex(iconColor);
 
                     var markerIcon = L.VectorMarkers.icon({
                         icon: icon,
