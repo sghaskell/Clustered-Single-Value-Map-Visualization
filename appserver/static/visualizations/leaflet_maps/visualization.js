@@ -186,6 +186,20 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            this.drilldown(payload);
 	        },
 
+			/* 
+			/ Convert 0x|# prefixed hex values to # prefixed for consistency
+			/ Splunk's eval tostring('hex') method returns 0x prefix
+			*/
+			convertHex: function(value) {
+				// Pass markerColor prefixed with # regardless of given prefix ("#" or "0x")
+				var hexRegex = /^(?:#|0x)([a-f\d]{6})$/i;
+				if (hexRegex.test(value)) {
+					markerColor = "#" + hexRegex.exec(value)[1];
+					return(markerColor);
+				} else {
+					return(value);
+				}
+			},
 
 	        // Convert hex values to RGB for marker icon colors
 	        hexToRgb: function(hex) {
@@ -630,11 +644,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                if (markerType == "svg") {
 						// Update marker to shade of Awesome Marker blue
 						if(markerColor == "blue") { markerColor = "#38AADD"; }
-	                    // Pass markerColor prefixed with # regardless of given prefix ("#" or "0x")
-	                    var hexRegex = /^(?:#|0x)([a-f\d]{6})$/i;
-	                    if (hexRegex.test(markerColor)) {
-	                        markerColor = "#" + hexRegex.exec(markerColor)[1];
-	                    }
+						markerColor = this.convertHex(markerColor);
+						iconColor = this.convertHex(iconColor);
+
 	                    var markerIcon = L.VectorMarkers.icon({
 	                        icon: icon,
 	                        iconColor: iconColor,
