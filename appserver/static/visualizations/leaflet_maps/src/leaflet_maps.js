@@ -30,6 +30,7 @@ define([
     return SplunkVisualizationBase.extend({
         maxResults: 0,
         tileLayer: null,
+        pathLineLayer: null,
         contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
         defaultConfig:  {
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
@@ -72,7 +73,9 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit': "sqmiles",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor': "#00ff00",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor': "#0066ff",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en"
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en",
+            // Path lines are off by default
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0
         },
         ATTRIBUTIONS: {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
@@ -102,7 +105,7 @@ define([
             this.clearMap = false;
         },
 
-        // Build object of key/value paris for invalid fields
+        // Build object of key/value pairs for invalid fields
         // to be used as data for _drilldown action
         validateFields: function(obj) {
             var invalidFields = {};
@@ -116,6 +119,7 @@ define([
 							   'markerPriority',
 							   'markerSize',
 						       'markerAnchor',
+                               'markerVisibility',
 							   'iconColor',
 						       'shadowAnchor',
 							   'shadowSize',
@@ -306,6 +310,7 @@ define([
                     lg.group.clearLayers();
                     lg.markerList = [];
                 }, this);
+                this.pathLineLayer.clearLayers();
             }
 
             // get data
@@ -364,7 +369,8 @@ define([
                 measureSecondaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit'],
                 measureActiveColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor'],
                 measureCompletedColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor'],
-                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization']
+                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization'],
+                showPathLines = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines'])
 
             this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -513,6 +519,8 @@ define([
                         this.fetchKmlAndMap(url, file, this.map);
                     }, this);
                 }
+                
+                this.pathLineLayer = L.layerGroup().addTo(this.map);
                
                 // Init defaults
                 this.chunk = 50000;
@@ -655,8 +663,13 @@ define([
                     marker.bindPopup(userData['description']);
                 }
 
-                // Save each icon in the layer
-                this.layerFilter[icon].markerList.push(marker);
+                // Save each icon in the layer if markerVisibility == "marker"
+                // TODO: possibly place more of marker-related code from above inside if statement?
+                if (userData["markerVisibility"] && userData["markerVisibility"] == "marker") {
+                    this.layerFilter[icon].markerList.push(marker);
+                } else {
+                    this.layerFilter[icon].markerList.push(marker);
+                }
             }, this);            
 
             // Enable/disable layer controls and toggle collapse 
@@ -709,6 +722,65 @@ define([
                 this.clearMap = true;
             }
 
+            // Draw path lines
+            if (showPathLines) {
+                var intervalCounter = 0;
+                var previousTime = new Date();
+                this.activeTrails = [];
+                var interval = 86400000;
+                var that = this;
+
+                var data = _.chain(dataRows).map(function (d) {
+                    var lat = +d["latitude"];
+                    var lon = +d["longitude"];
+                    var dt = new Date(d["_time"]);
+                    var id_field = d["id_field"];
+                    var id;
+                    if (id_field) {
+                        id = d[id_field];
+                    } else {
+                        id = d["Wagennummer"];
+                    }
+
+                    var colorIndex = that.activeTrails.indexOf(id);
+
+                    if (colorIndex < 0) {
+                        colorIndex = that.activeTrails.push(id) - 1;
+                    }
+
+                    return {
+                        'id': id,
+                        'colorIndex': colorIndex,
+                        'coordinates': L.latLng(lat, lon),
+                        'time': dt,
+                        'icon': d[4] ? d[4] : false
+                    };
+                }).each(function (d) {
+                    var dt = d.time;
+                    if (interval && previousTime - dt > interval) {
+                        intervalCounter++;
+                    }
+                    d.interval = 'interval' + intervalCounter;
+
+                    previousTime = dt;
+                }).groupBy(function (d) {
+                    return d.id;
+                }).values().value();
+                
+                var pathLineLayer = this.pathLineLayer;
+                var CLRS = ['#1e93c6', '#f2b827', '#d6563c', '#6a5c9e', '#31a35f', '#ed8440', '#3863a0', '#a2cc3e', '#cc5068', '#73427f'];
+                
+                _.each(data, function (userData, i) {
+                    var data = _.chain(userData).groupBy(function (d) {
+                        return d.interval;
+                    }).values().value();
+
+                    _.each(data, function (trace) {
+                        L.polyline(_.pluck(trace, 'coordinates'), { color: CLRS[data[0][0].colorIndex % CLRS.length] }).addTo(pathLineLayer);
+                    }, this);
+                }, this);
+            }
+                
             return this;
         }
     });
