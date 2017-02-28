@@ -30,6 +30,7 @@ define([
     return SplunkVisualizationBase.extend({
         maxResults: 0,
         tileLayer: null,
+        pathLineLayer: null,
         contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
         defaultConfig:  {
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
@@ -72,7 +73,10 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit': "sqmiles",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor': "#00ff00",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor': "#0066ff",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en"
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier': "",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378"
         },
         ATTRIBUTIONS: {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
@@ -102,7 +106,7 @@ define([
             this.clearMap = false;
         },
 
-        // Build object of key/value paris for invalid fields
+        // Build object of key/value pairs for invalid fields
         // to be used as data for _drilldown action
         validateFields: function(obj) {
             var invalidFields = {};
@@ -116,6 +120,7 @@ define([
 							   'markerPriority',
 							   'markerSize',
 						       'markerAnchor',
+                               'markerVisibility',
 							   'iconColor',
 						       'shadowAnchor',
 							   'shadowSize',
@@ -306,6 +311,7 @@ define([
                     lg.group.clearLayers();
                     lg.markerList = [];
                 }, this);
+                this.pathLineLayer.clearLayers();
             }
 
             // get data
@@ -364,7 +370,10 @@ define([
                 measureSecondaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit'],
                 measureActiveColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor'],
                 measureCompletedColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor'],
-                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization']
+                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization'],
+                showPathLines = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines']),
+                pathIdentifier = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier'],
+                pathColorList = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList'];
 
             this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -513,6 +522,8 @@ define([
                         this.fetchKmlAndMap(url, file, this.map);
                     }, this);
                 }
+                
+                this.pathLineLayer = L.layerGroup().addTo(this.map);
                
                 // Init defaults
                 this.chunk = 50000;
@@ -655,8 +666,15 @@ define([
                     marker.bindPopup(userData['description']);
                 }
 
-                // Save each icon in the layer
-                this.layerFilter[icon].markerList.push(marker);
+                // Save each icon in the layer if markerVisibility is either set and == "marker" or unset
+                // TODO: possibly place more of marker-related code from above inside if statement?
+                if (userData["markerVisibility"]) {
+                    if (userData["markerVisibility"] == "marker") {
+                        this.layerFilter[icon].markerList.push(marker);
+                    }
+                } else {
+                    this.layerFilter[icon].markerList.push(marker);
+                }
             }, this);            
 
             // Enable/disable layer controls and toggle collapse 
@@ -709,6 +727,36 @@ define([
                 this.clearMap = true;
             }
 
+            // Draw path lines
+            if (this.isArgTrue(showPathLines)) {
+                var activePaths = [];
+                var colors = _.map(pathColorList.split(','), function(color) {
+                    return this.convertHex(color);
+                }, this);
+                
+                var paths = _.map(dataRows, function (d) {
+                    var colorIndex = 0;
+                    if (pathIdentifier) {
+                        var id = d[pathIdentifier];
+                        var colorIndex = activePaths.indexOf(id);
+                        if (colorIndex < 0) {
+                            colorIndex = activePaths.push(id) - 1;
+                        }
+                    }
+                    return {
+                        'coordinates': L.latLng(d['latitude'], d['longitude']),
+                        'colorIndex': colorIndex
+                    };
+                });
+                paths = _.groupBy(paths, function (d) {
+                    return d.colorIndex;
+                });
+                
+                _.each(paths, function(path) {
+                    L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length]}).addTo(this.pathLineLayer);
+                }, this);
+            }
+                
             return this;
         }
     });
