@@ -1,4 +1,4 @@
-define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_111__, __WEBPACK_EXTERNAL_MODULE_112__) { return /******/ (function(modules) { // webpackBootstrap
+define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_113__, __WEBPACK_EXTERNAL_MODULE_114__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -46,20 +46,20 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	            __webpack_require__(3),
-	            __webpack_require__(113),
+	            __webpack_require__(115),
 	            __webpack_require__(2),
 	            __webpack_require__(4),
 	            __webpack_require__(7),
-	            __webpack_require__(110),
-	            __webpack_require__(111),
 	            __webpack_require__(112),
+	            __webpack_require__(113),
+	            __webpack_require__(114),
 				__webpack_require__(1),
-				__webpack_require__(114),
-	            __webpack_require__(115),
-	            __webpack_require__(116),
+				__webpack_require__(116),
 	            __webpack_require__(117),
-				__webpack_require__(118),
-	            __webpack_require__(119)
+	            __webpack_require__(118),
+	            __webpack_require__(119),
+				__webpack_require__(120),
+	            __webpack_require__(121)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -25109,9 +25109,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    };
 	}
 	JSZip.prototype = __webpack_require__(8);
-	JSZip.prototype.loadAsync = __webpack_require__(101);
+	JSZip.prototype.loadAsync = __webpack_require__(103);
 	JSZip.support = __webpack_require__(11);
-	JSZip.defaults = __webpack_require__(72);
+	JSZip.defaults = __webpack_require__(74);
 
 	// TODO find a better way to handle this version,
 	// a require('package.json').version doesn't work with webpack, see #327
@@ -25121,7 +25121,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    return new JSZip().loadAsync(content, options);
 	};
 
-	JSZip.external = __webpack_require__(62);
+	JSZip.external = __webpack_require__(64);
 	module.exports = JSZip;
 
 
@@ -25132,14 +25132,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	'use strict';
 	var utf8 = __webpack_require__(9);
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
-	var StreamHelper = __webpack_require__(66);
-	var defaults = __webpack_require__(72);
-	var CompressedObject = __webpack_require__(73);
-	var ZipObject = __webpack_require__(78);
-	var generate = __webpack_require__(79);
-	var nodejsUtils = __webpack_require__(40);
-	var NodejsStreamInputAdapter = __webpack_require__(100);
+	var GenericWorker = __webpack_require__(67);
+	var StreamHelper = __webpack_require__(68);
+	var defaults = __webpack_require__(74);
+	var CompressedObject = __webpack_require__(75);
+	var ZipObject = __webpack_require__(80);
+	var generate = __webpack_require__(81);
+	var nodejsUtils = __webpack_require__(42);
+	var NodejsStreamInputAdapter = __webpack_require__(102);
 
 
 	/**
@@ -25528,8 +25528,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var utils = __webpack_require__(10);
 	var support = __webpack_require__(11);
-	var nodejsUtils = __webpack_require__(40);
-	var GenericWorker = __webpack_require__(65);
+	var nodejsUtils = __webpack_require__(42);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * The following functions come from pako, from pako/lib/utils/strings
@@ -25808,10 +25808,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	'use strict';
 
 	var support = __webpack_require__(11);
-	var base64 = __webpack_require__(39);
-	var nodejsUtils = __webpack_require__(40);
-	var setImmediate = __webpack_require__(41);
-	var external = __webpack_require__(62);
+	var base64 = __webpack_require__(41);
+	var nodejsUtils = __webpack_require__(42);
+	var setImmediate = __webpack_require__(43);
+	var external = __webpack_require__(64);
 
 
 	/**
@@ -28394,10 +28394,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	inherits(Stream, EE);
 	Stream.Readable = __webpack_require__(20);
-	Stream.Writable = __webpack_require__(35);
-	Stream.Duplex = __webpack_require__(36);
-	Stream.Transform = __webpack_require__(37);
-	Stream.PassThrough = __webpack_require__(38);
+	Stream.Writable = __webpack_require__(37);
+	Stream.Duplex = __webpack_require__(38);
+	Stream.Transform = __webpack_require__(39);
+	Stream.PassThrough = __webpack_require__(40);
 
 	// Backwards-compat with node 0.4.x
 	Stream.Stream = Stream;
@@ -28844,10 +28844,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	exports = module.exports = __webpack_require__(21);
 	exports.Stream = Stream || exports;
 	exports.Readable = exports;
-	exports.Writable = __webpack_require__(28);
-	exports.Duplex = __webpack_require__(27);
-	exports.Transform = __webpack_require__(33);
-	exports.PassThrough = __webpack_require__(34);
+	exports.Writable = __webpack_require__(30);
+	exports.Duplex = __webpack_require__(29);
+	exports.Transform = __webpack_require__(35);
+	exports.PassThrough = __webpack_require__(36);
 
 	if (!process.browser && process.env.READABLE_STREAM === 'disable' && Stream) {
 	  module.exports = Stream;
@@ -28868,7 +28868,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var isArray = __webpack_require__(15);
+	var isArray = __webpack_require__(23);
 	/*</replacement>*/
 
 	/*<replacement>*/
@@ -28898,16 +28898,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var Buffer = __webpack_require__(12).Buffer;
 	/*<replacement>*/
-	var bufferShim = __webpack_require__(23);
+	var bufferShim = __webpack_require__(24);
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var util = __webpack_require__(24);
-	util.inherits = __webpack_require__(19);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var debugUtil = __webpack_require__(25);
+	var debugUtil = __webpack_require__(27);
 	var debug = void 0;
 	if (debugUtil && debugUtil.debuglog) {
 	  debug = debugUtil.debuglog('stream');
@@ -28916,7 +28916,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 	/*</replacement>*/
 
-	var BufferList = __webpack_require__(26);
+	var BufferList = __webpack_require__(28);
 	var StringDecoder;
 
 	util.inherits(Readable, Stream);
@@ -28936,7 +28936,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 	function ReadableState(options, stream) {
-	  Duplex = Duplex || __webpack_require__(27);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  options = options || {};
 
@@ -28998,14 +28998,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	  this.decoder = null;
 	  this.encoding = null;
 	  if (options.encoding) {
-	    if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+	    if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
 	    this.decoder = new StringDecoder(options.encoding);
 	    this.encoding = options.encoding;
 	  }
 	}
 
 	function Readable(options) {
-	  Duplex = Duplex || __webpack_require__(27);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  if (!(this instanceof Readable)) return new Readable(options);
 
@@ -29108,7 +29108,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	// backwards compatibility.
 	Readable.prototype.setEncoding = function (enc) {
-	  if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+	  if (!StringDecoder) StringDecoder = __webpack_require__(34).StringDecoder;
 	  this._readableState.decoder = new StringDecoder(enc);
 	  this._readableState.encoding = enc;
 	  return this;
@@ -29854,6 +29854,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 /***/ },
 /* 23 */
+/***/ function(module, exports) {
+
+	var toString = {}.toString;
+
+	module.exports = Array.isArray || function (arr) {
+	  return toString.call(arr) == '[object Array]';
+	};
+
+
+/***/ },
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -29968,7 +29979,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -30082,20 +30093,49 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 25 */
+/* 26 */
+/***/ function(module, exports) {
+
+	if (typeof Object.create === 'function') {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor
+	    var TempCtor = function () {}
+	    TempCtor.prototype = superCtor.prototype
+	    ctor.prototype = new TempCtor()
+	    ctor.prototype.constructor = ctor
+	  }
+	}
+
+
+/***/ },
+/* 27 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 26 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var Buffer = __webpack_require__(12).Buffer;
 	/*<replacement>*/
-	var bufferShim = __webpack_require__(23);
+	var bufferShim = __webpack_require__(24);
 	/*</replacement>*/
 
 	module.exports = BufferList;
@@ -30157,7 +30197,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 27 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// a duplex stream is just a stream that is both readable and writable.
@@ -30184,12 +30224,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var util = __webpack_require__(24);
-	util.inherits = __webpack_require__(19);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	var Readable = __webpack_require__(21);
-	var Writable = __webpack_require__(28);
+	var Writable = __webpack_require__(30);
 
 	util.inherits(Duplex, Readable);
 
@@ -30237,7 +30277,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 /***/ },
-/* 28 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// A bit simpler than readable streams.
@@ -30263,13 +30303,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	Writable.WritableState = WritableState;
 
 	/*<replacement>*/
-	var util = __webpack_require__(24);
-	util.inherits = __webpack_require__(19);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	/*<replacement>*/
 	var internalUtil = {
-	  deprecate: __webpack_require__(31)
+	  deprecate: __webpack_require__(33)
 	};
 	/*</replacement>*/
 
@@ -30286,7 +30326,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var Buffer = __webpack_require__(12).Buffer;
 	/*<replacement>*/
-	var bufferShim = __webpack_require__(23);
+	var bufferShim = __webpack_require__(24);
 	/*</replacement>*/
 
 	util.inherits(Writable, Stream);
@@ -30301,7 +30341,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 	function WritableState(options, stream) {
-	  Duplex = Duplex || __webpack_require__(27);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  options = options || {};
 
@@ -30435,7 +30475,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 	function Writable(options) {
-	  Duplex = Duplex || __webpack_require__(27);
+	  Duplex = Duplex || __webpack_require__(29);
 
 	  // Writable ctor is applied to Duplexes, too.
 	  // `realHasInstance` is necessary because using plain `instanceof`
@@ -30794,10 +30834,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    }
 	  };
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(29).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(31).setImmediate))
 
 /***/ },
-/* 29 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var apply = Function.prototype.apply;
@@ -30850,13 +30890,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 	// setimmediate attaches itself to the global object
-	__webpack_require__(30);
+	__webpack_require__(32);
 	exports.setImmediate = setImmediate;
 	exports.clearImmediate = clearImmediate;
 
 
 /***/ },
-/* 30 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -31049,7 +31089,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(5)))
 
 /***/ },
-/* 31 */
+/* 33 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -31123,7 +31163,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 32 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -31350,7 +31390,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 33 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// a transform stream is a readable/writable stream where you do
@@ -31399,11 +31439,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	module.exports = Transform;
 
-	var Duplex = __webpack_require__(27);
+	var Duplex = __webpack_require__(29);
 
 	/*<replacement>*/
-	var util = __webpack_require__(24);
-	util.inherits = __webpack_require__(19);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	util.inherits(Transform, Duplex);
@@ -31537,7 +31577,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 /***/ },
-/* 34 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// a passthrough stream.
@@ -31548,11 +31588,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	module.exports = PassThrough;
 
-	var Transform = __webpack_require__(33);
+	var Transform = __webpack_require__(35);
 
 	/*<replacement>*/
-	var util = __webpack_require__(24);
-	util.inherits = __webpack_require__(19);
+	var util = __webpack_require__(25);
+	util.inherits = __webpack_require__(26);
 	/*</replacement>*/
 
 	util.inherits(PassThrough, Transform);
@@ -31568,35 +31608,35 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(28)
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(27)
-
-
-/***/ },
 /* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(33)
+	module.exports = __webpack_require__(30)
 
 
 /***/ },
 /* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(34)
+	module.exports = __webpack_require__(29)
 
 
 /***/ },
 /* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(35)
+
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(36)
+
+
+/***/ },
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31708,7 +31748,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 40 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
@@ -31749,31 +31789,31 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 41 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(42);
-	module.exports = __webpack_require__(45).setImmediate;
+	__webpack_require__(44);
+	module.exports = __webpack_require__(47).setImmediate;
 
 /***/ },
-/* 42 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var $export = __webpack_require__(43)
-	  , $task   = __webpack_require__(58);
+	var $export = __webpack_require__(45)
+	  , $task   = __webpack_require__(60);
 	$export($export.G + $export.B, {
 	  setImmediate:   $task.set,
 	  clearImmediate: $task.clear
 	});
 
 /***/ },
-/* 43 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(44)
-	  , core      = __webpack_require__(45)
-	  , ctx       = __webpack_require__(46)
-	  , hide      = __webpack_require__(48)
+	var global    = __webpack_require__(46)
+	  , core      = __webpack_require__(47)
+	  , ctx       = __webpack_require__(48)
+	  , hide      = __webpack_require__(50)
 	  , PROTOTYPE = 'prototype';
 
 	var $export = function(type, name, source){
@@ -31833,7 +31873,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	module.exports = $export;
 
 /***/ },
-/* 44 */
+/* 46 */
 /***/ function(module, exports) {
 
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -31842,18 +31882,18 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 
 /***/ },
-/* 45 */
+/* 47 */
 /***/ function(module, exports) {
 
 	var core = module.exports = {version: '2.3.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
-/* 46 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// optional / simple context binding
-	var aFunction = __webpack_require__(47);
+	var aFunction = __webpack_require__(49);
 	module.exports = function(fn, that, length){
 	  aFunction(fn);
 	  if(that === undefined)return fn;
@@ -31874,7 +31914,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 47 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -31883,12 +31923,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 48 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var dP         = __webpack_require__(49)
-	  , createDesc = __webpack_require__(57);
-	module.exports = __webpack_require__(53) ? function(object, key, value){
+	var dP         = __webpack_require__(51)
+	  , createDesc = __webpack_require__(59);
+	module.exports = __webpack_require__(55) ? function(object, key, value){
 	  return dP.f(object, key, createDesc(1, value));
 	} : function(object, key, value){
 	  object[key] = value;
@@ -31896,15 +31936,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 49 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var anObject       = __webpack_require__(50)
-	  , IE8_DOM_DEFINE = __webpack_require__(52)
-	  , toPrimitive    = __webpack_require__(56)
+	var anObject       = __webpack_require__(52)
+	  , IE8_DOM_DEFINE = __webpack_require__(54)
+	  , toPrimitive    = __webpack_require__(58)
 	  , dP             = Object.defineProperty;
 
-	exports.f = __webpack_require__(53) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+	exports.f = __webpack_require__(55) ? Object.defineProperty : function defineProperty(O, P, Attributes){
 	  anObject(O);
 	  P = toPrimitive(P, true);
 	  anObject(Attributes);
@@ -31917,17 +31957,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 50 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(51);
+	var isObject = __webpack_require__(53);
 	module.exports = function(it){
 	  if(!isObject(it))throw TypeError(it + ' is not an object!');
 	  return it;
 	};
 
 /***/ },
-/* 51 */
+/* 53 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -31935,24 +31975,24 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 52 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = !__webpack_require__(53) && !__webpack_require__(54)(function(){
-	  return Object.defineProperty(__webpack_require__(55)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+	module.exports = !__webpack_require__(55) && !__webpack_require__(56)(function(){
+	  return Object.defineProperty(__webpack_require__(57)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
-/* 53 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Thank's IE8 for his funny defineProperty
-	module.exports = !__webpack_require__(54)(function(){
+	module.exports = !__webpack_require__(56)(function(){
 	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
-/* 54 */
+/* 56 */
 /***/ function(module, exports) {
 
 	module.exports = function(exec){
@@ -31964,11 +32004,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 55 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(51)
-	  , document = __webpack_require__(44).document
+	var isObject = __webpack_require__(53)
+	  , document = __webpack_require__(46).document
 	  // in old IE typeof document.createElement is 'object'
 	  , is = isObject(document) && isObject(document.createElement);
 	module.exports = function(it){
@@ -31976,11 +32016,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 56 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.1 ToPrimitive(input [, PreferredType])
-	var isObject = __webpack_require__(51);
+	var isObject = __webpack_require__(53);
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
 	module.exports = function(it, S){
@@ -31993,7 +32033,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 57 */
+/* 59 */
 /***/ function(module, exports) {
 
 	module.exports = function(bitmap, value){
@@ -32006,14 +32046,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 58 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ctx                = __webpack_require__(46)
-	  , invoke             = __webpack_require__(59)
-	  , html               = __webpack_require__(60)
-	  , cel                = __webpack_require__(55)
-	  , global             = __webpack_require__(44)
+	var ctx                = __webpack_require__(48)
+	  , invoke             = __webpack_require__(61)
+	  , html               = __webpack_require__(62)
+	  , cel                = __webpack_require__(57)
+	  , global             = __webpack_require__(46)
 	  , process            = global.process
 	  , setTask            = global.setImmediate
 	  , clearTask          = global.clearImmediate
@@ -32048,7 +32088,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    delete queue[id];
 	  };
 	  // Node.js 0.8-
-	  if(__webpack_require__(61)(process) == 'process'){
+	  if(__webpack_require__(63)(process) == 'process'){
 	    defer = function(id){
 	      process.nextTick(ctx(run, id, 1));
 	    };
@@ -32086,7 +32126,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 59 */
+/* 61 */
 /***/ function(module, exports) {
 
 	// fast apply, http://jsperf.lnkit.com/fast-apply/5
@@ -32107,13 +32147,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 60 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(44).document && document.documentElement;
+	module.exports = __webpack_require__(46).document && document.documentElement;
 
 /***/ },
-/* 61 */
+/* 63 */
 /***/ function(module, exports) {
 
 	var toString = {}.toString;
@@ -32123,7 +32163,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	};
 
 /***/ },
-/* 62 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* global Promise */
@@ -32136,7 +32176,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	if (typeof Promise !== "undefined") {
 	    ES6Promise = Promise;
 	} else {
-	    ES6Promise = __webpack_require__(63);
+	    ES6Promise = __webpack_require__(65);
 	}
 
 	/**
@@ -32148,11 +32188,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 63 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var immediate = __webpack_require__(64);
+	var immediate = __webpack_require__(66);
 
 	/* istanbul ignore next */
 	function INTERNAL() {}
@@ -32269,7 +32309,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	function getThen(obj) {
 	  // Make sure we only access the accessor once as required by the spec
 	  var then = obj && obj.then;
-	  if (obj && (typeof obj === 'object' || typeof obj === 'function') && typeof then === 'function') {
+	  if (obj && typeof obj === 'object' && typeof then === 'function') {
 	    return function appyThen() {
 	      then.apply(obj, arguments);
 	    };
@@ -32407,7 +32447,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 64 */
+/* 66 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -32483,7 +32523,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 65 */
+/* 67 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -32752,22 +32792,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 66 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
 
 	var utils = __webpack_require__(10);
-	var ConvertWorker = __webpack_require__(67);
-	var GenericWorker = __webpack_require__(65);
-	var base64 = __webpack_require__(39);
+	var ConvertWorker = __webpack_require__(69);
+	var GenericWorker = __webpack_require__(67);
+	var base64 = __webpack_require__(41);
 	var support = __webpack_require__(11);
-	var external = __webpack_require__(62);
+	var external = __webpack_require__(64);
 
 	var NodejsStreamOutputAdapter = null;
 	if (support.nodestream) {
 	    try {
-	        NodejsStreamOutputAdapter = __webpack_require__(68);
+	        NodejsStreamOutputAdapter = __webpack_require__(70);
 	    } catch(e) {}
 	}
 
@@ -32978,12 +33018,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).Buffer))
 
 /***/ },
-/* 67 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 	var utils = __webpack_require__(10);
 
 	/**
@@ -33010,14 +33050,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 68 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var Readable = __webpack_require__(16).Readable;
 
-	var util = __webpack_require__(69);
+	var util = __webpack_require__(71);
 	util.inherits(NodejsStreamOutputAdapter, Readable);
 
 	/**
@@ -33058,7 +33098,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 69 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -33586,7 +33626,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(70);
+	exports.isBuffer = __webpack_require__(72);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -33630,7 +33670,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(71);
+	exports.inherits = __webpack_require__(73);
 
 	exports._extend = function(origin, add) {
 	  // Don't do anything if add isn't an object
@@ -33651,7 +33691,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(5)))
 
 /***/ },
-/* 70 */
+/* 72 */
 /***/ function(module, exports) {
 
 	module.exports = function isBuffer(arg) {
@@ -33662,7 +33702,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	}
 
 /***/ },
-/* 71 */
+/* 73 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -33691,7 +33731,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 72 */
+/* 74 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33708,16 +33748,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 73 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var external = __webpack_require__(62);
-	var DataWorker = __webpack_require__(74);
-	var DataLengthProbe = __webpack_require__(75);
-	var Crc32Probe = __webpack_require__(76);
-	var DataLengthProbe = __webpack_require__(75);
+	var external = __webpack_require__(64);
+	var DataWorker = __webpack_require__(76);
+	var DataLengthProbe = __webpack_require__(77);
+	var Crc32Probe = __webpack_require__(78);
+	var DataLengthProbe = __webpack_require__(77);
 
 	/**
 	 * Represent a compressed object, with everything needed to decompress it.
@@ -33789,13 +33829,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 74 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 
 	// the size of the generated chunks
 	// TODO expose this as a public variable
@@ -33911,13 +33951,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 75 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A worker which calculate the total length of the data flowing through.
@@ -33946,13 +33986,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 76 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(65);
-	var crc32 = __webpack_require__(77);
+	var GenericWorker = __webpack_require__(67);
+	var crc32 = __webpack_require__(79);
 	var utils = __webpack_require__(10);
 
 	/**
@@ -33976,7 +34016,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 77 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34060,16 +34100,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 78 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var StreamHelper = __webpack_require__(66);
-	var DataWorker = __webpack_require__(74);
+	var StreamHelper = __webpack_require__(68);
+	var DataWorker = __webpack_require__(76);
 	var utf8 = __webpack_require__(9);
-	var CompressedObject = __webpack_require__(73);
-	var GenericWorker = __webpack_require__(65);
+	var CompressedObject = __webpack_require__(75);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A simple object representing a file in the zip file.
@@ -34190,13 +34230,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 79 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var compressions = __webpack_require__(80);
-	var ZipFileWorker = __webpack_require__(98);
+	var compressions = __webpack_require__(82);
+	var ZipFileWorker = __webpack_require__(100);
 
 	/**
 	 * Find the compression to use.
@@ -34253,12 +34293,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 80 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 
 	exports.STORE = {
 	    magic: "\x00\x00",
@@ -34269,19 +34309,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        return new GenericWorker("STORE decompression");
 	    }
 	};
-	exports.DEFLATE = __webpack_require__(81);
+	exports.DEFLATE = __webpack_require__(83);
 
 
 /***/ },
-/* 81 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var USE_TYPEDARRAY = (typeof Uint8Array !== 'undefined') && (typeof Uint16Array !== 'undefined') && (typeof Uint32Array !== 'undefined');
 
-	var pako = __webpack_require__(82);
+	var pako = __webpack_require__(84);
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 
 	var ARRAY_TYPE = USE_TYPEDARRAY ? "uint8array" : "array";
 
@@ -34347,17 +34387,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 82 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Top level file is just a mixin of submodules & constants
 	'use strict';
 
-	var assign    = __webpack_require__(83).assign;
+	var assign    = __webpack_require__(85).assign;
 
-	var deflate   = __webpack_require__(84);
-	var inflate   = __webpack_require__(92);
-	var constants = __webpack_require__(96);
+	var deflate   = __webpack_require__(86);
+	var inflate   = __webpack_require__(94);
+	var constants = __webpack_require__(98);
 
 	var pako = {};
 
@@ -34367,7 +34407,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 83 */
+/* 85 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34475,17 +34515,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 84 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_deflate = __webpack_require__(85);
-	var utils        = __webpack_require__(83);
-	var strings      = __webpack_require__(90);
-	var msg          = __webpack_require__(89);
-	var ZStream      = __webpack_require__(91);
+	var zlib_deflate = __webpack_require__(87);
+	var utils        = __webpack_require__(85);
+	var strings      = __webpack_require__(92);
+	var msg          = __webpack_require__(91);
+	var ZStream      = __webpack_require__(93);
 
 	var toString = Object.prototype.toString;
 
@@ -34881,16 +34921,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 85 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils   = __webpack_require__(83);
-	var trees   = __webpack_require__(86);
-	var adler32 = __webpack_require__(87);
-	var crc32   = __webpack_require__(88);
-	var msg     = __webpack_require__(89);
+	var utils   = __webpack_require__(85);
+	var trees   = __webpack_require__(88);
+	var adler32 = __webpack_require__(89);
+	var crc32   = __webpack_require__(90);
+	var msg     = __webpack_require__(91);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -36742,13 +36782,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 86 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils = __webpack_require__(83);
+	var utils = __webpack_require__(85);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -37950,7 +37990,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 87 */
+/* 89 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -37988,7 +38028,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 88 */
+/* 90 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -38035,7 +38075,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 89 */
+/* 91 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -38054,14 +38094,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 90 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// String encode/decode helpers
 	'use strict';
 
 
-	var utils = __webpack_require__(83);
+	var utils = __webpack_require__(85);
 
 
 	// Quick check if we can use fast array to bin string conversion
@@ -38245,7 +38285,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 91 */
+/* 93 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -38280,19 +38320,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 92 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_inflate = __webpack_require__(93);
-	var utils        = __webpack_require__(83);
-	var strings      = __webpack_require__(90);
-	var c            = __webpack_require__(96);
-	var msg          = __webpack_require__(89);
-	var ZStream      = __webpack_require__(91);
-	var GZheader     = __webpack_require__(97);
+	var zlib_inflate = __webpack_require__(95);
+	var utils        = __webpack_require__(85);
+	var strings      = __webpack_require__(92);
+	var c            = __webpack_require__(98);
+	var msg          = __webpack_require__(91);
+	var ZStream      = __webpack_require__(93);
+	var GZheader     = __webpack_require__(99);
 
 	var toString = Object.prototype.toString;
 
@@ -38704,17 +38744,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 93 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils         = __webpack_require__(83);
-	var adler32       = __webpack_require__(87);
-	var crc32         = __webpack_require__(88);
-	var inflate_fast  = __webpack_require__(94);
-	var inflate_table = __webpack_require__(95);
+	var utils         = __webpack_require__(85);
+	var adler32       = __webpack_require__(89);
+	var crc32         = __webpack_require__(90);
+	var inflate_fast  = __webpack_require__(96);
+	var inflate_table = __webpack_require__(97);
 
 	var CODES = 0;
 	var LENS = 1;
@@ -40248,7 +40288,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 94 */
+/* 96 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -40580,13 +40620,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 95 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var utils = __webpack_require__(83);
+	var utils = __webpack_require__(85);
 
 	var MAXBITS = 15;
 	var ENOUGH_LENS = 852;
@@ -40911,7 +40951,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 96 */
+/* 98 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -40967,7 +41007,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 97 */
+/* 99 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -41013,16 +41053,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 98 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 	var utf8 = __webpack_require__(9);
-	var crc32 = __webpack_require__(77);
-	var signature = __webpack_require__(99);
+	var crc32 = __webpack_require__(79);
+	var signature = __webpack_require__(101);
 
 	/**
 	 * Transform an integer into a string in hexadecimal.
@@ -41559,7 +41599,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 99 */
+/* 101 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -41572,13 +41612,13 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 100 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var utils = __webpack_require__(10);
-	var GenericWorker = __webpack_require__(65);
+	var GenericWorker = __webpack_require__(67);
 
 	/**
 	 * A worker that use a nodejs stream as source.
@@ -41652,17 +41692,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 101 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var utils = __webpack_require__(10);
-	var external = __webpack_require__(62);
+	var external = __webpack_require__(64);
 	var utf8 = __webpack_require__(9);
 	var utils = __webpack_require__(10);
-	var ZipEntries = __webpack_require__(102);
-	var Crc32Probe = __webpack_require__(76);
-	var nodejsUtils = __webpack_require__(40);
+	var ZipEntries = __webpack_require__(104);
+	var Crc32Probe = __webpack_require__(78);
+	var nodejsUtils = __webpack_require__(42);
 
 	/**
 	 * Check the CRC32 of an entry.
@@ -41740,14 +41780,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 102 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(103);
+	var readerFor = __webpack_require__(105);
 	var utils = __webpack_require__(10);
-	var sig = __webpack_require__(99);
-	var ZipEntry = __webpack_require__(109);
+	var sig = __webpack_require__(101);
+	var ZipEntry = __webpack_require__(111);
 	var utf8 = __webpack_require__(9);
 	var support = __webpack_require__(11);
 	//  class ZipEntries {{{
@@ -42008,17 +42048,17 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 103 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var utils = __webpack_require__(10);
 	var support = __webpack_require__(11);
-	var ArrayReader = __webpack_require__(104);
-	var StringReader = __webpack_require__(106);
-	var NodeBufferReader = __webpack_require__(107);
-	var Uint8ArrayReader = __webpack_require__(108);
+	var ArrayReader = __webpack_require__(106);
+	var StringReader = __webpack_require__(108);
+	var NodeBufferReader = __webpack_require__(109);
+	var Uint8ArrayReader = __webpack_require__(110);
 
 	/**
 	 * Create a reader adapted to the data.
@@ -42044,11 +42084,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 104 */
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(105);
+	var DataReader = __webpack_require__(107);
 	var utils = __webpack_require__(10);
 
 	function ArrayReader(data) {
@@ -42107,7 +42147,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 105 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42229,11 +42269,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 106 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(105);
+	var DataReader = __webpack_require__(107);
 	var utils = __webpack_require__(10);
 
 	function StringReader(data) {
@@ -42273,11 +42313,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 107 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Uint8ArrayReader = __webpack_require__(108);
+	var Uint8ArrayReader = __webpack_require__(110);
 	var utils = __webpack_require__(10);
 
 	function NodeBufferReader(data) {
@@ -42298,11 +42338,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 108 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ArrayReader = __webpack_require__(104);
+	var ArrayReader = __webpack_require__(106);
 	var utils = __webpack_require__(10);
 
 	function Uint8ArrayReader(data) {
@@ -42326,16 +42366,16 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 109 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(103);
+	var readerFor = __webpack_require__(105);
 	var utils = __webpack_require__(10);
-	var CompressedObject = __webpack_require__(73);
-	var crc32fn = __webpack_require__(77);
+	var CompressedObject = __webpack_require__(75);
+	var crc32fn = __webpack_require__(79);
 	var utf8 = __webpack_require__(9);
-	var compressions = __webpack_require__(80);
+	var compressions = __webpack_require__(82);
 	var support = __webpack_require__(11);
 
 	var MADE_BY_DOS = 0x00;
@@ -42624,7 +42664,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 110 */
+/* 112 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -42733,19 +42773,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 111 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_111__;
-
-/***/ },
-/* 112 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_112__;
-
-/***/ },
 /* 113 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_113__;
+
+/***/ },
+/* 114 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_114__;
+
+/***/ },
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -44299,7 +44339,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 114 */
+/* 116 */
 /***/ function(module, exports) {
 
 	L.Control.Dialog = L.Control.extend({
@@ -44632,7 +44672,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 115 */
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -47298,7 +47338,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 116 */
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -47523,7 +47563,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 117 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var require;var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*** IMPORTS FROM imports-loader ***/
@@ -54824,7 +54864,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 118 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -54960,7 +55000,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 119 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
