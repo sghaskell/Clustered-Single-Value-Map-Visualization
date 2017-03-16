@@ -34,7 +34,7 @@ This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 ```
-base_search | table latitude, longitude [ description | title | icon | markerColor | markerType | markerPriority | markerSize | markerAnchor | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription]
+base_search | table latitude, longitude [ description | title | icon | markerColor | markerType | markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity]
 ```
 
 # Required Fields
