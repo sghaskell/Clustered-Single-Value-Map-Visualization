@@ -126,7 +126,9 @@ define([
 							   'shadowSize',
 							   'prefix',
 							   'extraClasses',
-						       'layerDescription'];
+						       'layerDescription',
+							   'pathWeight',
+							   'pathOpacity'];
             $.each(obj, function(key, value) {
                 if($.inArray(key, validFields) === -1) {
                     invalidFields[key] = value;
@@ -727,36 +729,46 @@ define([
                 this.clearMap = true;
             }
 
-            // Draw path lines
-            if (this.isArgTrue(showPathLines)) {
-                var activePaths = [];
-                var colors = _.map(pathColorList.split(','), function(color) {
-                    return this.convertHex(color);
-                }, this);
-                
-                var paths = _.map(dataRows, function (d) {
-                    var colorIndex = 0;
-                    if (pathIdentifier) {
-                        var id = d[pathIdentifier];
-                        var colorIndex = activePaths.indexOf(id);
-                        if (colorIndex < 0) {
-                            colorIndex = activePaths.push(id) - 1;
-                        }
-                    }
-                    return {
-                        'coordinates': L.latLng(d['latitude'], d['longitude']),
-                        'colorIndex': colorIndex
-                    };
-                });
-                paths = _.groupBy(paths, function (d) {
-                    return d.colorIndex;
-                });
-                
-                _.each(paths, function(path) {
-                    L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length]}).addTo(this.pathLineLayer);
-                }, this);
-            }
-                
+			// Draw path lines
+			if (this.isArgTrue(showPathLines)) {
+				var activePaths = [];
+				var colors = _.map(pathColorList.split(','), function(color) {
+					return this.convertHex(color);
+				}, this);
+
+				var paths = _.map(dataRows, function (d) {
+					var colorIndex = 0;
+					var pathWeight = (_.has(d, "pathWeight")) ? d["pathWeight"]:5;
+					var pathOpacity = (_.has(d, "pathOpacity")) ? d["pathOpacity"]:0.5;
+
+					if (pathIdentifier) {
+						var id = d[pathIdentifier];
+						var colorIndex = activePaths.indexOf(id);
+						if (colorIndex < 0) {
+							colorIndex = activePaths.push(id) - 1;
+						}
+					}
+					return {
+						'coordinates': L.latLng(d['latitude'], d['longitude']),
+						'colorIndex': colorIndex,
+						'pathWeight': pathWeight,
+						'pathOpacity': pathOpacity
+					};
+				});
+				paths = _.groupBy(paths, function (d) {
+					return d.colorIndex;
+				});
+				console.log(activePaths);
+				console.log(paths);
+				console.log(colors);
+
+				_.each(paths, function(path) {
+					L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length],
+															  weight: path[0]['pathWeight'],
+															  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
+				}, this);
+			}
+
             return this;
         }
     });
