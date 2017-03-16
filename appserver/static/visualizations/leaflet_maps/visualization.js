@@ -75,6 +75,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	    return SplunkVisualizationBase.extend({
 	        maxResults: 0,
 	        tileLayer: null,
+	        pathLineLayer: null,
 	        contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
 	        defaultConfig:  {
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
@@ -117,7 +118,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit': "sqmiles",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor': "#00ff00",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor': "#0066ff",
-	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en"
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en",
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier': "",
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378"
 	        },
 	        ATTRIBUTIONS: {
 	        'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
@@ -147,7 +151,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            this.clearMap = false;
 	        },
 
-	        // Build object of key/value paris for invalid fields
+	        // Build object of key/value pairs for invalid fields
 	        // to be used as data for _drilldown action
 	        validateFields: function(obj) {
 	            var invalidFields = {};
@@ -161,12 +165,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 								   'markerPriority',
 								   'markerSize',
 							       'markerAnchor',
+	                               'markerVisibility',
 								   'iconColor',
 							       'shadowAnchor',
 								   'shadowSize',
 								   'prefix',
 								   'extraClasses',
-							       'layerDescription'];
+							       'layerDescription',
+								   'pathWeight',
+								   'pathOpacity'];
 	            $.each(obj, function(key, value) {
 	                if($.inArray(key, validFields) === -1) {
 	                    invalidFields[key] = value;
@@ -351,6 +358,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    lg.group.clearLayers();
 	                    lg.markerList = [];
 	                }, this);
+	                this.pathLineLayer.clearLayers();
 	            }
 
 	            // get data
@@ -409,7 +417,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                measureSecondaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit'],
 	                measureActiveColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor'],
 	                measureCompletedColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor'],
-	                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization']
+	                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization'],
+	                showPathLines = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines']),
+	                pathIdentifier = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier'],
+	                pathColorList = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList'];
 
 	            this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
 	            this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -558,6 +569,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        this.fetchKmlAndMap(url, file, this.map);
 	                    }, this);
 	                }
+	                
+	                this.pathLineLayer = L.layerGroup().addTo(this.map);
 	               
 	                // Init defaults
 	                this.chunk = 50000;
@@ -700,8 +713,15 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    marker.bindPopup(userData['description']);
 	                }
 
-	                // Save each icon in the layer
-	                this.layerFilter[icon].markerList.push(marker);
+	                // Save each icon in the layer if markerVisibility is either set and == "marker" or unset
+	                // TODO: possibly place more of marker-related code from above inside if statement?
+	                if (userData["markerVisibility"]) {
+	                    if (userData["markerVisibility"] == "marker") {
+	                        this.layerFilter[icon].markerList.push(marker);
+	                    }
+	                } else {
+	                    this.layerFilter[icon].markerList.push(marker);
+	                }
 	            }, this);            
 
 	            // Enable/disable layer controls and toggle collapse 
@@ -753,6 +773,46 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            } else {
 	                this.clearMap = true;
 	            }
+
+				// Draw path lines
+				if (this.isArgTrue(showPathLines)) {
+					var activePaths = [];
+					var colors = _.map(pathColorList.split(','), function(color) {
+						return this.convertHex(color);
+					}, this);
+
+					var paths = _.map(dataRows, function (d) {
+						var colorIndex = 0;
+						var pathWeight = (_.has(d, "pathWeight")) ? d["pathWeight"]:5;
+						var pathOpacity = (_.has(d, "pathOpacity")) ? d["pathOpacity"]:0.5;
+
+						if (pathIdentifier) {
+							var id = d[pathIdentifier];
+							var colorIndex = activePaths.indexOf(id);
+							if (colorIndex < 0) {
+								colorIndex = activePaths.push(id) - 1;
+							}
+						}
+						return {
+							'coordinates': L.latLng(d['latitude'], d['longitude']),
+							'colorIndex': colorIndex,
+							'pathWeight': pathWeight,
+							'pathOpacity': pathOpacity
+						};
+					});
+					paths = _.groupBy(paths, function (d) {
+						return d.colorIndex;
+					});
+					console.log(activePaths);
+					console.log(paths);
+					console.log(colors);
+
+					_.each(paths, function(path) {
+						L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length],
+																  weight: path[0]['pathWeight'],
+																  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
+					}, this);
+				}
 
 	            return this;
 	        }

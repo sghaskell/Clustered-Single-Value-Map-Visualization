@@ -22,9 +22,11 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [transform-loader](https://www.npmjs.com/package/transform-loader)
 ##### [brfs](https://www.npmjs.com/package/brfs)
 
-Big thanks to [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
+Big thanks to the following people: 
 
-Special thanks to Paul Thompson for [marker priority](#marker-priority) and [SVG marker](#svg-markers) feature suggestions.
+* [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
+* Johannes Effland for contributing the path tracing code.
+* Paul Thompson for [marker priority](#marker-priority) and [SVG marker](#svg-markers) feature suggestions.
 
 # Compatibility
 This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
@@ -96,6 +98,20 @@ Color of icon - Any [CSS color name](https://www.vogatek.com/html-tutorials/cssr
 
 ##### extraClasses
 Any extra CSS classes you wish to add for styling. Here are some [additional classes](http://fortawesome.github.io/Font-Awesome/examples/) you can use with Font Awesome to change the styling.
+
+# Path Tracing
+Version 1.5.0 introduces the ability to trace paths along the map. If you have a dataset that contains multiple coordinates for each point (think cars, trains, planes, bicycles, anything that moves and can be tracked) you can now trace the path of the object. You can control whether markers are displayed along the path using the **markerVisibility** setting.
+
+### Available Fields and Values
+##### markerVisibility
+Show marker for the given coordinates. Set to ``marker`` to show marker or any other value to hide.
+
+##### pathWeight
+Weight (width) of path. **Default** ``5``
+
+##### pathOpacity
+Opacity of path line. **Default** ``0.5``
+
 
 # Marker Priority
 Version 1.4.4 introduces the ability to prioritize how markers are rendered on the map. Higher priority markers will render on top of lower priority markers. This is especially useful for dense maps where you need certain markers to stand out over others.
@@ -300,6 +316,16 @@ markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000000, lik
 | table latitude, longitude, description, markerColor, icon, markerType, markerSize, extraClasses, shadowSize, shadowAnchor, markerPriority
 ```
 
+### Show path lines with only the last marker visible for data set with the following fields: _time, latitude, longitude, vehicle
+```
+| inputlookup vehicles.csv 
+| reverse 
+| streamstats current=f window=1 first(_time) as ftime by vehicle 
+| reverse 
+| eval markerVisibility=if(isnull(ftime), "marker", "foo"), description=vehicle, pathWeight=case(like(user, "%mustang%"), 10), pathOpacity=case(like(user, "%mustang%"), 0.8)
+| table latitude, longitude, user, description, markerVisibility, pathWeight, pathOpacity
+```
+
 # Formatting Options
 ### Map
 ###### Map Tile
@@ -374,12 +400,11 @@ Enable or disable dynamic filtering of layer groups on map. Each icon type's vis
 Collapse or expand layer control widget. If collapsed, mousing over icon will expand. (Default: Collapsed)
 
 ### Overlays
-#### Layer control changes require browser refresh
+#### Overlay control changes require browser refresh
 ###### KML/KMZ Overlay
 Comma separated list of KML or KMZ file names copied into kml directory of app (file1.kml, file2.kml)
 
 ### Measure
-#### Layer control changes require browser refresh
 ###### Enable Measurement Plugin
 Enable or disable measurement plugin to allow path and area measurement on map. (Default: Enabled)
 ###### Localization
@@ -398,6 +423,14 @@ Secondary unit for area measurement (Default: square miles)
 Color of measurement when actively drawing (Default: #00ff00)
 ###### Completed Color
 Color of measurement when drawing is complete (Default: #0066ff)
+
+### Path Lines
+###### Show Path Lines
+Draw path lines on map for markers that have multiple coordinates.
+###### Path Identifier
+Field used to distinguish unique paths, e.g. vehicle number or trip ID
+###### Path Colors
+Comma-separated list of hex or html colors for path lines (wraps around if more paths than colors)
 
 # Support
 ###### This app is supported by Scott Haskell ([shaskell@splunk.com](mailto:shaskell@splunk.com))
