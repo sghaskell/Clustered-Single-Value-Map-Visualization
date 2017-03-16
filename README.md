@@ -323,7 +323,7 @@ markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000000, lik
 | streamstats current=f window=1 first(_time) as ftime by vehicle 
 | reverse 
 | eval markerVisibility=if(isnull(ftime), "marker", "foo"), description=vehicle, pathWeight=case(like(user, "%mustang%"), 10), pathOpacity=case(like(user, "%mustang%"), 0.8)
-| table latitude, longitude, user, description, markerVisibility, pathWeight, pathOpacity
+| table latitude, longitude, vehicle, description, markerVisibility, pathWeight, pathOpacity
 ```
 
 # Formatting Options
