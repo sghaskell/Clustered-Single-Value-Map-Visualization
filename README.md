@@ -316,6 +316,16 @@ markerPriority=case(like(description, "%HARASSMENT BY TELEPHONE%"), 1000000, lik
 | table latitude, longitude, description, markerColor, icon, markerType, markerSize, extraClasses, shadowSize, shadowAnchor, markerPriority
 ```
 
+### Show path lines with only the last marker visible for data set with the following fields: _time, latitude, longitude, vehicle
+```
+| inputlookup vehicles.csv 
+| reverse 
+| streamstats current=f window=1 first(_time) as ftime by vehicle 
+| reverse 
+| eval markerVisibility=if(isnull(ftime), "marker", "foo"), description=vehicle, pathWeight=case(like(user, "%mustang%"), 10), pathOpacity=case(like(user, "%mustang%"), 0.8)
+| table latitude, longitude, user, description, markerVisibility, pathWeight, pathOpacity
+```
+
 # Formatting Options
 ### Map
 ###### Map Tile
