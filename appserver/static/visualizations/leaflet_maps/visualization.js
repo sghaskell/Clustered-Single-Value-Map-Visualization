@@ -76,6 +76,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        maxResults: 0,
 	        tileLayer: null,
 	        pathLineLayer: null,
+			mapOptions: {},
 	        contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
 	        defaultConfig:  {
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster': 1,
@@ -440,7 +441,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	                // Configure context menu
 	                if(this.isArgTrue(contextMenu)) {
-	                    var mapOptions =  {contextmenu: true,
+	                    this.mapOptions =  {contextmenu: true,
 	                                       contextmenuWidth: 140,
 	                                       contextmenuItems: [{
 	                                           text: 'Show details',
@@ -485,11 +486,11 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    });
 
 	                    // Disable close popup on click to allow multiple popups
-	                    mapOptions.closePopupOnClick = false;
+	                    this.mapOptions.closePopupOnClick = false;
 	                }
 
 	                // Create map 
-	                var map = this.map = new L.Map(this.el, mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
+	                var map = this.map = new L.Map(this.el, this.mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
 	               
 	                // Setup the tile layer with map tile, zoom and attribution
 					this.tileLayer = L.tileLayer(this.activeTile, {
