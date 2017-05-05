@@ -260,9 +260,9 @@ define([
 
 						L.geoJson(geojson.features, {
 							style: function (feature) {
-								return {color: feature.properties.fill,
-										opacity: feature.properties["fill-opacity"],
-										weight: feature.properties["stroke-width"]};
+								return { color: feature.properties.fill || '#FFFFFF',
+										opacity: feature.properties["fill-opacity"] || 0.5,
+										weight: feature.properties["stroke-width"]} || 1;
 							},
 							onEachFeature: function (feature, layer) {
 								layer.bindPopup(feature.properties.name);
@@ -278,9 +278,9 @@ define([
 
 					L.geoJson(geojson.features, {
 						style: function (feature) {
-							return {color: feature.properties.fill,
-									opacity: feature.properties["fill-opacity"],
-									weight: feature.properties["stroke-width"]};
+							return { color: feature.properties.fill || '#FFFFFF',
+									opacity: feature.properties["fill-opacity"] || 0.5,
+									weight: feature.properties["stroke-width"] || 1 };
 						 },
 						 onEachFeature: function (feature, layer) {
 							 layer.bindPopup(feature.properties.name);
