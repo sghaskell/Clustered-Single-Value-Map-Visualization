@@ -2098,6 +2098,12 @@ L.MarkerCluster.include({
 			center = map.latLngToLayerPoint(this._latlng),
 			positions;
 
+        if (childMarkers.length > this._group.options.maxSpiderfySize) {
+            alert("Cluster has " + childMarkers.length + " points which exceeds cluster warning size of " + this._group.options.maxSpiderfySize + ". Cluster will not be expanded.");
+            return;
+        }
+
+
 		this._group._unspiderfy();
 		this._group._spiderfied = this;
 
