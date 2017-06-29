@@ -243,6 +243,16 @@ define([
             this.map.zoomOut();
         },
 
+		fitLayerBounds: function (e) {
+			var tmpGroup = new L.featureGroup;
+
+			_.each(this.layerFilter, function(lg, i) {
+				tmpGroup.addLayer(lg.group);
+			}, this);
+
+			this.map.fitBounds(tmpGroup.getBounds());
+		},
+
         // Fetch KMZ or KML files and add to map
         fetchKmlAndMap: function(url, file, map) {
             // Test if it's a kmz file
@@ -302,6 +312,7 @@ define([
             // Clear map and reset everything
             if(this.clearMap === true) {
                 //console.log("CLEARING MAP!!");
+				this.fitLayerBounds();
                 this.offset = 0; // reset offset
                 this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
                 this.invalidateUpdateView();  // redraw map
@@ -407,6 +418,10 @@ define([
                                            context: this,
                                            callback: this.centerMap
                                        }, '-', {
+                                               text: 'Fit Map To Boundaries',
+                                               context: this,
+                                               callback: this.fitLayerBounds
+                                       }, {
                                            text: 'Zoom in',
                                            iconCls: 'fa fa-search-plus',
                                            context: this,
