@@ -25,7 +25,6 @@ display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.permanentTooltip = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.stickyTooltip = <int>
-display.visualizations.custom.leaflet_maps_app.leaflet_maps.markerType = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor = <string>

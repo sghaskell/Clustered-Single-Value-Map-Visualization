@@ -165,6 +165,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                               'tooltip',
 								   'description',
 								   'icon',
+								   'markerType',
 								   'markerColor',
 								   'markerPriority',
 								   'markerSize',
@@ -421,7 +422,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
 	                permanentTooltip = parseInt(this._getEscapedProperty('permanentTooltip', config)),
 	                stickyTooltip = parseInt(this._getEscapedProperty('stickyTooltip', config)),
-	                markerType = this._getEscapedProperty('markerType', config),
 	                kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
 	                rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
 	                rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -657,7 +657,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                if (typeof this.layerFilter[icon] !== 'undefined') {
 	                    this.layerFilter[icon].layerDescription = layerDescription;
 	                }
-
+					
+					var markerType = _.has(userData, "markerType") ? userData["markerType"]:"png";
 	                var markerColor = _.has(userData, "markerColor") ? userData["markerColor"]:"blue";
 	                var iconColor = _.has(userData, "iconColor") ? userData["iconColor"]:"white";
 	                var markerSize = _.has(userData, "markerSize") ? userData["markerSize"].split(/,/):[35,45];
