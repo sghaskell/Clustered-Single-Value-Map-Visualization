@@ -2,7 +2,7 @@
     <div class="control-group">
         <label class="control-label">Map Tile</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile" value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
+            <splunk-select name="{{VIZ_NAMESPACE}}.mapTile" value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
               <option value="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">Open Streetmap</option> 
               <option value="http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png">CartoDB Light</option> 
               <option value="http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png">CartoDB Dark</option> 
@@ -15,21 +15,21 @@
     <div class="control-group">
         <label class="control-label">Map Tile Override</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.mapTileOverride"></splunk-text-input>
             <span class="help-block ">Use your own map tile URL and override defaults. Example: http://a.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Map Attribution Override</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.mapAttributionOverride"></splunk-text-input>
             <span class="help-block ">Use your own attribution.</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Scroll Wheel Zoom</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.scrollWheelZoom" value="1">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -39,7 +39,7 @@
     <div class="control-group">
         <label class="control-label">Full Screen Mode</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.fullScreen" value="0">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -49,7 +49,7 @@
     <div class="control-group">
         <label class="control-label">Drilldown</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.drilldown" value="0">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -59,7 +59,7 @@
     <div class="control-group">
         <label class="control-label">Context Menu</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.contextMenu" value="1">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -69,44 +69,54 @@
     <div class="control-group">
         <label class="control-label">Default Height</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight" value="600"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.defaultHeight" value="600"></splunk-text-input>
             <span class="help-block ">Initial Height Of Map (Default: 600) </span> 
         </div>
     </div>
 </form>
 <form class="splunk-formatter-section" section-label="Map (Continued)">
     <div class="control-group">
+        <label class="control-label">Auto Fit & Zoom</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.autoFitAndZoom" value="1">
+                <option value="1">Enabled</option>
+                <option value="0">Disabled</option>
+            </splunk-radio-input>
+            <span class="help-block ">Dynamically set map view that contains all markers with the maximum zoom level possible when search finishes.</span>
+        </div>
+    </div>
+    <div class="control-group">
         <label class="control-label">Map Zoom</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom" value="6"></splunk-text-input>
-            <span class="help-block ">Initial Zoom for map (Default: 6)</span> 
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.mapCenterZoom" value="6"></splunk-text-input>
+            <span class="help-block ">Initial Zoom for map (Default: 6).</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Center Lat</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat" value="39.50"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.mapCenterLat" value="39.50"></splunk-text-input>
             <span class="help-block ">Initial Center Latitiude (Default: 39.50)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Center Lon</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon" value="-98.35"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.mapCenterLon" value="-98.35"></splunk-text-input>
             <span class="help-block ">Initial Center Longitude (Default: -98.35)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Min Zoom</label>
         <div class="controls controls-block">
-            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom" value="1"></splunk-text-input>
+            <splunk-text-input class="input-medium" name="{{VIZ_NAMESPACE}}.minZoom" value="1"></splunk-text-input>
             <span class="help-block ">Minimum zoom for tile layer. Does not affect map zoom. (Default: 1)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Max Zoom</label>
         <div class="controls controls-block">
-            <splunk-text-input class="input-medium" name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom" value="19"></splunk-text-input>
+            <splunk-text-input class="input-medium" name="{{VIZ_NAMESPACE}}.maxZoom" value="19"></splunk-text-input>
             <span class="help-block ">Maximum zoom for tile layer. Does not affect map zoom. (Default: 19)</span> 
         </div>
     </div>
@@ -115,7 +125,7 @@
     <div class="control-group">
         <label class="control-label">Enable Clustering</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.cluster" value="1">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -125,7 +135,7 @@
     <div class="control-group">
         <label class="control-label">Show All Popups</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.allPopups" value="0">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -135,7 +145,7 @@
     <div class="control-group">
         <label class="control-label">Allow Multiple Popups</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.multiplePopups" value="0">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -145,7 +155,7 @@
     <div class="control-group">
         <label class="control-label">Animate</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.animate" value="1">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -155,7 +165,7 @@
     <div class="control-group">
         <label class="control-label">Single Marker Mode</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.singleMarkerMode" value="0">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -167,21 +177,21 @@
     <div class="control-group">
         <label class="control-label">Max Cluster Radius</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius" value="80"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.maxClusterRadius" value="80"></splunk-text-input>
             <span class="help-block ">A cluster will cover at most this many pixels from its center (Default: 80)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Cluster Warning Size</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize" value="100"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.maxSpiderfySize" value="100"></splunk-text-input>
             <span class="help-block ">Display an alert warning that the cluster exceeds threshold at max-zoom and do not show underlying markers. Browser may hang and die if a single point exceeds a very large number.(Default: 100)</span> 
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Distance Multiplier</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier" value="1"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.spiderfyDistanceMultiplier" value="1"></splunk-text-input>
             <span class="help-block ">Increase to increase the distance away that markers appear from the center when expanded at max zoom. (Default: 1)</span> 
         </div>
     </div>
@@ -190,7 +200,7 @@
     <div class="control-group">
         <label class="control-label">Range One Background</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor" value="#B5E28C">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeOneBgColor" value="#B5E28C">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #B5E28C)</span> 
         </div>
@@ -198,7 +208,7 @@
     <div class="control-group">
         <label class="control-label">Range One Foreground</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor" value="#6ECC39">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeOneFgColor" value="#6ECC39">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #6ECC39)</span> 
         </div>
@@ -206,14 +216,14 @@
     <div class="control-group">
         <label class="control-label">Range two thereshold</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold" value="55"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.warningThreshold" value="55"></splunk-text-input>
             <span class="help-block ">Number at which cluster group two starts</span>
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Range Two Background</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoBgColor" value="#F1D357">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeTwoBgColor" value="#F1D357">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #F1D357)</span> 
         </div>
@@ -221,7 +231,7 @@
     <div class="control-group">
         <label class="control-label">Range Two Foreground</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor" value="#F0C20C">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeTwoFgColor" value="#F0C20C">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #F0C20C)</span> 
         </div>
@@ -229,14 +239,14 @@
     <div class="control-group">
         <label class="control-label">Range three threshold</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold" value="80"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.criticalThreshold" value="80"></splunk-text-input>
             <span class="help-block ">Number at which cluster group three starts</span>
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Range Three Background</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor" value="#FD9C73">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeThreeBgColor" value="#FD9C73">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #FD9C73)</span> 
         </div>
@@ -244,7 +254,7 @@
     <div class="control-group">
         <label class="control-label">Range Three Foreground</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor" value="#F18017">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.rangeThreeFgColor" value="#F18017">
             </splunk-color-picker> 
             <span class="help-block ">(Default: #F18017)</span> 
         </div>
@@ -254,7 +264,7 @@
     <div class="control-group">
         <label class="control-label">Layer Control</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.layerControl" value="1">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -264,7 +274,7 @@
     <div class="control-group">
         <label class="control-label">Control Collapsed</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.layerControlCollapsed" value="1">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -276,7 +286,7 @@
     <div class="control-group">
         <label class="control-label">KML/KMZ Overlay</label>
         <div class="controls controls-block">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.kmlOverlay"></splunk-text-input>
             <span class="help-block ">Comma separated list of KML or KMZ file names copied into kml directory of app (file1.kml, file2.kml)</span> 
         </div>
     </div>
@@ -285,7 +295,7 @@
     <div class="control-group">
         <label class="control-label">Enable Measurement Plugin</label>
         <div class="controls controls-fill ">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool" value="1">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.measureTool" value="1">
                 <option value="1">Enabled</option>
                 <option value="0">Disabled</option>
             </splunk-radio-input>
@@ -295,7 +305,7 @@
     <div class="control-group">
         <label class="control-label">Localization</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization" value="en">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measureLocalization" value="en">
               <option value="cn">Chinese</option>
               <option value="de">German</option>
               <option value="en">English</option>
@@ -314,7 +324,7 @@
     <div class="control-group">
         <label class="control-label">Icon Position</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureIconPosition" value="topright">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measureIconPosition" value="topright">
               <option value="topleft">Top Left</option>
               <option value="topright">Top Right</option>
               <option value="bottomleft">Bottom Left</option>
@@ -326,7 +336,7 @@
     <div class="control-group">
         <label class="control-label">Primary Length Unit</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit" value="feet">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measurePrimaryLengthUnit" value="feet">
               <option value="feet">Feet</option>
               <option value="meters">Meters</option>
               <option value="miles">Miles</option>
@@ -338,7 +348,7 @@
     <div class="control-group">
         <label class="control-label">Secondary Length Unit</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit" value="miles">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measureSecondaryLengthUnit" value="miles">
               <option value="feet">Feet</option>
               <option value="meters">Meters</option>
               <option value="miles">Miles</option>
@@ -351,7 +361,7 @@
     <div class="control-group">
         <label class="control-label">Primary Area Unit</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit" value="acres">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measurePrimaryAreaUnit" value="acres">
               <option value="acres">Acres</option>
               <option value="hectares">Hectares</option>
               <option value="sqfeet">Square Feet</option>
@@ -364,7 +374,7 @@
     <div class="control-group">
         <label class="control-label">Secondary Area Unit</label>
         <div class="controls controls-block">
-            <splunk-select name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit" value="sqmiles">
+            <splunk-select name="{{VIZ_NAMESPACE}}.measureSecondaryAreaUnit" value="sqmiles">
               <option value="acres">Acres</option>
               <option value="hectares">Hectares</option>
               <option value="sqfeet">Square Feet</option>
@@ -378,7 +388,7 @@
     <div class="control-group">
         <label class="control-label">Active Color</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor" value="#00ff00">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.measureActiveColor" value="#00ff00">
             </splunk-color-picker> 
             <span class="help-block ">Color of measurement when actively drawing (Default: #00ff00)</span> 
         </div>
@@ -386,7 +396,7 @@
     <div class="control-group">
         <label class="control-label">Completed Color</label>
         <div class="controls controls-block">
-            <splunk-color-picker name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor" value="#0066ff">
+            <splunk-color-picker name="{{VIZ_NAMESPACE}}.measureCompletedColor" value="#0066ff">
             </splunk-color-picker> 
             <span class="help-block ">Color of measurement when drawing is complete (Default: #0066ff)</span> 
         </div>
@@ -396,7 +406,7 @@
     <div class="control-group">
         <label class="control-label">Show Path Lines</label>
         <div class="controls controls-fill">
-            <splunk-radio-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines" value="0">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.showPathLines" value="0">
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </splunk-radio-input> 
@@ -406,14 +416,14 @@
     <div class="control-group">
         <label class="control-label">Path Identifier</label>
         <div class="controls controls-fill">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.pathIdentifier"></splunk-text-input>
             <span class="help-block">Field used to distinguish unique paths, e.g. vehicle number or trip ID</span>
         </div>
     </div>
     <div class="control-group">
         <label class="control-label">Path Colors</label>
         <div class="controls controls-fill">
-            <splunk-text-input name="display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList" value="#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378"></splunk-text-input>
+            <splunk-text-input name="{{VIZ_NAMESPACE}}.pathColorList" value="#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378"></splunk-text-input>
             <span class="help-block">Comma-separated list of hex or html colors for path lines (wraps around if more paths than colors)</span>
         </div>
     </div>
