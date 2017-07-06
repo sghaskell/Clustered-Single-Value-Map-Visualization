@@ -103,6 +103,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.permanentTooltip': 0,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.stickyTooltip': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
@@ -160,10 +162,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            var validFields = ['latitude',
 								   'longitude',
 	                               'title',
+	                               'tooltip',
 								   'description',
 								   'icon',
 								   'markerColor',
-								   'markerType',
 								   'markerPriority',
 								   'markerSize',
 							       'markerAnchor',
@@ -185,7 +187,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            return(invalidFields);
 	        },
 
-			// Helper method to access config values by name
 	        _getEscapedProperty: function(name, config) {
 	            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
 	            return SplunkVisualizationUtils.escapeHtml(propertyValue);
@@ -418,6 +419,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                mapCenterLon = parseFloat(this._getEscapedProperty('mapCenterLon', config)),
 	                minZoom     = parseInt(this._getEscapedProperty('minZoom', config)),
 	                maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
+	                permanentTooltip = parseInt(this._getEscapedProperty('permanentTooltip', config)),
+	                stickyTooltip = parseInt(this._getEscapedProperty('stickyTooltip', config)),
+	                markerType = this._getEscapedProperty('markerType', config),
 	                kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
 	                rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
 	                rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -655,7 +659,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                }
 
 	                var markerColor = _.has(userData, "markerColor") ? userData["markerColor"]:"blue";
-	                var markerType = _.has(userData, "markerType") ? userData["markerType"]:"png";
 	                var iconColor = _.has(userData, "iconColor") ? userData["iconColor"]:"white";
 	                var markerSize = _.has(userData, "markerSize") ? userData["markerSize"].split(/,/):[35,45];
 	                var markerAnchor = _.has(userData, "markerAnchor") ? userData["markerAnchor"].split(/,/):[15,50];
@@ -663,6 +666,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                var shadowAnchor = _.has(userData, "shadowAnchor") ? userData["shadowAnchor"].split(/,/):[30,30];
 	                var markerPriority = _.has(userData, "markerPriority") ? parseInt(userData["markerPriority"]):0;
 	                var title = _.has(userData, "title") ? userData["title"]:null;
+	                var tooltip = _.has(userData, "tooltip") ? userData["tooltip"]:null;
 	                var prefix = _.has(userData, "prefix") ? userData["prefix"]:"fa";
 	                var extraClasses = _.has(userData, "extraClasses") ? userData["extraClasses"]:"fa-lg";
 
@@ -701,7 +705,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                        icon: icon,
 	                        markerColor: markerColor,
 	                        iconColor: iconColor,
-	                        title: title,
 	                        prefix: prefix,
 	                        className: className,
 	                        extraClasses: extraClasses,
@@ -721,9 +724,19 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                var marker = L.marker([userData['latitude'],
 	                                       userData['longitude']],
 	                                      {icon: markerIcon,
-	                                       title: title,
 	                                       layerDescription: layerDescription,
 										   zIndexOffset: markerPriority});
+
+	                // Bind tooltip: default tooltip field, fallback to title field for backwards compatibility
+	                if(tooltip) {
+	                    marker.bindTooltip(tooltip, {permanent: permanentTooltip,
+	                                                 direction: 'auto',
+	                                                 sticky: stickyTooltip});
+	                } else if (title) {
+	                    marker.bindTooltip(title, {permanent: permanentTooltip,
+	                                               direction: 'auto',
+	                                               sticky: stickyTooltip});
+	                }
 
 	                if(this.isArgTrue(drilldown)) {
 						var drilldownFields = this.validateFields(userData);
