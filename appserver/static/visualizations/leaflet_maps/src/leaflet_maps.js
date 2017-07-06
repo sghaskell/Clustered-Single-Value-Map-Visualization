@@ -7,8 +7,10 @@ define([
             'jszip-utils',
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
+            'load-google-maps-api',
 			'leaflet-contextmenu',
 			'leaflet-dialog',
+            'leaflet-google-places-autocomplete',
             '../contrib/leaflet.markercluster-src',
             '../contrib/leaflet.featuregroup.subgroup-src',
             '../contrib/leaflet-measure',
@@ -23,7 +25,8 @@ define([
             JSZip,
             JSZipUtils,
             SplunkVisualizationBase,
-            SplunkVisualizationUtils
+            SplunkVisualizationUtils,
+            loadGoogleMapsAPI
         ) {
 
 
@@ -60,6 +63,9 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.permanentTooltip': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.stickyTooltip': 1,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesSearch': 0,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesApiKey': "",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel': "12",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
@@ -377,6 +383,9 @@ define([
                 maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
                 permanentTooltip = parseInt(this._getEscapedProperty('permanentTooltip', config)),
                 stickyTooltip = parseInt(this._getEscapedProperty('stickyTooltip', config)),
+                googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
+                googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
+                googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
                 kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
                 rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
                 rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -409,6 +418,15 @@ define([
 
                 // Create layer filter object
                 var layerFilter = this.layerFilter = {};
+
+                // Initialize Google Places API
+                /*
+                $("<script>")
+                    .prop("type", "text/javascript")
+                    .prop("src", "https://maps.googleapis.com/maps/api/js?key=AIzaSyBauutpfQIxe75H_auMeXvEN1hx2Ll1Ny0&libraries=places")
+                    .appendTo("head");
+                */
+                 
 
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
@@ -469,9 +487,26 @@ define([
                     this.mapOptions.closePopupOnClick = false;
                 }
 
+
                 // Create map 
                 var map = this.map = new L.Map(this.el, this.mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
-               
+
+				// Load Google Places Search Control
+                if(this.isArgTrue(googlePlacesSearch)) {
+                    loadGoogleMapsAPI({key: googlePlacesApiKey,
+                                      libraries: ['places']}).then(function(google) {
+                        new L.Control.GPlaceAutocomplete({
+                            position: "topleft",
+                            callback: function(l){
+                                var latlng = L.latLng(l.geometry.location.lat(), l.geometry.location.lng());
+                                map.flyTo(latlng, googlePlacesZoomLevel);
+                            }
+                        }).addTo(map);
+                    }).catch((err) => {
+                        console.error(err)
+                    }) 
+                }
+
                 // Setup the tile layer with map tile, zoom and attribution
 				this.tileLayer = L.tileLayer(this.activeTile, {
                     attribution: this.attribution,
