@@ -196,6 +196,28 @@
         </div>
     </div>
 </form>
+<form class="splunk-formatter-section" section-label="Markers">
+    <div class="control-group">
+        <label class="control-label">Permanent Tooltip</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.permanentTooltip" value="0">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Open the tooltip permanently or only on mouseover. Depends on tooltip field in search results.</span> 
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Sticky Tooltip</label>
+        <div class="controls controls-fill ">
+            <splunk-radio-input name="{{VIZ_NAMESPACE}}.stickyTooltip" value="1">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </splunk-radio-input> 
+            <span class="help-block ">Tooltip follows mouse instead of fixed position.</span> 
+        </div>
+    </div>
+</form>
 <form class="splunk-formatter-section" section-label="Cluster Colors">
     <div class="control-group">
         <label class="control-label">Range One Background</label>
