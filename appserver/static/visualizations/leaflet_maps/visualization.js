@@ -97,6 +97,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown': 0,
 				'display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoom': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom': 6,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat': 39.50,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
@@ -182,6 +183,12 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            });
 
 	            return(invalidFields);
+	        },
+
+			// Helper method to access config values by name
+	        _getEscapedProperty: function(name, config) {
+	            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
+	            return SplunkVisualizationUtils.escapeHtml(propertyValue);
 	        },
 
 			// Custom drilldown behavior for markers
@@ -356,8 +363,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            // Clear map and reset everything
 	            if(this.clearMap === true) {
-	                //console.log("CLEARING MAP!!");
-					this.fitLayerBounds();
 	                this.offset = 0; // reset offset
 	                this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
 	                this.invalidateUpdateView();  // redraw map
@@ -389,50 +394,51 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            }
 
 	            // get configs
-	            var cluster     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.cluster']),
-	                allPopups   = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.allPopups']),
-	                multiplePopups = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.multiplePopups']),
-	                animate     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.animate']),
-	                singleMarkerMode = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.singleMarkerMode']),
-	                maxClusterRadius = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxClusterRadius']),
-	                maxSpiderfySize = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxSpiderfySize']),
-	                spiderfyDistanceMultiplier = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier']),
-	                mapTile     = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTile']),
-	                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapTileOverride']),
-	                mapAttributionOverride = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapAttributionOverride'],
-	                layerControl = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControl']),
-	                layerControlCollapsed = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.layerControlCollapsed']),
-	                scrollWheelZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.scrollWheelZoom']),
-	                fullScreen = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.fullScreen']),
-	                drilldown = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown']),
-					contextMenu = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu']),
-	                defaultHeight = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight']),
-	                mapCenterZoom = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom']),
-	                mapCenterLat = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat']),
-	                mapCenterLon = parseFloat(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon']),
-	                minZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.minZoom']),
-	                maxZoom     = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom']),
-	                kmlOverlay  = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay'],
-	                rangeOneBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor'],
-	                rangeOneFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor'],
-	                warningThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.warningThreshold'],
-	                rangeTwoBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoBgColor'],
-	                rangeTwoFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeTwoFgColor'],
-	                criticalThreshold = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.criticalThreshold'],
-	                rangeThreeBgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeBgColor'],
-	                rangeThreeFgColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeThreeFgColor'],
-	                measureTool = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureTool']),
-	                measureIconPosition = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureIconPosition'],
-	                measurePrimaryLengthUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit'],
-	                measureSecondaryLengthUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit'],
-	                measurePrimaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit'],
-	                measureSecondaryAreaUnit = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit'],
-	                measureActiveColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureActiveColor'],
-	                measureCompletedColor = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColor'],
-	                measureLocalization = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization'],
-	                showPathLines = parseInt(config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines']),
-	                pathIdentifier = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier'],
-	                pathColorList = config['display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList'];
+	            var cluster     = parseInt(this._getEscapedProperty('cluster', config)),
+	                allPopups   = parseInt(this._getEscapedProperty('allPopups', config)),
+	                multiplePopups = parseInt(this._getEscapedProperty('multiplePopups', config)),
+	                animate     = parseInt(this._getEscapedProperty('animate', config)),
+	                singleMarkerMode = parseInt(this._getEscapedProperty('singleMarkerMode', config)),
+	                maxClusterRadius = parseInt(this._getEscapedProperty('maxClusterRadius', config)),
+	                maxSpiderfySize = parseInt(this._getEscapedProperty('maxSpiderfySize', config)),
+	                spiderfyDistanceMultiplier = parseInt(this._getEscapedProperty('spiderfyDistanceMultiplier', config)),
+	                mapTile     = SplunkVisualizationUtils.makeSafeUrl(this._getEscapedProperty('mapTile', config)),
+	                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(this._getEscapedProperty('mapTileOverride', config)),
+	                mapAttributionOverride = this._getEscapedProperty('mapAttributionOverride', config),
+	                layerControl = parseInt(this._getEscapedProperty('layerControl', config)),
+	                layerControlCollapsed = parseInt(this._getEscapedProperty('layerControlCollapsed', config)),
+	                scrollWheelZoom = parseInt(this._getEscapedProperty('scrollWheelZoom', config)),
+	                fullScreen = parseInt(this._getEscapedProperty('fullScreen', config)),
+	                drilldown = parseInt(this._getEscapedProperty('drilldown', config)),
+					contextMenu = parseInt(this._getEscapedProperty('contextMenu', config)),
+	                defaultHeight = parseInt(this._getEscapedProperty('defaultHeight', config)),
+					autoFitAndZoom = parseInt(this._getEscapedProperty('autoFitAndZoom', config)),
+	                mapCenterZoom = parseInt(this._getEscapedProperty('mapCenterZoom', config)),
+	                mapCenterLat = parseFloat(this._getEscapedProperty('mapCenterLat', config)),
+	                mapCenterLon = parseFloat(this._getEscapedProperty('mapCenterLon', config)),
+	                minZoom     = parseInt(this._getEscapedProperty('minZoom', config)),
+	                maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
+	                kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
+	                rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
+	                rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
+	                warningThreshold = this._getEscapedProperty('warningThreshold', config),
+	                rangeTwoBgColor = this._getEscapedProperty('rangeTwoBgColor', config),
+	                rangeTwoFgColor = this._getEscapedProperty('rangeTwoFgColor', config),
+	                criticalThreshold = this._getEscapedProperty('criticalThreshold', config),
+	                rangeThreeBgColor = this._getEscapedProperty('rangeThreeBgColor', config),
+	                rangeThreeFgColor = this._getEscapedProperty('rangeThreeFgColor', config),
+	                measureTool = parseInt(this._getEscapedProperty('measureTool', config)),
+	                measureIconPosition = this._getEscapedProperty('measureIconPosition', config),
+	                measurePrimaryLengthUnit = this._getEscapedProperty('measurePrimaryLengthUnit', config),
+	                measureSecondaryLengthUnit = this._getEscapedProperty('measureSecondaryLengthUnit', config),
+	                measurePrimaryAreaUnit = this._getEscapedProperty('measurePrimaryAreaUnit', config),
+	                measureSecondaryAreaUnit = this._getEscapedProperty('measureSecondaryAreaUnit', config),
+	                measureActiveColor = this._getEscapedProperty('measureActiveColor', config),
+	                measureCompletedColor = this._getEscapedProperty('measureCompletedColor', config),
+	                measureLocalization = this._getEscapedProperty('measureLocalization', config),
+	                showPathLines = parseInt(this._getEscapedProperty('showPathLines', config)),
+	                pathIdentifier = this._getEscapedProperty('pathIdentifier', config),
+	                pathColorList = this._getEscapedProperty('pathColorList', config);
 
 	            this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
 	            this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -463,7 +469,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                                           context: this,
 	                                           callback: this.centerMap
 	                                       }, '-', {
-	                                               text: 'Fit Map To Boundaries',
+	                                               text: 'Auto Fit & Zoom',
 	                                               context: this,
 	                                               callback: this.fitLayerBounds
 	                                       }, {
@@ -635,7 +641,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                                             };
 	                // Create normal layergroup
 	                } else if (typeof this.layerFilter[icon] == 'undefined') {
-	                    this.layerFilter[icon] = {'group' : L.layerGroup(),
+	                    this.layerFilter[icon] = {'group' : L.featureGroup(),
 	                                              'markerList' : [],
 	                                              'iconStyle' : icon,
 	                                              'layerExists' : false
@@ -787,6 +793,9 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                this.offset += this.chunk;
 	                this.updateDataParams({count: this.chunk, offset: this.offset});
 	            } else {
+	                if(this.isArgTrue(autoFitAndZoom)) {
+	                    this.fitLayerBounds();
+	                }
 	                this.clearMap = true;
 	            }
 
@@ -819,9 +828,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					paths = _.groupBy(paths, function (d) {
 						return d.colorIndex;
 					});
-					console.log(activePaths);
-					console.log(paths);
-					console.log(colors);
 
 					_.each(paths, function(path) {
 						L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length],
