@@ -344,6 +344,8 @@ Enable or disable drilldown. Double click a marker to activate drilldown. - **Re
 Enable or disable context menu when right clicking the map.
 ###### Default Height
 Initial Height Of Map (Default: 600)
+###### Auto Fit & Zoom
+Dynamically set map view that contains all markers with the maximum zoom level possible when search finishes. (Default: Enabled)
 ###### Map Zoom
 Initial Zoom for map (Default: 6)
 ###### Center Lat
