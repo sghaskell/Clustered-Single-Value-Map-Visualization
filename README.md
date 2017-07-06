@@ -34,7 +34,7 @@ This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 ```
-base_search | table latitude, longitude [ description | title | icon | markerColor | markerType | markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity]
+base_search | table latitude, longitude [ description | tooltip | title | icon | markerColor |markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity]
 ```
 
 # Required Fields
@@ -57,7 +57,9 @@ By default, markers are rendered as PNG's. The set of markers comes in a limited
 
 ### Available Fields and Values
 ##### title
-Icon mouse hover over description.
+Icon mouse hover over description. **Deprecated (with backwards compatibility) - see tooltip**
+##### tooltip
+Tooltip to display on marker hover.
 ##### icon
 Icon displayed in map marker - Any icon from [Font Awesome](http://fortawesome.github.io/Font-Awesome/icons/) or [ionicons](http://ionicons.com/). **Default** ``circle``
 ##### markerColor
@@ -374,6 +376,12 @@ A cluster will cover at most this many pixels from its center (Default: 80) - **
 Display an alert warning that the cluster exceeds threshold at max-zoom and do not show underlying markers. Browser may hang and die if a single point exceeds a very large number.(Default: 100) - **Requires browser refresh**
 ###### Distance Multiplier
 Increase to increase the distance away that markers appear from the center when expanded at max zoom. (Default: 1) - **Requires browser refresh**
+
+### Markers
+###### Permanent Tooltip
+Open the tooltip permanently or only on mouseover. Depends on tooltip field in search results.
+###### Sticky Tooltip
+Tooltip follows mouse instead of fixed position.
 
 ### Cluster Colors
 #### Cluster color changes require browser refresh
