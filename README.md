@@ -14,6 +14,8 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Leaflet.contextmenu](https://github.com/aratcliffe/Leaflet.contextmenu)
 ##### [Leaflet.Dialog](https://github.com/NBTSolutions/Leaflet.Dialog)
 ##### [togeojson](https://github.com/mapbox/togeojson)
+##### [load-google-maps-api](https://www.npmjs.com/package/load-google-maps-api#usage)
+##### [load-google-places-autocomplete](https://www.npmjs.com/package/leaflet-google-places-autocomplete)
 ##### [JSZip](https://stuk.github.io/jszip/)
 ##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
 ##### [Jquery](https://jquery.com/)
@@ -263,6 +265,17 @@ The files will be asynchronously loaded when the map is rendered.
 
 # Measurement Plugin
 Version 1.3.8 indroduces a new feature that allows you to interactively measure paths and area on the map. The feature is enabled by default. Click the icon in the upper right corner of the map and then select 'Create new measurement'. You can draw a simple path or click to define multiple points to measure an area. Measurements will not be persisted for future use. This is an interactive tool designed for a single session.
+
+# Google Places Search
+Version 1.5.6 introduces a search control for the Google Places API. Log into the [Google API Console](https://console.developers.google.com/flows/enableapi?apiid=places_backend&reusekey=true&authuser=2) and enable the **Google Places API Web Service** and **Google Maps JavaScript API** for the given project and create an API key. See [Google's docs](https://developers.google.com/places/web-service/get-api-key?authuser=2) for detailed instructions.
+
+#### Usage
+**Enable/Disable** the search control via the format menu option **Google Places -> Google Places Search -> Enabled**
+
+Set the **API Key** option **Google Places -> API Key**
+
+Optionally set the **Zoom Level** option **Google Places -> Zoom Level** for the desired fly to zoom level.
+
 
 # Search Examples
 ### Basic plot of latitude and longitude
