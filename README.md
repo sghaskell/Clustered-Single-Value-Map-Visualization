@@ -361,6 +361,8 @@ Enable or disable context menu when right clicking the map.
 Initial Height Of Map (Default: 600)
 ###### Auto Fit & Zoom
 Dynamically set map view that contains all markers with the maximum zoom level possible when search finishes. (Default: Enabled)
+###### Auto Fit & Zoom Delay (ms)
+Delay in milliseconds before triggering Auto Fit & Zoom. Increase if you get inconsistent behavior (Default: 500)
 ###### Map Zoom
 Initial Zoom for map (Default: 6)
 ###### Center Lat
@@ -395,6 +397,16 @@ Increase to increase the distance away that markers appear from the center when 
 Open the tooltip permanently or only on mouseover. Depends on tooltip field in search results.
 ###### Sticky Tooltip
 Tooltip follows mouse instead of fixed position.
+
+### Google Places
+###### Google Places Search
+Enable or disable Google Places API search control.
+###### API Key
+Google Places API Key
+###### Search Bar Position
+Position of Google Places Search Bar (Default: Top Left)
+###### Zoom Level
+Desired zoom level to fly to
 
 ### Cluster Colors
 #### Cluster color changes require browser refresh
