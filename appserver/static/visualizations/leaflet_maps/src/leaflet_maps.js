@@ -7,8 +7,10 @@ define([
             'jszip-utils',
             'vizapi/SplunkVisualizationBase',
             'vizapi/SplunkVisualizationUtils',
+            'load-google-maps-api',
 			'leaflet-contextmenu',
 			'leaflet-dialog',
+            'leaflet-google-places-autocomplete',
             '../contrib/leaflet.markercluster-src',
             '../contrib/leaflet.featuregroup.subgroup-src',
             '../contrib/leaflet-measure',
@@ -23,7 +25,8 @@ define([
             JSZip,
             JSZipUtils,
             SplunkVisualizationBase,
-            SplunkVisualizationUtils
+            SplunkVisualizationUtils,
+            loadGoogleMapsAPI
         ) {
 
 
@@ -53,6 +56,7 @@ define([
 			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoom': 1,
+			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay': 500,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom': 6,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat': 39.50,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
@@ -60,6 +64,10 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.permanentTooltip': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.stickyTooltip': 1,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesSearch': 0,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesApiKey': "",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel': "12",
+			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesPosition': "topleft",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
@@ -252,15 +260,26 @@ define([
             this.map.zoomOut();
         },
 
-		fitLayerBounds: function (e) {
-			var tmpGroup = new L.featureGroup;
 
-			_.each(this.layerFilter, function(lg, i) {
-				tmpGroup.addLayer(lg.group);
-			}, this);
+        fitLayerBounds: function (e, that) {
+            var tmpGroup = new L.featureGroup;
 
-			this.map.fitBounds(tmpGroup.getBounds());
-		},
+            try {
+                _.each(e, function(lg, i) {
+                    tmpGroup.addLayer(lg.group);
+                }, this);
+            } catch(err) {
+                _.each(this.layerFilter, function(lg, i) {
+                    tmpGroup.addLayer(lg.group);
+                }, this);
+            }
+
+            try {
+                that.map.fitBounds(tmpGroup.getBounds());
+            } catch(err) {
+                this.map.fitBounds(tmpGroup.getBounds());
+            }
+        },
 
         // Fetch KMZ or KML files and add to map
         fetchKmlAndMap: function(url, file, map) {
@@ -308,6 +327,14 @@ define([
 					}).addTo(map);
                 });
             }
+        },
+
+        formatData: function(data) {
+            if(data.results.length < 1) {
+                    return false;
+            }
+
+            return data;
         },
 
         // Do the work of creating the viz
@@ -370,6 +397,7 @@ define([
 				contextMenu = parseInt(this._getEscapedProperty('contextMenu', config)),
                 defaultHeight = parseInt(this._getEscapedProperty('defaultHeight', config)),
 				autoFitAndZoom = parseInt(this._getEscapedProperty('autoFitAndZoom', config)),
+				autoFitAndZoomDelay = parseInt(this._getEscapedProperty('autoFitAndZoomDelay', config)),
                 mapCenterZoom = parseInt(this._getEscapedProperty('mapCenterZoom', config)),
                 mapCenterLat = parseFloat(this._getEscapedProperty('mapCenterLat', config)),
                 mapCenterLon = parseFloat(this._getEscapedProperty('mapCenterLon', config)),
@@ -377,6 +405,10 @@ define([
                 maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
                 permanentTooltip = parseInt(this._getEscapedProperty('permanentTooltip', config)),
                 stickyTooltip = parseInt(this._getEscapedProperty('stickyTooltip', config)),
+                googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
+                googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
+                googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
+				googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
                 kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
                 rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
                 rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -469,9 +501,26 @@ define([
                     this.mapOptions.closePopupOnClick = false;
                 }
 
+
                 // Create map 
                 var map = this.map = new L.Map(this.el, this.mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
-               
+
+				// Load Google Places Search Control
+                if(this.isArgTrue(googlePlacesSearch)) {
+                    loadGoogleMapsAPI({key: googlePlacesApiKey,
+                                      libraries: ['places']}).then(function(google) {
+                        new L.Control.GPlaceAutocomplete({
+                            position: googlePlacesPosition,
+                            callback: function(l){
+                                var latlng = L.latLng(l.geometry.location.lat(), l.geometry.location.lng());
+                                map.flyTo(latlng, googlePlacesZoomLevel);
+                            }
+                        }).addTo(map);
+                    }).catch((err) => {
+                        console.error(err)
+                    }) 
+                }
+
                 // Setup the tile layer with map tile, zoom and attribution
 				this.tileLayer = L.tileLayer(this.activeTile, {
                     attribution: this.attribution,
@@ -757,17 +806,6 @@ define([
 
             }
 
-            // Chunk through data 50k results at a time
-            if(dataRows.length === this.chunk) {
-                this.offset += this.chunk;
-                this.updateDataParams({count: this.chunk, offset: this.offset});
-            } else {
-                if(this.isArgTrue(autoFitAndZoom)) {
-                    this.fitLayerBounds();
-                }
-                this.clearMap = true;
-            }
-
 			// Draw path lines
 			if (this.isArgTrue(showPathLines)) {
 				var activePaths = [];
@@ -804,6 +842,28 @@ define([
 															  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
 				}, this);
 			}
+
+			// New logic for v1.5.6 - use data.meta.done flag to determine end of search
+            this.offset += dataRows.length;
+            try {
+                if(data.meta.done !== true) {
+                    this.updateDataParams({count: this.chunk, offset: this.offset});
+                } else {
+					// Make final call to flush
+                    this.updateDataParams({});
+
+                    if(this.isArgTrue(autoFitAndZoom)) {
+						// Delay firing due to issues with fitBounds not always working
+						// 500 ms seems to help
+                        setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
+                    }
+
+                    this.clearMap = true;
+                }
+            } catch(err) {
+                console.log(err);
+            }
+
 
             return this;
         }
