@@ -46,20 +46,22 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	            __webpack_require__(3),
-	            __webpack_require__(115),
+	            __webpack_require__(116),
 	            __webpack_require__(2),
 	            __webpack_require__(4),
 	            __webpack_require__(7),
 	            __webpack_require__(112),
 	            __webpack_require__(113),
 	            __webpack_require__(114),
+	            __webpack_require__(115),
 				__webpack_require__(1),
-				__webpack_require__(116),
-	            __webpack_require__(117),
+				__webpack_require__(117),
 	            __webpack_require__(118),
 	            __webpack_require__(119),
-				__webpack_require__(120),
-	            __webpack_require__(121)
+	            __webpack_require__(120),
+	            __webpack_require__(121),
+				__webpack_require__(122),
+	            __webpack_require__(123)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -68,7 +70,8 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            JSZip,
 	            JSZipUtils,
 	            SplunkVisualizationBase,
-	            SplunkVisualizationUtils
+	            SplunkVisualizationUtils,
+	            loadGoogleMapsAPI
 	        ) {
 
 
@@ -98,6 +101,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 				'display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu': 1,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoom': 1,
+				'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay': 500,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom': 6,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat': 39.50,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
@@ -105,6 +109,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.maxZoom': 19,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.permanentTooltip': 0,
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.stickyTooltip': 1,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesSearch': 0,
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesApiKey': "",
+	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel': "12",
+				'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesPosition': "topleft",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
 	            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
@@ -297,15 +305,26 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            this.map.zoomOut();
 	        },
 
-			fitLayerBounds: function (e) {
-				var tmpGroup = new L.featureGroup;
 
-				_.each(this.layerFilter, function(lg, i) {
-					tmpGroup.addLayer(lg.group);
-				}, this);
+	        fitLayerBounds: function (e, that) {
+	            var tmpGroup = new L.featureGroup;
 
-				this.map.fitBounds(tmpGroup.getBounds());
-			},
+	            try {
+	                _.each(e, function(lg, i) {
+	                    tmpGroup.addLayer(lg.group);
+	                }, this);
+	            } catch(err) {
+	                _.each(this.layerFilter, function(lg, i) {
+	                    tmpGroup.addLayer(lg.group);
+	                }, this);
+	            }
+
+	            try {
+	                that.map.fitBounds(tmpGroup.getBounds());
+	            } catch(err) {
+	                this.map.fitBounds(tmpGroup.getBounds());
+	            }
+	        },
 
 	        // Fetch KMZ or KML files and add to map
 	        fetchKmlAndMap: function(url, file, map) {
@@ -353,6 +372,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 						}).addTo(map);
 	                });
 	            }
+	        },
+
+	        formatData: function(data) {
+	            if(data.results.length < 1) {
+	                    return false;
+	            }
+
+	            return data;
 	        },
 
 	        // Do the work of creating the viz
@@ -415,6 +442,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					contextMenu = parseInt(this._getEscapedProperty('contextMenu', config)),
 	                defaultHeight = parseInt(this._getEscapedProperty('defaultHeight', config)),
 					autoFitAndZoom = parseInt(this._getEscapedProperty('autoFitAndZoom', config)),
+					autoFitAndZoomDelay = parseInt(this._getEscapedProperty('autoFitAndZoomDelay', config)),
 	                mapCenterZoom = parseInt(this._getEscapedProperty('mapCenterZoom', config)),
 	                mapCenterLat = parseFloat(this._getEscapedProperty('mapCenterLat', config)),
 	                mapCenterLon = parseFloat(this._getEscapedProperty('mapCenterLon', config)),
@@ -422,6 +450,10 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                maxZoom     = parseInt(this._getEscapedProperty('maxZoom', config)),
 	                permanentTooltip = parseInt(this._getEscapedProperty('permanentTooltip', config)),
 	                stickyTooltip = parseInt(this._getEscapedProperty('stickyTooltip', config)),
+	                googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
+	                googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
+	                googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
+					googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
 	                kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
 	                rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
 	                rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -514,9 +546,26 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                    this.mapOptions.closePopupOnClick = false;
 	                }
 
+
 	                // Create map 
 	                var map = this.map = new L.Map(this.el, this.mapOptions).setView([mapCenterLat, mapCenterLon], mapCenterZoom);
-	               
+
+					// Load Google Places Search Control
+	                if(this.isArgTrue(googlePlacesSearch)) {
+	                    loadGoogleMapsAPI({key: googlePlacesApiKey,
+	                                      libraries: ['places']}).then(function(google) {
+	                        new L.Control.GPlaceAutocomplete({
+	                            position: googlePlacesPosition,
+	                            callback: function(l){
+	                                var latlng = L.latLng(l.geometry.location.lat(), l.geometry.location.lng());
+	                                map.flyTo(latlng, googlePlacesZoomLevel);
+	                            }
+	                        }).addTo(map);
+	                    }).catch((err) => {
+	                        console.error(err)
+	                    }) 
+	                }
+
 	                // Setup the tile layer with map tile, zoom and attribution
 					this.tileLayer = L.tileLayer(this.activeTile, {
 	                    attribution: this.attribution,
@@ -802,17 +851,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            }
 
-	            // Chunk through data 50k results at a time
-	            if(dataRows.length === this.chunk) {
-	                this.offset += this.chunk;
-	                this.updateDataParams({count: this.chunk, offset: this.offset});
-	            } else {
-	                if(this.isArgTrue(autoFitAndZoom)) {
-	                    this.fitLayerBounds();
-	                }
-	                this.clearMap = true;
-	            }
-
 				// Draw path lines
 				if (this.isArgTrue(showPathLines)) {
 					var activePaths = [];
@@ -849,6 +887,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 																  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
 					}, this);
 				}
+
+				// New logic for v1.5.6 - use data.meta.done flag to determine end of search
+	            this.offset += dataRows.length;
+	            try {
+	                if(data.meta.done !== true) {
+	                    this.updateDataParams({count: this.chunk, offset: this.offset});
+	                } else {
+						// Make final call to flush
+	                    this.updateDataParams({});
+
+	                    if(this.isArgTrue(autoFitAndZoom)) {
+							// Delay firing due to issues with fitBounds not always working
+							// 500 ms seems to help
+	                        setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
+	                    }
+
+	                    this.clearMap = true;
+	                }
+	            } catch(err) {
+	                console.log(err);
+	            }
+
 
 	            return this;
 	        }
@@ -42834,6 +42894,60 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 /***/ },
 /* 115 */
+/***/ function(module, exports) {
+
+	var CALLBACK_NAME = '__googleMapsApiOnLoadCallback'
+
+	var OPTIONS_KEYS = ['client', 'key', 'language', 'region', 'v']
+
+	module.exports = function(options) {
+	  options = options || {}
+
+	  return new Promise(function(resolve, reject) {
+	    // Exit if not running inside a browser.
+	    if (typeof window === 'undefined') {
+	      return reject(
+	        new Error('Can only load the Google Maps API in the browser')
+	      )
+	    }
+
+	    // Reject the promise after a timeout.
+	    var timeoutId = setTimeout(function() {
+	      window[CALLBACK_NAME] = function() {} // Set the on load callback to a no-op.
+	      reject(new Error('Could not load the Google Maps API'))
+	    }, options.timeout || 10000)
+
+	    // Hook up the on load callback.
+	    window[CALLBACK_NAME] = function() {
+	      if (timeoutId !== null) {
+	        clearTimeout(timeoutId)
+	      }
+	      resolve(window.google.maps)
+	      delete window[CALLBACK_NAME]
+	    }
+
+	    // Prepare the `script` tag to be inserted into the page.
+	    var scriptElement = document.createElement('script')
+	    var params = ['callback=' + CALLBACK_NAME]
+	    OPTIONS_KEYS.forEach(function(key) {
+	      if (options[key]) {
+	        params.push(key + '=' + options[key])
+	      }
+	    })
+	    if (options.libraries && options.libraries.length) {
+	      params.push('libraries=' + options.libraries.join(','))
+	    }
+	    scriptElement.src =
+	      'https://maps.googleapis.com/maps/api/js?' + params.join('&')
+
+	    // Insert the `script` tag.
+	    document.body.appendChild(scriptElement)
+	  })
+	}
+
+
+/***/ },
+/* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -44387,7 +44501,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 116 */
+/* 117 */
 /***/ function(module, exports) {
 
 	L.Control.Dialog = L.Control.extend({
@@ -44720,7 +44834,157 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 117 */
+/* 118 */
+/***/ function(module, exports) {
+
+	(function () {
+	    L.GPlaceAutocomplete = {};
+
+	    L.Control.GPlaceAutocomplete = L.Control.extend({
+	        options: {
+	            position: "topright",
+	            prepend: true,
+	            collapsed_mode: false,
+	            autocomplete_options: {}
+	        },
+
+	        collapsedModeIsExpanded: true,
+
+	        autocomplete: null,
+	        icon: null,
+	        searchBox: null,
+
+	        initialize: function (options) {
+	            if (options) {
+	                L.Util.setOptions(this, options);
+	            }
+	            if (!this.options.callback) {
+	                this.options.callback = this.onLocationComplete;
+	            }
+	            this._buildContainer();
+	        },
+
+	        _buildContainer: function () {
+
+	            // build structure
+	            this.container = L.DomUtil.create("div", "leaflet-gac-container leaflet-bar");
+	            var searchWrapper = L.DomUtil.create("div", "leaflet-gac-wrapper");
+	            this.searchBox = L.DomUtil.create("input", "leaflet-gac-control");
+	            this.autocomplete = new google.maps.places.Autocomplete(this.searchBox, this.options.autocomplete_options);
+
+	            // if collapse mode set - create icon and register events
+	            if (this.options.collapsed_mode) {
+	                this.collapsedModeIsExpanded = false;
+
+	                this.icon = L.DomUtil.create("div", "leaflet-gac-search-btn");
+	                L.DomEvent
+	                    .on(this.icon, "click", this._showSearchBar, this);
+
+	                this.icon.appendChild(
+	                    L.DomUtil.create("div", "leaflet-gac-search-icon")
+	                );
+
+	                searchWrapper.appendChild(
+	                    this.icon
+	                );
+	                L.DomUtil.addClass(this.searchBox, "leaflet-gac-hidden");
+	            }
+
+	            searchWrapper.appendChild(
+	                this.searchBox
+	            );
+	            // create and bind autocomplete
+	            this.container.appendChild(
+	                searchWrapper
+	            );
+
+	        },
+
+	        //***
+	        // Collapse mode callbacks
+	        //***
+
+	        _showSearchBar: function () {
+	            this._toggleSearch(true);
+	        },
+
+	        _hideSearchBar: function () {
+	            // if element is expanded, we need to change expanded flag and call collapse handler
+	            if (this.collapsedModeIsExpanded) {
+	                this._toggleSearch(false);
+	            }
+	        },
+
+	        _toggleSearch: function (shouldDisplaySearch) {
+	            if (shouldDisplaySearch) {
+	                L.DomUtil.removeClass(this.searchBox, "leaflet-gac-hidden");
+	                L.DomUtil.addClass(this.icon, "leaflet-gac-hidden");
+	                this.searchBox.focus();
+	            } else {
+	                L.DomUtil.addClass(this.searchBox, "leaflet-gac-hidden");
+	                L.DomUtil.removeClass(this.icon, "leaflet-gac-hidden");
+	            }
+	            this.collapsedModeIsExpanded = shouldDisplaySearch;
+	        },
+
+	        //***
+	        // Default success callback
+	        //***
+
+	        onLocationComplete: function (place, map) {
+	            // default callback
+	            if (!place.geometry) {
+	                alert("Location not found");
+	                return;
+	            }
+	            map.panTo([
+	                place.geometry.location.lat(),
+	                place.geometry.location.lng()
+	            ]);
+
+	        },
+
+	        onAdd: function () {
+	            // stop propagation of click events
+	            L.DomEvent.addListener(this.container, 'click', L.DomEvent.stop);
+	            L.DomEvent.disableClickPropagation(this.container);
+	            if (this.options.collapsed_mode) {
+	                // if collapse mode - register handler
+	                this._map.on('dragstart click', this._hideSearchBar, this);
+	            }
+	            return this.container;
+	        },
+
+	        addTo: function (map) {
+	            this._map = map;
+
+	            var container = this._container = this.onAdd(map),
+	                pos = this.options.position,
+	                corner = map._controlCorners[pos];
+
+	            L.DomUtil.addClass(container, 'leaflet-control');
+	            if (this.options.prepend) {
+	                corner.insertBefore(container, corner.firstChild);
+	            } else {
+	                corner.appendChild(container)
+	            }
+
+	            var callback = this.options.callback;
+	            var _this = this;
+	            google.maps.event.addListener(this.autocomplete, "place_changed", function () {
+	                callback(_this.autocomplete.getPlace(), map);
+	            });
+
+	            return this;
+	        }
+
+
+	    });
+	})();
+
+
+/***/ },
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -47393,7 +47657,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 118 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -47618,7 +47882,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 119 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var require;var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*** IMPORTS FROM imports-loader ***/
@@ -54919,7 +55183,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 120 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -55055,7 +55319,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 
 /***/ },
-/* 121 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
