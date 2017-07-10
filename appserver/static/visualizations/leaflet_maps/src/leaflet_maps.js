@@ -804,19 +804,6 @@ define([
 
             }
 
-			/*
-            // Chunk through data 50k results at a time
-            if(dataRows.length === this.chunk) {
-                this.offset += this.chunk;
-                this.updateDataParams({count: this.chunk, offset: this.offset});
-            } else {
-                if(this.isArgTrue(autoFitAndZoom)) {
-                    this.fitLayerBounds();
-                }
-                this.clearMap = true;
-            }
-			*/
-
 			// Draw path lines
 			if (this.isArgTrue(showPathLines)) {
 				var activePaths = [];
