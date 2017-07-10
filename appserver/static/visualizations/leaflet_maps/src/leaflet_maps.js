@@ -261,8 +261,6 @@ define([
 
 
         fitLayerBounds: function (e, that) {
-            console.log("DEBUG: Auto Fit & Zoom");
-            console.log(e, this.layerFilter);
             var tmpGroup = new L.featureGroup;
 
             try {
