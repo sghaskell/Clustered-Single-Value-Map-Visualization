@@ -66,6 +66,7 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesSearch': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesApiKey': "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel': "12",
+			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.googlePlacesPosition': "topleft",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.kmlOverlay' : "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneBgColor': "#B5E28C",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.rangeOneFgColor': "#6ECC39",
@@ -407,6 +408,7 @@ define([
                 googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
                 googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
                 googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
+				googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
                 kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
                 rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
                 rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -439,15 +441,6 @@ define([
 
                 // Create layer filter object
                 var layerFilter = this.layerFilter = {};
-
-                // Initialize Google Places API
-                /*
-                $("<script>")
-                    .prop("type", "text/javascript")
-                    .prop("src", "https://maps.googleapis.com/maps/api/js?key=AIzaSyBauutpfQIxe75H_auMeXvEN1hx2Ll1Ny0&libraries=places")
-                    .appendTo("head");
-                */
-                 
 
                 // Setup cluster marker CSS
                 this.createMarkerStyle(rangeOneBgColor, rangeOneFgColor, "one");
@@ -517,7 +510,7 @@ define([
                     loadGoogleMapsAPI({key: googlePlacesApiKey,
                                       libraries: ['places']}).then(function(google) {
                         new L.Control.GPlaceAutocomplete({
-                            position: "topleft",
+                            position: googlePlacesPosition,
                             callback: function(l){
                                 var latlng = L.latLng(l.geometry.location.lat(), l.geometry.location.lng());
                                 map.flyTo(latlng, googlePlacesZoomLevel);
