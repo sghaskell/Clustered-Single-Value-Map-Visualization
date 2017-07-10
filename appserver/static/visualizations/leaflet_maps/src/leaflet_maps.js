@@ -56,6 +56,7 @@ define([
 			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu': 1,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight': 600,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoom': 1,
+			'display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay': 500,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom': 6,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat': 39.50,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon': -98.35,
@@ -396,6 +397,7 @@ define([
 				contextMenu = parseInt(this._getEscapedProperty('contextMenu', config)),
                 defaultHeight = parseInt(this._getEscapedProperty('defaultHeight', config)),
 				autoFitAndZoom = parseInt(this._getEscapedProperty('autoFitAndZoom', config)),
+				autoFitAndZoomDelay = parseInt(this._getEscapedProperty('autoFitAndZoomDelay', config)),
                 mapCenterZoom = parseInt(this._getEscapedProperty('mapCenterZoom', config)),
                 mapCenterLat = parseFloat(this._getEscapedProperty('mapCenterLat', config)),
                 mapCenterLon = parseFloat(this._getEscapedProperty('mapCenterLon', config)),
@@ -853,7 +855,7 @@ define([
                     if(this.isArgTrue(autoFitAndZoom)) {
 						// Delay firing due to issues with fitBounds not always working
 						// 500 ms seems to help
-                        setTimeout(this.fitLayerBounds, 500, this.layerFilter, this);
+                        setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
                     }
 
                     this.clearMap = true;

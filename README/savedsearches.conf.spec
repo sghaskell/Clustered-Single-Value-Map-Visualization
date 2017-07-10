@@ -18,6 +18,7 @@ display.visualizations.custom.leaflet_maps_app.leaflet_maps.drilldown = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.contextMenu = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.defaultHeight = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoom = <string>
+display.visualizations.custom.leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterZoom = <int>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLat = <float>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.mapCenterLon = <float>
