@@ -303,15 +303,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            this.map.zoomOut();
 	        },
 
-			fitLayerBounds: function (e) {
-				var tmpGroup = new L.featureGroup;
 
-				_.each(this.layerFilter, function(lg, i) {
-					tmpGroup.addLayer(lg.group);
-				}, this);
+	        fitLayerBounds: function (e, that) {
+	            console.log("DEBUG: Auto Fit & Zoom");
+	            console.log(e, this.layerFilter);
+	            var tmpGroup = new L.featureGroup;
 
-				this.map.fitBounds(tmpGroup.getBounds());
-			},
+	            try {
+	                _.each(e, function(lg, i) {
+	                    tmpGroup.addLayer(lg.group);
+	                }, this);
+	            } catch(err) {
+	                _.each(this.layerFilter, function(lg, i) {
+	                    tmpGroup.addLayer(lg.group);
+	                }, this);
+	            }
+
+	            try {
+	                that.map.fitBounds(tmpGroup.getBounds());
+	            } catch(err) {
+	                this.map.fitBounds(tmpGroup.getBounds());
+	            }
+	        },
 
 	        // Fetch KMZ or KML files and add to map
 	        fetchKmlAndMap: function(url, file, map) {
@@ -359,6 +372,14 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 						}).addTo(map);
 	                });
 	            }
+	        },
+
+	        formatData: function(data) {
+	            if(data.results.length < 1) {
+	                    return false;
+	            }
+
+	            return data;
 	        },
 
 	        // Do the work of creating the viz
@@ -837,6 +858,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 
 	            }
 
+				/*
 	            // Chunk through data 50k results at a time
 	            if(dataRows.length === this.chunk) {
 	                this.offset += this.chunk;
@@ -847,6 +869,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                }
 	                this.clearMap = true;
 	            }
+				*/
 
 				// Draw path lines
 				if (this.isArgTrue(showPathLines)) {
@@ -884,6 +907,28 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 																  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
 					}, this);
 				}
+
+				// New logic for v1.5.6 - use data.meta.done flag to determine end of search
+	            this.offset += dataRows.length;
+	            try {
+	                if(data.meta.done !== true) {
+	                    this.updateDataParams({count: this.chunk, offset: this.offset});
+	                } else {
+						// Make final call to flush
+	                    this.updateDataParams({});
+
+	                    if(this.isArgTrue(autoFitAndZoom)) {
+							// Delay firing due to issues with fitBounds not always working
+							// 500 ms seems to help
+	                        setTimeout(this.fitLayerBounds, 500, this.layerFilter, this);
+	                    }
+
+	                    this.clearMap = true;
+	                }
+	            } catch(err) {
+	                console.log(err);
+	            }
+
 
 	            return this;
 	        }
