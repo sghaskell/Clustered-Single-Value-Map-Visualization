@@ -888,6 +888,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 					}, this);
 				}
 
+				/*
 				// New logic for v1.5.6 - use data.meta.done flag to determine end of search
 	            this.offset += dataRows.length;
 	            try {
@@ -908,6 +909,21 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	            } catch(err) {
 	                console.log(err);
 	            }
+				*/
+
+				// 1.5.6.1 - Reverting to old code due to reports of inconsistent 
+				// behavior featching results.
+	            // Chunk through data 50k results at a time
+	            if(dataRows.length === this.chunk) {
+	                this.offset += this.chunk;
+	                this.updateDataParams({count: this.chunk, offset: this.offset});
+	            } else {
+	                if(this.isArgTrue(autoFitAndZoom)) {
+	                    setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
+	                }
+	                this.clearMap = true;
+	            }
+
 
 
 	            return this;
