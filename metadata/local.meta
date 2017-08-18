@@ -1,0 +1,15 @@
+[app/install/install_source_checksum]
+version = 6.6.0
+modtime = 1495838292.158828000
+
+[app/ui]
+version = 6.6.0
+modtime = 1495839301.076747000
+
+[app/launcher]
+version = 6.6.0
+modtime = 1495839301.082000000
+
+[app/package/check_for_updates]
+version = 6.6.0
+modtime = 1495839301.083687000
