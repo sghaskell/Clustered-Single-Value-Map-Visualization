@@ -562,7 +562,7 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	                            }
 	                        }).addTo(map);
 	                    }).catch(function(err) {
-	                        console.error(err)
+	                        console.error(err);
 	                    }) 
 	                }
 
