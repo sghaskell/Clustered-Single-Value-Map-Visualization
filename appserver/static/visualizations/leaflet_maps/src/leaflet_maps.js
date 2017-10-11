@@ -516,7 +516,7 @@ define([
                                 map.flyTo(latlng, googlePlacesZoomLevel);
                             }
                         }).addTo(map);
-                    }).catch((err) => {
+                    }).catch(function(err) {
                         console.error(err)
                     }) 
                 }
