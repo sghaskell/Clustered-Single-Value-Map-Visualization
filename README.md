@@ -32,7 +32,7 @@ Big thanks to the following people:
 * Paul Thompson for [marker priority](#marker-priority) and [SVG marker](#svg-markers) feature suggestions.
 
 # Compatibility
-This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
+This app is compatible with **Splunk 6.4+** as it relies on the [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
