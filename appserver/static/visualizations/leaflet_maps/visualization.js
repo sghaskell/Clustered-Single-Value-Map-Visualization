@@ -9218,9 +9218,6 @@ define(["vizapi/SplunkVisualizationBase","vizapi/SplunkVisualizationUtils"], fun
 	        updateView: function(data, config) {
 	            // viz gets passed empty config until you click the 'format' dropdown
 	            // intialize with defaults
-	            //if(_.isEmpty(config)) {
-	            //    config = this.defaultConfig;
-	            //}
 				if(_.keys(config).length <= 1) {
 	                config = this.defaultConfig;
 	            }
