@@ -342,10 +342,12 @@ define([
         updateView: function(data, config) {
             // viz gets passed empty config until you click the 'format' dropdown
             // intialize with defaults
-            if(_.isEmpty(config)) {
+            //if(_.isEmpty(config)) {
+            //    config = this.defaultConfig;
+            //}
+			if(_.keys(config).length <= 1) {
                 config = this.defaultConfig;
             }
-
             // Clear map and reset everything
             if(this.clearMap === true) {
                 this.offset = 0; // reset offset
