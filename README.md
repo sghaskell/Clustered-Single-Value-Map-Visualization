@@ -23,6 +23,7 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Webpack](https://webpack.github.io/)
 ##### [transform-loader](https://www.npmjs.com/package/transform-loader)
 ##### [brfs](https://www.npmjs.com/package/brfs)
+##### [babel-polyfill](https://github.com/babel/babel/tree/master/packages/babel-polyfill)
 
 Big thanks to the following people: 
 
