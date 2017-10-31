@@ -1,6 +1,6 @@
 {
   "name": "leaflet_maps_app",
-  "version": "1.5.7",
+  "version": "1.5.9",
   "description": "Leaflet maps app with Markercluster plugin functionality.",
   "main": "visualization.js",
   "scripts": {
@@ -12,7 +12,8 @@
   "license": "MIT",
   "devDependencies": {
     "imports-loader": "^0.6.5",
-    "webpack": "^1.12.6"
+    "webpack": "^1.12.6",
+	"babel-polyfill": "^6.26.0"
   },
   "dependencies": {
     "jquery": "^2.2.0",
