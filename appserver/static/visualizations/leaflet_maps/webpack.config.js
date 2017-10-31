@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-    entry: 'leaflet_maps',
+    entry: ['babel-polyfill', 'leaflet_maps'],
     resolve: {
         root: [
             path.join(__dirname, 'src'),

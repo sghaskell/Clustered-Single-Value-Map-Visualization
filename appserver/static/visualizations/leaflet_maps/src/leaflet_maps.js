@@ -141,7 +141,8 @@ define([
 							   'extraClasses',
 						       'layerDescription',
 							   'pathWeight',
-							   'pathOpacity'];
+							   'pathOpacity',
+							   'layerGroup'];
             $.each(obj, function(key, value) {
                 if($.inArray(key, validFields) === -1) {
                     invalidFields[key] = value;
@@ -341,10 +342,9 @@ define([
         updateView: function(data, config) {
             // viz gets passed empty config until you click the 'format' dropdown
             // intialize with defaults
-            if(_.isEmpty(config)) {
+			if(_.keys(config).length <= 1) {
                 config = this.defaultConfig;
             }
-
             // Clear map and reset everything
             if(this.clearMap === true) {
                 this.offset = 0; // reset offset
@@ -639,17 +639,18 @@ define([
             _.each(dataRows, function(userData, i) {
                 // Set icon options
                 var icon = _.has(userData, "icon") ? userData["icon"]:"circle";
+				var layerGroup = _.has(userData, "layerGroup") ? userData["layerGroup"]:icon;
 
                 // Create Clustered featuregroup subgroup layer
-                if (typeof this.layerFilter[icon] == 'undefined' && this.isArgTrue(cluster)) {
-                    this.layerFilter[icon] = {'group' : L.featureGroup.subGroup(this.markers),
+                if (typeof this.layerFilter[layerGroup] == 'undefined' && this.isArgTrue(cluster)) {
+                    this.layerFilter[layerGroup] = {'group' : L.featureGroup.subGroup(this.markers),
                                               'markerList' : [],
                                               'iconStyle' : icon,
                                               'layerExists' : false
                                              };
                 // Create normal layergroup
-                } else if (typeof this.layerFilter[icon] == 'undefined') {
-                    this.layerFilter[icon] = {'group' : L.featureGroup(),
+                } else if (typeof this.layerFilter[layerGroup] == 'undefined') {
+                    this.layerFilter[layerGroup] = {'group' : L.featureGroup(),
                                               'markerList' : [],
                                               'iconStyle' : icon,
                                               'layerExists' : false
@@ -658,8 +659,8 @@ define([
 
                 var layerDescription  = _.has(userData, "layerDescription") ? userData["layerDescription"]:"";
 
-                if (typeof this.layerFilter[icon] !== 'undefined') {
-                    this.layerFilter[icon].layerDescription = layerDescription;
+                if (typeof this.layerFilter[layerGroup] !== 'undefined') {
+                    this.layerFilter[layerGroup].layerDescription = layerDescription;
                 }
 				
 				var markerType = _.has(userData, "markerType") ? userData["markerType"]:"png";
@@ -722,8 +723,8 @@ define([
                 /* Add the icon to layerFilter so we can access properties
 				 * for overlay in addLayerToControl
 				 */
-                if (typeof this.layerFilter[icon] !== 'undefined') {
-                    this.layerFilter[icon].icon = markerIcon;
+                if (typeof this.layerFilter[layerGroup] !== 'undefined') {
+                    this.layerFilter[layerGroup].icon = markerIcon;
                 }
 
                 var marker = L.marker([userData['latitude'],
@@ -757,10 +758,10 @@ define([
                 // TODO: possibly place more of marker-related code from above inside if statement?
                 if (userData["markerVisibility"]) {
                     if (userData["markerVisibility"] == "marker") {
-                        this.layerFilter[icon].markerList.push(marker);
+                        this.layerFilter[layerGroup].markerList.push(marker);
                     }
                 } else {
-                    this.layerFilter[icon].markerList.push(marker);
+                    this.layerFilter[layerGroup].markerList.push(marker);
                 }
             }, this);            
 

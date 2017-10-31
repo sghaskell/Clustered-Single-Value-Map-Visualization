@@ -36,7 +36,7 @@ This app only works with **Splunk 6.4 and 6.5** as it relies on the new [Custom 
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 ```
-base_search | table latitude, longitude [ description | tooltip | title | icon | markerColor |markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity]
+base_search | table latitude, longitude [ description | tooltip | title | icon | markerColor |markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity | layerGroup]
 ```
 
 # Required Fields
@@ -239,7 +239,20 @@ This example highlights creating a dashboard with contextual drilldown. I save t
 ```
 
 # Layer Controls
-Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. Use the optional **layerDescription** field to add description text next to each icon in the layer control legend.
+Version 1.3.6 introduces a few feature that groups marker/icon styles into their own layer. A layer control widget (enabled by default, but optionally hidden) is presented in the upper right hand corner that displays a legend for each icon class with a checkbox to toggle visbility of the markers on the map. This control works for both clustered and single value visualizations. 
+
+Version 1.5.9 introduces the ability to specify a **layerGroup** via SPL for filtering markers via layer controls. The default behavior is to group by icon. If you have the same icon with different colors, the **layerGroup** field allows you to split them into their own group for filtering.
+
+### Available Fields
+##### layerDescription
+Add description text next to each icon in the layer control legend.
+##### layerGroup
+Specify unique group that markers belong to. [See Issue 13 for details](https://github.com/sghaskell/Clustered-Single-Value-Map-Visualization/issues/13)
+
+Example
+```
+layerGroup=case(like(description, "%HARASSMENT BY TELEPHONE%"), "hbt", like(description, "%RECKLESS CONDUCT%"), "rc", 1=1, "default")
+```
 
 # Overlays
 Version 1.3.7 introduces a new feature that allows you to add custom overlays to the map. The first release implements a KML or KMZ overlay feature. If you have existing KML/KMZ files that define features (polyline, polygons, whatever) you can now leverage them to overlay these features on the map.
