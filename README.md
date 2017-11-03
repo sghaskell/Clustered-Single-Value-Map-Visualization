@@ -118,7 +118,7 @@ Weight (width) of path. **Default** ``5``
 Opacity of path line. **Default** ``0.5``
 
 ##### pathColor
-The color of the path.  If not specified, the color will be chosen randomly from the set of colors listed in the Path Colors option.
+The color of the path.  If not specified, the color will be chosen randomly from the set of colors listed in the **Path Colors** option.
 
 # Marker Priority
 Version 1.4.4 introduces the ability to prioritize how markers are rendered on the map. Higher priority markers will render on top of lower priority markers. This is especially useful for dense maps where you need certain markers to stand out over others.
