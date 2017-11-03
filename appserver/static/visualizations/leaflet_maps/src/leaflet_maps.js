@@ -33,7 +33,6 @@ define([
     return SplunkVisualizationBase.extend({
         maxResults: 0,
         tileLayer: null,
-        pathLineLayer: null,
 		mapOptions: {},
         contribUri: '/en-US/static/app/leaflet_maps_app/visualizations/leaflet_maps/contrib/',
         defaultConfig:  {
@@ -142,7 +141,8 @@ define([
 						       'layerDescription',
 							   'pathWeight',
 							   'pathOpacity',
-							   'layerGroup'];
+							   'layerGroup',
+							   'pathColor'];
             $.each(obj, function(key, value) {
                 if($.inArray(key, validFields) === -1) {
                     invalidFields[key] = value;
@@ -600,7 +600,7 @@ define([
                     }, this);
                 }
                 
-                this.pathLineLayer = L.layerGroup().addTo(this.map);
+                var pathLineLayer = this.pathLineLayer = L.layerGroup().addTo(this.map);
                
                 // Init defaults
                 this.chunk = 50000;
