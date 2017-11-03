@@ -47,7 +47,7 @@ Latitude Coordinates
 Longitude Coordinates
 
 # Optional Fields
-##### descirption
+##### description
 Desciption that is displayed in a pop-up when then marker is clicked on the map. You can get creative with this field. Combine a bunch of other fields or lookups using eval to make the description full of detail. **This field supports HTML**.
 ##### layerDescription
 Description that is added next to the icon in the layer control legend. **this field supports HTML**
@@ -117,6 +117,8 @@ Weight (width) of path. **Default** ``5``
 ##### pathOpacity
 Opacity of path line. **Default** ``0.5``
 
+##### pathColor
+The color of the path.  If not specified, the color will be chosen randomly from the set of colors listed in the **Path Colors** option.
 
 # Marker Priority
 Version 1.4.4 introduces the ability to prioritize how markers are rendered on the map. Higher priority markers will render on top of lower priority markers. This is especially useful for dense maps where you need certain markers to stand out over others.
