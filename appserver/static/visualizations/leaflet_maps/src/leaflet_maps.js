@@ -826,11 +826,13 @@ define([
 							colorIndex = activePaths.push(id) - 1;
 						}
 					}
+				    var color = (_.has(d, "pathColor")) ? d["pathColor"] : colors[colorIndex % colors.length];
 					return {
 						'coordinates': L.latLng(d['latitude'], d['longitude']),
 						'colorIndex': colorIndex,
 						'pathWeight': pathWeight,
-						'pathOpacity': pathOpacity
+					    'pathOpacity': pathOpacity,
+					    'color':color
 					};
 				});
 				paths = _.groupBy(paths, function (d) {
@@ -838,7 +840,7 @@ define([
 				});
 
 				_.each(paths, function(path) {
-					L.polyline(_.pluck(path, 'coordinates'), {color: colors[path[0]['colorIndex'] % colors.length],
+					L.polyline(_.pluck(path, 'coordinates'), {color: this.convertHex(path[0]['color']),
 															  weight: path[0]['pathWeight'],
 															  opacity: path[0]['pathOpacity']}).addTo(this.pathLineLayer);
 				}, this);
