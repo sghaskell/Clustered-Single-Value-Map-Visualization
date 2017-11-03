@@ -30,6 +30,7 @@ Big thanks to the following people:
 * [Damien Dallimore](https://splunkbase.splunk.com/apps/#/page/1/search/damien%2520dallimore/order/relevance) and **Andrew Stein** for all the feature requests and extensive testing.
 * Johannes Effland for contributing the path tracing code.
 * Paul Thompson for [marker priority](#marker-priority) and [SVG marker](#svg-markers) feature suggestions.
+* [dxwils3](https://github.com/dxwils3) for **pathColor** enhancement.
 
 # Compatibility
 This app is compatible with **Splunk 6.4+** as it relies on the [Custom Visualization API](http://docs.splunk.com/Documentation/Splunk/latest/AdvancedDev/CustomVizDevOverview).
