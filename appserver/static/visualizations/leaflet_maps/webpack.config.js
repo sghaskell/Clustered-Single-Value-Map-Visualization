@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-    entry: ['babel-polyfill', 'leaflet_maps'],
+    entry: ['leaflet_maps'],
     resolve: {
         root: [
             path.join(__dirname, 'src'),
@@ -37,7 +37,7 @@ module.exports = {
         ]
     },
     externals: [
-        'vizapi/SplunkVisualizationBase',
-        'vizapi/SplunkVisualizationUtils'
+        'api/SplunkVisualizationBase',
+        'api/SplunkVisualizationUtils'
     ]
 };
