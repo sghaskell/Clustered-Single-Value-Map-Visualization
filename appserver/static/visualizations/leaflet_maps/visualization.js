@@ -606,9 +606,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                this.control = L.control.layers(null, null, { collapsed: this.isArgTrue(layerControlCollapsed)});
 	                this.markers.addTo(this.map);
-	           
+					
+					// Get map size          
+					var mapSize = this.mapSize = this.map.getSize();
+	 
 	                // Get parent element of div to resize
-	                var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
+					var parentEl = $(this.el).selector;
 
 	                // Map Full Screen Mode
 	                if (this.isArgTrue(fullScreen)) {
@@ -920,6 +923,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                console.log(err);
 	            }
 				*/
+
+	 			/*
+	             * Fix for hidden divs using tokens in Splunk
+	             * https://github.com/Leaflet/Leaflet/issues/2738
+	             */
+	            if(this.mapSize.x == 0 && this.mapSize.y == 0) {
+	                var intervalId = this.intervalId = setInterval(function(that) {
+	                    curSize = that.curSize = that.map.getSize();
+	                    that.map.invalidateSize();
+	                    if(that.curSize.x > 0 && that.curSize.y > 0) {
+	                        clearInterval(that.intervalId);
+	                    }
+	                }, 500, this);
+	            }
 
 				// 1.5.6.1 - Reverting to old code due to reports of inconsistent 
 				// behavior featching results.
