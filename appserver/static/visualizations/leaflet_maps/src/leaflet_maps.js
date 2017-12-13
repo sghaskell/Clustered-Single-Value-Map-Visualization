@@ -559,7 +559,7 @@ define([
 				var mapSize = this.mapSize = this.map.getSize();
  
                 // Get parent element of div to resize
-				var parentEl = $(this.el).selector;
+				var parentEl = $(this.el).parent().parent().parent().parent().parent().parent().parent().parent().closest("div").attr("data-cid");
 
                 // Map Full Screen Mode
                 if (this.isArgTrue(fullScreen)) {
