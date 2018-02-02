@@ -557,11 +557,18 @@ define([
 				
 				// Get map size          
 				var mapSize = this.mapSize = this.map.getSize();
- 
-                // Get parent element of div to resize
-				//var parentEl = $(this.el).parent().parent().parent().parent().parent().parent().parent().parent().closest("div").attr("data-cid");
-				var parentEl = $(this.el).parent().parent().parent().parent().parent().closest("div").attr("data-cid");
 
+                // Get parent element of div to resize 
+                // Nesting of Div's is different, try 7.x first
+                var parentEl = $(this.el).parent().parent().parent().parent().parent().closest("div").attr("data-cid");
+                var parentView = $(this.el).parent().parent().parent().parent().parent().closest("div").attr("data-view");
+
+                // Default to 6.x view
+                if(parentView != 'views/shared/ReportVisualizer') {
+                    var parentEl = $(this.el).parent().parent().closest("div").attr("data-cid");
+                    var parentView = $(this.el).parent().parent().closest("div").attr("data-view");
+                }
+ 
                 // Map Full Screen Mode
                 if (this.isArgTrue(fullScreen)) {
                     var vh = $(window).height() - 120;
