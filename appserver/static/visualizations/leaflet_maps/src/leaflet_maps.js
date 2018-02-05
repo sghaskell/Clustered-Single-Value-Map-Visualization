@@ -157,6 +157,12 @@ define([
             return SplunkVisualizationUtils.escapeHtml(propertyValue);
         },
 
+        _getSafeUrlProperty: function(name, config) {
+            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
+            return SplunkVisualizationUtils.makeSafeUrl(propertyValue);
+
+        },
+
 		// Custom drilldown behavior for markers
         _drilldown: function(drilldownFields, resource) {
             payload = {
@@ -387,7 +393,7 @@ define([
                 maxSpiderfySize = parseInt(this._getEscapedProperty('maxSpiderfySize', config)),
                 spiderfyDistanceMultiplier = parseInt(this._getEscapedProperty('spiderfyDistanceMultiplier', config)),
                 mapTile     = SplunkVisualizationUtils.makeSafeUrl(this._getEscapedProperty('mapTile', config)),
-                mapTileOverride  = SplunkVisualizationUtils.makeSafeUrl(this._getEscapedProperty('mapTileOverride', config)),
+				mapTileOverride  = this._getSafeUrlProperty('mapTileOverride', config),
                 mapAttributionOverride = this._getEscapedProperty('mapAttributionOverride', config),
                 layerControl = parseInt(this._getEscapedProperty('layerControl', config)),
                 layerControlCollapsed = parseInt(this._getEscapedProperty('layerControlCollapsed', config)),
