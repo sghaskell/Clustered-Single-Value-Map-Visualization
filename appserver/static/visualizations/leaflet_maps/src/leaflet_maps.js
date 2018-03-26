@@ -113,10 +113,6 @@ define([
             });
         },
 
-        setupView: function() {
-            this.clearMap = false;
-        },
-
         // Build object of key/value pairs for invalid fields
         // to be used as data for _drilldown action
         validateFields: function(obj) {
@@ -337,9 +333,15 @@ define([
         },
 
         formatData: function(data) {
-            if(data.results.length < 1) {
-                    return false;
+            if(data.results.length == 0 && data.fields.length >= 1){
+                this.allDataProcessed = true;
+                console.log("ALL DONE!");
+                return this;
+            } else if(data.results.length == 0)  {
+                console.log("returning formatData - false");
+                return this;
             }
+
 
             return data;
         },
@@ -350,37 +352,6 @@ define([
             // intialize with defaults
 			if(_.keys(config).length <= 1) {
                 config = this.defaultConfig;
-            }
-            // Clear map and reset everything
-            if(this.clearMap === true) {
-                this.offset = 0; // reset offset
-                this.updateDataParams({count: this.chunk, offset: this.offset}); // update data params
-                this.invalidateUpdateView();  // redraw map
-                var markers = this.markers;
-                this.markers.clearLayers();
-                var clearMap = this.clearMap;
-                this.clearMap = false;
-                // remove layers from map and clear out marker data
-                _.each(this.layerFilter, function(lg, i) {
-                    lg.group.clearLayers();
-                    lg.markerList = [];
-                }, this);
-                this.pathLineLayer.clearLayers();
-            }
-
-            // get data
-            var dataRows = data.results;
-
-            // check for data
-            if (!dataRows || dataRows.length === 0 || dataRows[0].length === 0) {
-                return this;
-            }
-
-            // Validate we have at least latitude and longitude fields
-            if(!("latitude" in dataRows[0]) || !("longitude" in dataRows[0])) {
-                 throw new SplunkVisualizationBase.VisualizationError(
-                    'Incorrect Fields Detected - latitude & longitude fields required'
-                );
             }
 
             // get configs
@@ -436,6 +407,34 @@ define([
                 showPathLines = parseInt(this._getEscapedProperty('showPathLines', config)),
                 pathIdentifier = this._getEscapedProperty('pathIdentifier', config),
                 pathColorList = this._getEscapedProperty('pathColorList', config);
+
+            // Auto Fit & Zoom once we've processed all data
+            if(this.allDataProcessed) {
+                if(this.isArgTrue(autoFitAndZoom)) {
+                    setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
+                }
+                return this;
+            }
+
+            // Check for data and retrun if we don't have any
+            if(!_.has(data, "results")) {
+                return this;
+            }
+
+            // get data
+            var dataRows = data.results;
+
+            // check for data
+            if (!dataRows || dataRows.length === 0 || dataRows[0].length === 0) {
+                return this;
+            }
+
+            // Validate we have at least latitude and longitude fields
+            if(!("latitude" in dataRows[0]) || !("longitude" in dataRows[0])) {
+                 throw new SplunkVisualizationBase.VisualizationError(
+                    'Incorrect Fields Detected - latitude & longitude fields required'
+                );
+            }
 
             this.activeTile = (mapTileOverride) ? mapTileOverride:mapTile;
             this.attribution = (mapAttributionOverride) ? mapAttributionOverride:this.ATTRIBUTIONS[mapTile];
@@ -623,7 +622,7 @@ define([
                 this.chunk = 50000;
                 this.offset = 0;
 				this.isInitializedDom = true;         
-                this.clearMap = false;
+                this.allDataProcessed = false;
             } 
 
 
@@ -659,14 +658,14 @@ define([
 				var layerGroup = _.has(userData, "layerGroup") ? userData["layerGroup"]:icon;
 
                 // Create Clustered featuregroup subgroup layer
-                if (typeof this.layerFilter[layerGroup] == 'undefined' && this.isArgTrue(cluster)) {
+                if (_.isUndefined(this.layerFilter[layerGroup]) && this.isArgTrue(cluster)) {
                     this.layerFilter[layerGroup] = {'group' : L.featureGroup.subGroup(this.markers),
                                               'markerList' : [],
                                               'iconStyle' : icon,
                                               'layerExists' : false
                                              };
                 // Create normal layergroup
-                } else if (typeof this.layerFilter[layerGroup] == 'undefined') {
+                } else if (_.isUndefined(this.layerFilter[layerGroup])) {
                     this.layerFilter[layerGroup] = {'group' : L.featureGroup(),
                                               'markerList' : [],
                                               'iconStyle' : icon,
@@ -676,7 +675,7 @@ define([
 
                 var layerDescription  = _.has(userData, "layerDescription") ? userData["layerDescription"]:"";
 
-                if (typeof this.layerFilter[layerGroup] !== 'undefined') {
+                if (!_.isUndefined(this.layerFilter[layerGroup])) {
                     this.layerFilter[layerGroup].layerDescription = layerDescription;
                 }
 				
@@ -740,7 +739,7 @@ define([
                 /* Add the icon to layerFilter so we can access properties
 				 * for overlay in addLayerToControl
 				 */
-                if (typeof this.layerFilter[layerGroup] !== 'undefined') {
+                if (!_.isUndefined(this.layerFilter[layerGroup])) {
                     this.layerFilter[layerGroup].icon = markerIcon;
                 }
 
@@ -863,29 +862,6 @@ define([
 				}, this);
 			}
 
-			/*
-			// New logic for v1.5.6 - use data.meta.done flag to determine end of search
-            this.offset += dataRows.length;
-            try {
-                if(data.meta.done !== true) {
-                    this.updateDataParams({count: this.chunk, offset: this.offset});
-                } else {
-					// Make final call to flush
-                    this.updateDataParams({});
-
-                    if(this.isArgTrue(autoFitAndZoom)) {
-						// Delay firing due to issues with fitBounds not always working
-						// 500 ms seems to help
-                        setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
-                    }
-
-                    this.clearMap = true;
-                }
-            } catch(err) {
-                console.log(err);
-            }
-			*/
-
  			/*
              * Fix for hidden divs using tokens in Splunk
              * https://github.com/Leaflet/Leaflet/issues/2738
@@ -900,20 +876,10 @@ define([
                 }, 500, this);
             }
 
-			// 1.5.6.1 - Reverting to old code due to reports of inconsistent 
-			// behavior featching results.
-            // Chunk through data 50k results at a time
-            if(dataRows.length === this.chunk) {
-                this.offset += this.chunk;
-                this.updateDataParams({count: this.chunk, offset: this.offset});
-            } else {
-                if(this.isArgTrue(autoFitAndZoom)) {
-                    setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
-                }
-                this.clearMap = true;
-            }
-
-
+            // Update offset and fetch next chunk of data
+            this.offset += dataRows.length;
+            this.updateDataParams({count: this.chunk, offset: this.offset});
+            
 
             return this;
         }
