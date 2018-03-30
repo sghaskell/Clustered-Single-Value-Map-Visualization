@@ -50,3 +50,5 @@ display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureCompletedColo
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines = <string>
 display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList = <string>
+display.visualizations.custom.leaflet_maps_app.leaflet_maps.refresh = <string>
+display.visualizations.custom.leaflet_maps_app.leaflet_maps.refreshInterval = <string>

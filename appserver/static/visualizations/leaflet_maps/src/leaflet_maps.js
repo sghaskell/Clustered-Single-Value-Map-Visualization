@@ -87,7 +87,9 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.measureLocalization': "en",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier': "",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378"
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378",
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refresh': 0,
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refreshInterval': 300
         },
         ATTRIBUTIONS: {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
@@ -430,14 +432,22 @@ define([
                 measureLocalization = this._getEscapedProperty('measureLocalization', config),
                 showPathLines = parseInt(this._getEscapedProperty('showPathLines', config)),
                 pathIdentifier = this._getEscapedProperty('pathIdentifier', config),
-                pathColorList = this._getEscapedProperty('pathColorList', config);
+                pathColorList = this._getEscapedProperty('pathColorList', config),
+                refresh = parseInt(this._getEscapedProperty('refresh', config)),
+                refreshInterval = parseInt(this._getEscapedProperty('refreshInterval', config));
 
             // Auto Fit & Zoom once we've processed all data
             if(this.allDataProcessed) {
                 if(this.isArgTrue(autoFitAndZoom)) {
                     setTimeout(this.fitLayerBounds, autoFitAndZoomDelay, this.layerFilter, this);
                 }
-                //return this;
+
+                // Dashboard refresh
+                if(this.isArgTrue(refresh)) {
+                    setTimeout(function() {
+                        location.reload();
+                    }, refreshInterval * 1000);
+                }
             } 
             
             if (this.allDataProcessed && !this.isSplunkSeven) {
