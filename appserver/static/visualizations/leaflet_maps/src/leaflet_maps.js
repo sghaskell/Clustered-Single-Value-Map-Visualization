@@ -88,7 +88,6 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier': "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refresh': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refreshInterval': 300
         },
         ATTRIBUTIONS: {
@@ -433,7 +432,6 @@ define([
                 showPathLines = parseInt(this._getEscapedProperty('showPathLines', config)),
                 pathIdentifier = this._getEscapedProperty('pathIdentifier', config),
                 pathColorList = this._getEscapedProperty('pathColorList', config),
-                refresh = parseInt(this._getEscapedProperty('refresh', config)),
                 refreshInterval = parseInt(this._getEscapedProperty('refreshInterval', config)) * 1000;
 
             // Auto Fit & Zoom once we've processed all data
@@ -443,7 +441,7 @@ define([
                 }
 
                 // Dashboard refresh
-                if(this.isArgTrue(refresh)) {
+                if(refreshInterval > 0) {
                     setTimeout(function() {
                         location.reload();
                     }, refreshInterval);
