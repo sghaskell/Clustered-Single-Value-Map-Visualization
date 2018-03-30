@@ -96,7 +96,7 @@
         <label class="control-label">Dashboard Refresh Interval</label>
         <div class="controls controls-block">
             <splunk-text-input name="{{VIZ_NAMESPACE}}.refreshInterval" value="0"></splunk-text-input>
-            <span class="help-block ">Delay in seconds before refreshing the dasbhoard. WARNING - Refresh forces a full browser refresh on the entire dashboard. This is a workaround for a bug with the Custom Viz API tha does not honor panel level SimpleXML refresh. (default: 0 - disabled)</span>
+            <span class="help-block ">Delay in seconds before refreshing the dasbhoard. WARNING - Refresh forces a full browser refresh on the entire dashboard. This is a workaround for a bug with the Custom Viz API tha does not honor panel or global SimpleXML refresh. (default: 0 - disabled)</span>
         </div>
     </div>
     <div class="control-group">
