@@ -434,7 +434,7 @@ define([
                 pathIdentifier = this._getEscapedProperty('pathIdentifier', config),
                 pathColorList = this._getEscapedProperty('pathColorList', config),
                 refresh = parseInt(this._getEscapedProperty('refresh', config)),
-                refreshInterval = parseInt(this._getEscapedProperty('refreshInterval', config));
+                refreshInterval = parseInt(this._getEscapedProperty('refreshInterval', config)) * 1000;
 
             // Auto Fit & Zoom once we've processed all data
             if(this.allDataProcessed) {
@@ -446,7 +446,7 @@ define([
                 if(this.isArgTrue(refresh)) {
                     setTimeout(function() {
                         location.reload();
-                    }, refreshInterval * 1000);
+                    }, refreshInterval);
                 }
             } 
             
