@@ -381,7 +381,7 @@ Dynamically set map view that contains all markers with the maximum zoom level p
 ###### Auto Fit & Zoom Delay (ms)
 Delay in milliseconds before triggering Auto Fit & Zoom. Increase if you get inconsistent behavior (Default: 500)
 ###### Dashboard Refresh Interval
-Delay in seconds before refreshing the dasbhoard. WARNING - Refresh forces a full browser refresh on the entire dashboard. This is a workaround for a bug with the Custom Viz API tha does not honor panel or global SimpleXML refresh. (default: 0 - disabled)
+Delay in seconds before refreshing the dasbhoard. WARNING - Refresh forces a full browser refresh on the entire dashboard. This workaround addresses a usability issue in the Custom Viz API around reliably honoring panel or global SimpleXML refresh. (default: 0 - disabled)
 ###### Map Zoom
 Initial Zoom for map (Default: 6)
 ###### Center Lat
