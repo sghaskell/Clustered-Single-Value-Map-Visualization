@@ -88,7 +88,7 @@ define([
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.showPathLines': 0,
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathIdentifier': "",
             'display.visualizations.custom.leaflet_maps_app.leaflet_maps.pathColorList': "#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378",
-            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refreshInterval': 300
+            'display.visualizations.custom.leaflet_maps_app.leaflet_maps.refreshInterval': 0
         },
         ATTRIBUTIONS: {
         'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png': '&copy; OpenStreetMap contributors',
