@@ -12,6 +12,7 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
 ##### [leaflet-measure](https://www.npmjs.com/package/leaflet-measure)
 ##### [Leaflet.contextmenu](https://github.com/aratcliffe/Leaflet.contextmenu)
+##### [leaflet-bing-layer](https://github.com/digidem/leaflet-bing-layer)
 ##### [Leaflet.Dialog](https://github.com/NBTSolutions/Leaflet.Dialog)
 ##### [togeojson](https://github.com/mapbox/togeojson)
 ##### [load-google-maps-api](https://www.npmjs.com/package/load-google-maps-api#usage)
@@ -23,7 +24,6 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Webpack](https://webpack.github.io/)
 ##### [transform-loader](https://www.npmjs.com/package/transform-loader)
 ##### [brfs](https://www.npmjs.com/package/brfs)
-##### [babel-polyfill](https://github.com/babel/babel/tree/master/packages/babel-polyfill)
 
 Big thanks to the following people: 
 
