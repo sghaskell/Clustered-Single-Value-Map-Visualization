@@ -16,7 +16,6 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [togeojson](https://github.com/mapbox/togeojson)
 ##### [load-google-maps-api](https://www.npmjs.com/package/load-google-maps-api#usage)
 ##### [load-google-places-autocomplete](https://www.npmjs.com/package/leaflet-google-places-autocomplete)
-##### [leaflet-bing-layer](https://github.com/digidem/leaflet-bing-layer)
 ##### [JSZip](https://stuk.github.io/jszip/)
 ##### [JSZipUtils](http://stuk.github.io/jszip-utils/)
 ##### [Jquery](https://jquery.com/)
@@ -24,6 +23,7 @@ Have you ever wanted to plot massive amounts of single value lat/lons with clust
 ##### [Webpack](https://webpack.github.io/)
 ##### [transform-loader](https://www.npmjs.com/package/transform-loader)
 ##### [brfs](https://www.npmjs.com/package/brfs)
+##### [babel-polyfill](https://github.com/babel/babel/tree/master/packages/babel-polyfill)
 
 Big thanks to the following people: 
 
@@ -293,6 +293,17 @@ Set the **API Key** option **Google Places -> API Key**
 
 Optionally set the **Zoom Level** option **Google Places -> Zoom Level** for the desired fly to zoom level.
 
+# Bing Maps
+Version 1.5.17 introduces a Bing Maps tile layer. 
+
+#### Usage
+**Enable/Disable** Bing Maps via the format menu option **Bing Maps -> Bing Maps -> Enabled**. When Bing Maps are enabled, the default tile layer set and the map attribution override setting will not work.
+
+Set the **API Key** option **Bing Maps -> API Key** by pasting your Bing Maps API Key into this field.
+
+Choose the desired **Tile Layer** under **Bing Maps -> Tile Layer**
+
+Optionally set the **Label Language** using **Bing Maps -> Label Language** to localize the tile labels in the desired language. See [Microsoft's documentation](https://msdn.microsoft.com/en-us/library/hh441729.aspx) for more details.
 
 # Search Examples
 ### Basic plot of latitude and longitude
