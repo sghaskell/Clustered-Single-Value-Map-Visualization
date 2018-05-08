@@ -8,6 +8,7 @@ define([
             'api/SplunkVisualizationBase',
             'api/SplunkVisualizationUtils',
             'load-google-maps-api',
+            'leaflet-bing-layer',
 			'leaflet-contextmenu',
 			'leaflet-dialog',
             'leaflet-google-places-autocomplete',
@@ -410,7 +411,11 @@ define([
                 googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
                 googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
                 googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
-				googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
+                googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
+                bingMaps = parseInt(this._getEscapedProperty('bingMaps', config)),
+                bingMapsApiKey = this._getEscapedProperty('bingMapsApiKey', config),
+                bingMapsTileLayer = this._getEscapedProperty('bingMapsTileLayer', config),
+                bingMapsLabelLanguage = this._getEscapedProperty('bingMapsLabelLanguage', config),
                 kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
                 rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
                 rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -587,15 +592,23 @@ define([
                     }) 
                 }
 
-                // Setup the tile layer with map tile, zoom and attribution
-				this.tileLayer = L.tileLayer(this.activeTile, {
-                    attribution: this.attribution,
-                    minZoom: minZoom,
-                    maxZoom: maxZoom
-				});
+                // Create Bing Map
+                if(this.isArgTrue(bingMaps)) {
+                    var bingOptions = this.bingOptions = {"bingMapsKey": bingMapsApiKey,
+                                                          "imagerySet": bingMapsTileLayer,
+                                                          "culture": bingMapsLabelLanguage};
+                    this.tileLayer = L.tileLayer.bing(this.bingOptions);
+                } else {
+                    // Setup the tile layer with map tile, zoom and attribution
+                    this.tileLayer = L.tileLayer(this.activeTile, {
+                        attribution: this.attribution,
+                        minZoom: minZoom,
+                        maxZoom: maxZoom
+                    });    
+                }
 
                 // Add tile layer to map
-                this.map.addLayer(this.tileLayer);   
+                this.map.addLayer(this.tileLayer);
 
                 this.markers = new L.MarkerClusterGroup({ 
                     chunkedLoading: true,
@@ -691,14 +704,15 @@ define([
                 this.allDataProcessed = false;
             } 
 
-
             // Map Scroll
             (this.isArgTrue(scrollWheelZoom)) ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
 
-            // Reset Tile If Changed
-            if(this.tileLayer._url != this.activeTile) {
-                this.tileLayer.setUrl(this.activeTile);
-            }
+            if(!this.isArgTrue(bingMaps)) {
+                // Reset Tile If Changed
+                if(this.tileLayer._url != this.activeTile) {
+                    this.tileLayer.setUrl(this.activeTile);
+                }
+            }   
 
             // Reset tile zoom levels if changed
             if (this.tileLayer.options.maxZoom != maxZoom) {
