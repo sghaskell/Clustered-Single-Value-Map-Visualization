@@ -644,24 +644,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    }) 
 	                }
 
+	                // Create Bing Map
 	                if(this.isArgTrue(bingMaps)) {
 	                    var bingOptions = this.bingOptions = {"bingMapsKey": bingMapsApiKey,
 	                                                          "imagerySet": bingMapsTileLayer,
 	                                                          "culture": bingMapsLabelLanguage};
 	                    this.tileLayer = L.tileLayer.bing(this.bingOptions);
-	                    this.map.addLayer(this.tileLayer);
 	                } else {
 	                    // Setup the tile layer with map tile, zoom and attribution
 	                    this.tileLayer = L.tileLayer(this.activeTile, {
 	                        attribution: this.attribution,
 	                        minZoom: minZoom,
 	                        maxZoom: maxZoom
-	                    });
-
-	                    // Add tile layer to map
-	                    this.map.addLayer(this.tileLayer);
+	                    });    
 	                }
-	   
+
+	                // Add tile layer to map
+	                this.map.addLayer(this.tileLayer);
 
 	                this.markers = new L.MarkerClusterGroup({ 
 	                    chunkedLoading: true,
@@ -756,7 +755,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 					this.isInitializedDom = true;         
 	                this.allDataProcessed = false;
 	            } 
-
 
 	            // Map Scroll
 	            (this.isArgTrue(scrollWheelZoom)) ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
